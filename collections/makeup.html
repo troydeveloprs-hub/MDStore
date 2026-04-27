@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Makeup Collection — MDBoutiquee</title>
+  <meta name="description" content="Shop premium makeup — face, eyes, lips, nails and more at MDBoutiquee.">
+  <link rel="stylesheet" href="../css/sofie.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- ANNOUNCEMENT BAR -->
+  <div class="announcement-bar" role="banner">
+    <div class="announcement-content">
+      <span class="announcement-text">Free shipping on orders over 500 LE — <a href="makeup.html">Shop Now</a></span>
+    </div>
+    <button class="announcement-close" aria-label="Close announcement"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner container">
+      <button class="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+      <nav class="header-nav header-nav-left" aria-label="Main navigation left">
+        <div class="nav-item">
+          <a href="makeup.html" class="nav-link">Makeup <i class="fa-solid fa-chevron-down"></i></a>
+          <div class="mega-menu">
+            <a href="makeup.html" class="mega-link">Face</a>
+            <a href="makeup.html" class="mega-link">Eyes</a>
+            <a href="makeup.html" class="mega-link">Lips</a>
+            <a href="makeup.html" class="mega-link">Nails</a>
+            <a href="makeup.html" class="mega-link">Brushes & Tools</a>
+          </div>
+        </div>
+        <div class="nav-item">
+          <a href="skincare.html" class="nav-link">Skincare <i class="fa-solid fa-chevron-down"></i></a>
+          <div class="mega-menu">
+            <a href="skincare.html" class="mega-link">Cleansers</a>
+            <a href="skincare.html" class="mega-link">Moisturizers</a>
+            <a href="skincare.html" class="mega-link">Serums</a>
+            <a href="skincare.html" class="mega-link">Masks</a>
+            <a href="skincare.html" class="mega-link">Suncare</a>
+          </div>
+        </div>
+      </nav>
+      <a href="../index.html" class="header-logo"><span class="logo-text">MDBOUTIQUEE</span></a>
+      <nav class="header-nav header-nav-right" aria-label="Main navigation right">
+        <div class="nav-item"><a href="../pages/about.html" class="nav-link">About</a></div>
+        <div class="nav-item"><a href="../pages/contact.html" class="nav-link">Contact</a></div>
+      </nav>
+      <div class="header-icons">
+        <button class="icon-btn" data-search-toggle aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <a href="#" class="icon-btn" aria-label="Account"><i class="fa-regular fa-user"></i></a>
+        <a href="#" class="icon-btn" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></a>
+        <button class="icon-btn" data-cart-toggle aria-label="Cart"><i class="fa-solid fa-bag-shopping"></i><span class="cart-badge">0</span></button>
+      </div>
+    </div>
+    <div class="search-bar"><div class="container"><form class="search-form" action="#" method="get"><i class="fa-solid fa-magnifying-glass search-icon"></i><input type="text" class="search-input" placeholder="Search products..." name="q"><button type="button" class="search-close" aria-label="Close search"><i class="fa-solid fa-xmark"></i></button></form></div></div>
+  </header>
+
+  <!-- MOBILE NAV -->
+  <div class="mobile-nav-overlay"></div>
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <div class="mobile-nav-header"><span class="mobile-nav-title">Menu</span><button class="mobile-nav-close" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="mobile-nav-body">
+      <div class="mobile-nav-section"><button class="mobile-nav-parent">Makeup <i class="fa-solid fa-chevron-down"></i></button><div class="mobile-nav-submenu"><a href="makeup.html">Face</a><a href="makeup.html">Eyes</a><a href="makeup.html">Lips</a><a href="makeup.html">Nails</a></div></div>
+      <div class="mobile-nav-section"><button class="mobile-nav-parent">Skincare <i class="fa-solid fa-chevron-down"></i></button><div class="mobile-nav-submenu"><a href="skincare.html">Cleansers</a><a href="skincare.html">Moisturizers</a><a href="skincare.html">Serums</a><a href="skincare.html">Masks</a><a href="skincare.html">Suncare</a></div></div>
+      <div class="mobile-nav-links"><a href="../pages/about.html">About</a><a href="../pages/contact.html">Contact</a></div>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero hero">
+    <div class="hero-media"><img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Makeup collection" class="hero-img"></div>
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="page-hero-title">Makeup</h1>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Makeup</span>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <!-- COLLECTION LAYOUT -->
+  <main class="collection-main">
+    <div class="container">
+      <div class="collection-layout">
+        <!-- SIDEBAR -->
+        <aside class="collection-sidebar">
+          <div class="sidebar-header">
+            <h3 class="sidebar-title">Filters</h3>
+            <button class="sidebar-clear">Clear All</button>
+          </div>
+          <div class="filter-group">
+            <button class="filter-group-toggle">Category <i class="fa-solid fa-chevron-down"></i></button>
+            <div class="filter-group-body">
+              <label class="filter-check"><input type="checkbox"> Face</label>
+              <label class="filter-check"><input type="checkbox"> Eyes</label>
+              <label class="filter-check"><input type="checkbox"> Lips</label>
+              <label class="filter-check"><input type="checkbox"> Nails</label>
+              <label class="filter-check"><input type="checkbox"> Brushes & Tools</label>
+            </div>
+          </div>
+          <div class="filter-group">
+            <button class="filter-group-toggle">Brand <i class="fa-solid fa-chevron-down"></i></button>
+            <div class="filter-group-body">
+              <label class="filter-check"><input type="checkbox"> CHANEL</label>
+              <label class="filter-check"><input type="checkbox"> Dior</label>
+              <label class="filter-check"><input type="checkbox"> NARS</label>
+              <label class="filter-check"><input type="checkbox"> MAC</label>
+              <label class="filter-check"><input type="checkbox"> Armani</label>
+              <label class="filter-check"><input type="checkbox"> Fenty</label>
+            </div>
+          </div>
+          <div class="filter-group">
+            <button class="filter-group-toggle">Price <i class="fa-solid fa-chevron-down"></i></button>
+            <div class="filter-group-body">
+              <label class="filter-check"><input type="checkbox"> Under 500 LE</label>
+              <label class="filter-check"><input type="checkbox"> 500 LE - 1,000 LE</label>
+              <label class="filter-check"><input type="checkbox"> 1,000 LE - 1,500 LE</label>
+              <label class="filter-check"><input type="checkbox"> Over 1,500 LE</label>
+            </div>
+          </div>
+        </aside>
+
+        <!-- PRODUCTS -->
+        <div class="collection-products">
+          <div class="collection-toolbar">
+            <span class="collection-count">12 products</span>
+            <div class="collection-sort">
+              <button class="mobile-filter-btn"><i class="fa-solid fa-sliders"></i> Filter</button>
+              <label for="sort">Sort by:</label>
+              <select id="sort" class="sort-select">
+                <option value="featured">Featured</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="newest">Newest</option>
+                <option value="best">Best Selling</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="products-grid products-grid-4">
+            <div class="product-card" data-id="m1" data-name="Velvet Matte Lipstick" data-brand="CHANEL" data-price="850.00" data-image="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg">
+              <div class="product-card-image-wrap">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Velvet Matte Lipstick" class="product-card-img product-card-img-primary">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Velvet Matte Lipstick alternate" class="product-card-img product-card-img-secondary">
+                <div class="product-card-badges"><span class="badge badge-new">New</span></div>
+                <button class="product-card-wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></button>
+                <div class="product-card-actions"><button class="product-card-quickview">Quick View</button></div>
+              </div>
+              <div class="product-card-info">
+                <span class="product-card-brand">CHANEL</span>
+                <h3 class="product-card-name"><a href="../product.html">Velvet Matte Lipstick</a></h3>
+                <div class="product-card-price"><span class="price-current">850 LE</span></div>
+                <button class="product-card-atc">Add to Cart</button>
+              </div>
+            </div>
+
+            <div class="product-card" data-id="m2" data-name="Luminous Silk Foundation" data-brand="ARMANI" data-price="1290.00" data-image="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg">
+              <div class="product-card-image-wrap">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Luminous Silk Foundation" class="product-card-img product-card-img-primary">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Luminous Silk Foundation alternate" class="product-card-img product-card-img-secondary">
+                <div class="product-card-badges"><span class="badge badge-new">New</span></div>
+                <button class="product-card-wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></button>
+                <div class="product-card-actions"><button class="product-card-quickview">Quick View</button></div>
+              </div>
+              <div class="product-card-info">
+                <span class="product-card-brand">ARMANI</span>
+                <h3 class="product-card-name"><a href="../product.html">Luminous Silk Foundation</a></h3>
+                <div class="product-card-price"><span class="price-current">1,290 LE</span></div>
+                <button class="product-card-atc">Add to Cart</button>
+              </div>
+            </div>
+
+            <div class="product-card" data-id="m3" data-name="Bronze Glow Palette" data-brand="NARS" data-price="1100.00" data-image="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg">
+              <div class="product-card-image-wrap">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Bronze Glow Palette" class="product-card-img product-card-img-primary">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Bronze Glow Palette alternate" class="product-card-img product-card-img-secondary">
+                <button class="product-card-wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></button>
+                <div class="product-card-actions"><button class="product-card-quickview">Quick View</button></div>
+              </div>
+              <div class="product-card-info">
+                <span class="product-card-brand">NARS</span>
+                <h3 class="product-card-name"><a href="../product.html">Bronze Glow Palette</a></h3>
+                <div class="product-card-price"><span class="price-current">1,100 LE</span></div>
+                <button class="product-card-atc">Add to Cart</button>
+              </div>
+            </div>
+
+            <div class="product-card" data-id="m4" data-name="Dewy Setting Spray" data-brand="MILK" data-price="650.00" data-image="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg">
+              <div class="product-card-image-wrap">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Dewy Setting Spray" class="product-card-img product-card-img-primary">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Dewy Setting Spray alternate" class="product-card-img product-card-img-secondary">
+                <div class="product-card-badges"><span class="badge badge-sale">Sale</span></div>
+                <button class="product-card-wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></button>
+                <div class="product-card-actions"><button class="product-card-quickview">Quick View</button></div>
+              </div>
+              <div class="product-card-info">
+                <span class="product-card-brand">MILK</span>
+                <h3 class="product-card-name"><a href="../product.html">Dewy Setting Spray</a></h3>
+                <div class="product-card-price"><span class="price-current price-sale">650 LE</span><span class="price-original">800 LE</span></div>
+                <button class="product-card-atc">Add to Cart</button>
+              </div>
+            </div>
+
+            <div class="product-card" data-id="m5" data-name="Satin Kajal Liner" data-brand="DIOR" data-price="680.00" data-image="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg">
+              <div class="product-card-image-wrap">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Satin Kajal Liner" class="product-card-img product-card-img-primary">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Satin Kajal Liner alternate" class="product-card-img product-card-img-secondary">
+                <button class="product-card-wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></button>
+                <div class="product-card-actions"><button class="product-card-quickview">Quick View</button></div>
+              </div>
+              <div class="product-card-info">
+                <span class="product-card-brand">DIOR</span>
+                <h3 class="product-card-name"><a href="../product.html">Satin Kajal Liner</a></h3>
+                <div class="product-card-price"><span class="price-current">680 LE</span></div>
+                <button class="product-card-atc">Add to Cart</button>
+              </div>
+            </div>
+
+            <div class="product-card" data-id="m6" data-name="Pro Concealer Palette" data-brand="MAC" data-price="760.00" data-image="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg">
+              <div class="product-card-image-wrap">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Pro Concealer Palette" class="product-card-img product-card-img-primary">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Pro Concealer Palette alternate" class="product-card-img product-card-img-secondary">
+                <div class="product-card-badges"><span class="badge badge-sale">Sale</span></div>
+                <button class="product-card-wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></button>
+                <div class="product-card-actions"><button class="product-card-quickview">Quick View</button></div>
+              </div>
+              <div class="product-card-info">
+                <span class="product-card-brand">MAC</span>
+                <h3 class="product-card-name"><a href="../product.html">Pro Concealer Palette</a></h3>
+                <div class="product-card-price"><span class="price-current price-sale">760 LE</span><span class="price-original">960 LE</span></div>
+                <button class="product-card-atc">Add to Cart</button>
+              </div>
+            </div>
+
+            <div class="product-card" data-id="m7" data-name="Gloss Bomb Lip Gloss" data-brand="FENTY" data-price="580.00" data-image="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg">
+              <div class="product-card-image-wrap">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Gloss Bomb Lip Gloss" class="product-card-img product-card-img-primary">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Gloss Bomb Lip Gloss alternate" class="product-card-img product-card-img-secondary">
+                <div class="product-card-badges"><span class="badge badge-new">New</span></div>
+                <button class="product-card-wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></button>
+                <div class="product-card-actions"><button class="product-card-quickview">Quick View</button></div>
+              </div>
+              <div class="product-card-info">
+                <span class="product-card-brand">FENTY</span>
+                <h3 class="product-card-name"><a href="../product.html">Gloss Bomb Lip Gloss</a></h3>
+                <div class="product-card-price"><span class="price-current">580 LE</span></div>
+                <button class="product-card-atc">Add to Cart</button>
+              </div>
+            </div>
+
+            <div class="product-card" data-id="m8" data-name="Blush Tint Duo" data-brand="CHARLOTTE TILBURY" data-price="880.00" data-image="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg">
+              <div class="product-card-image-wrap">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Blush Tint Duo" class="product-card-img product-card-img-primary">
+                <img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Blush Tint Duo alternate" class="product-card-img product-card-img-secondary">
+                <button class="product-card-wishlist" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></button>
+                <div class="product-card-actions"><button class="product-card-quickview">Quick View</button></div>
+              </div>
+              <div class="product-card-info">
+                <span class="product-card-brand">CHARLOTTE TILBURY</span>
+                <h3 class="product-card-name"><a href="../product.html">Blush Tint Duo</a></h3>
+                <div class="product-card-price"><span class="price-current">880 LE</span></div>
+                <button class="product-card-atc">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="load-more-wrap">
+            <button class="btn btn-outline" data-load-more>Load More</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="../index.html" class="footer-logo-text">MDBOUTIQUEE</a>
+          <p class="footer-tagline">Premium beauty and skincare products curated for the modern woman.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/md_boutiquee2" target="_blank" class="social-link" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="social-link" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a>
+            <a href="#" class="social-link" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+            <a href="#" class="social-link" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          </div>
+        </div>
+        <div class="footer-column"><h4 class="footer-col-title">Shop</h4><ul class="footer-links"><li><a href="makeup.html">Makeup</a></li><li><a href="skincare.html">Skincare</a></li><li><a href="#">New Arrivals</a></li><li><a href="#">Sale</a></li></ul></div>
+        <div class="footer-column"><h4 class="footer-col-title">Help</h4><ul class="footer-links"><li><a href="../pages/contact.html">Contact Us</a></li><li><a href="../pages/shipping-policy.html">Shipping Policy</a></li><li><a href="#">Returns & Exchanges</a></li><li><a href="#">FAQ</a></li></ul></div>
+        <div class="footer-column"><h4 class="footer-col-title">Company</h4><ul class="footer-links"><li><a href="../pages/about.html">About Us</a></li><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li></ul><div class="footer-contact-info"><p><i class="fa-solid fa-envelope"></i> hello@mdboutiquee2.com</p><p><i class="fa-solid fa-phone"></i> +20 100 123 4567</p></div></div>
+      </div>
+    </div>
+    <div class="footer-bottom"><div class="container"><p class="footer-copyright">&copy; 2025 <a href="../index.html">MDBoutiquee</a>. All rights reserved.</p><div class="footer-payment"><i class="fa-brands fa-cc-visa payment-icon"></i><i class="fa-brands fa-cc-mastercard payment-icon"></i><i class="fa-brands fa-cc-amex payment-icon"></i><i class="fa-brands fa-cc-apple-pay payment-icon"></i><span class="cash-icon">CASH</span></div></div></div>
+  </footer>
+
+  <!-- MINI CART DRAWER -->
+  <div class="cart-drawer-overlay"></div>
+  <aside class="cart-drawer" aria-label="Shopping cart">
+    <div class="cart-drawer-header"><span class="cart-drawer-title">Your Cart</span><button class="cart-drawer-close" aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="cart-drawer-body"></div>
+    <div class="cart-drawer-footer">
+      <div class="cart-subtotal"><span>Subtotal</span><span class="cart-subtotal-value">0 LE</span></div>
+      <p class="cart-shipping-note"><i class="fa-solid fa-truck-fast"></i> Free shipping on orders over 500 LE</p>
+      <a href="../cart.html" class="btn btn-primary btn-full">View Cart</a>
+    </div>
+  </aside>
+
+  <!-- QUICK VIEW MODAL -->
+  <div class="modal-overlay"></div>
+  <div class="quickview-modal">
+    <button class="modal-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    <div class="quickview-inner">
+      <div class="quickview-image"><img src="" alt=""></div>
+      <div class="quickview-details">
+        <span class="quickview-brand"></span>
+        <h3 class="quickview-name"></h3>
+        <div class="quickview-price"></div>
+        <div class="quickview-actions"><button class="btn btn-primary quickview-atc"><i class="fa-solid fa-bag-shopping"></i> Add to Cart</button></div>
+        <a href="../product.html" class="quickview-link">View Full Details <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <button class="scroll-top" aria-label="Scroll to top"><i class="fa-solid fa-chevron-up"></i></button>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+    <div class="mobile-bottom-nav-inner">
+      <a href="../index.html"><i class="fa-solid fa-house"></i>Home</a>
+      <a href="makeup.html" class="active"><i class="fa-solid fa-swatchbook"></i>Shop</a>
+      <a href="#" data-cart-toggle><i class="fa-solid fa-bag-shopping"></i>Cart<span class="mob-cart-badge" style="display:none">0</span></a>
+      <a href="#"><i class="fa-regular fa-user"></i>Account</a>
+    </div>
+  </nav>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>

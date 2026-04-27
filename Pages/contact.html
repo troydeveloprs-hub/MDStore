@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us — MDBoutiquee</title>
+  <meta name="description" content="Get in touch with MDBoutiquee. We'd love to hear from you.">
+  <link rel="stylesheet" href="../css/sofie.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- ANNOUNCEMENT BAR -->
+  <div class="announcement-bar" role="banner">
+    <div class="announcement-content"><span class="announcement-text">Free shipping on orders over 500 LE — <a href="../collections/makeup.html">Shop Now</a></span></div>
+    <button class="announcement-close" aria-label="Close announcement"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner container">
+      <button class="hamburger" aria-label="Open menu"><span></span><span></span><span></span></button>
+      <nav class="header-nav header-nav-left" aria-label="Main navigation left">
+        <div class="nav-item"><a href="../collections/makeup.html" class="nav-link">Makeup <i class="fa-solid fa-chevron-down"></i></a><div class="mega-menu"><a href="../collections/makeup.html" class="mega-link">Face</a><a href="../collections/makeup.html" class="mega-link">Eyes</a><a href="../collections/makeup.html" class="mega-link">Lips</a></div></div>
+        <div class="nav-item"><a href="../collections/skincare.html" class="nav-link">Skincare <i class="fa-solid fa-chevron-down"></i></a><div class="mega-menu"><a href="../collections/skincare.html" class="mega-link">Cleansers</a><a href="../collections/skincare.html" class="mega-link">Moisturizers</a><a href="../collections/skincare.html" class="mega-link">Serums</a><a href="../collections/skincare.html" class="mega-link">Masks</a><a href="../collections/skincare.html" class="mega-link">Suncare</a></div></div>
+      </nav>
+      <a href="../index.html" class="header-logo"><span class="logo-text">MDBOUTIQUEE</span></a>
+      <nav class="header-nav header-nav-right" aria-label="Main navigation right">
+        <div class="nav-item"><a href="about.html" class="nav-link">About</a></div>
+        <div class="nav-item"><a href="contact.html" class="nav-link">Contact</a></div>
+      </nav>
+      <div class="header-icons">
+        <button class="icon-btn" data-search-toggle aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <a href="#" class="icon-btn" aria-label="Account"><i class="fa-regular fa-user"></i></a>
+        <a href="#" class="icon-btn" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></a>
+        <button class="icon-btn" data-cart-toggle aria-label="Cart"><i class="fa-solid fa-bag-shopping"></i><span class="cart-badge">0</span></button>
+      </div>
+    </div>
+    <div class="search-bar"><div class="container"><form class="search-form" action="#" method="get"><i class="fa-solid fa-magnifying-glass search-icon"></i><input type="text" class="search-input" placeholder="Search products..." name="q"><button type="button" class="search-close" aria-label="Close search"><i class="fa-solid fa-xmark"></i></button></form></div></div>
+  </header>
+
+  <!-- MOBILE NAV -->
+  <div class="mobile-nav-overlay"></div>
+  <nav class="mobile-nav" aria-label="Mobile navigation">
+    <div class="mobile-nav-header"><span class="mobile-nav-title">Menu</span><button class="mobile-nav-close" aria-label="Close menu"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="mobile-nav-body">
+      <div class="mobile-nav-section"><button class="mobile-nav-parent">Makeup <i class="fa-solid fa-chevron-down"></i></button><div class="mobile-nav-submenu"><a href="../collections/makeup.html">Face</a><a href="../collections/makeup.html">Eyes</a><a href="../collections/makeup.html">Lips</a></div></div>
+      <div class="mobile-nav-section"><button class="mobile-nav-parent">Skincare <i class="fa-solid fa-chevron-down"></i></button><div class="mobile-nav-submenu"><a href="../collections/skincare.html">Cleansers</a><a href="../collections/skincare.html">Moisturizers</a><a href="../collections/skincare.html">Serums</a><a href="../collections/skincare.html">Masks</a><a href="../collections/skincare.html">Suncare</a></div></div>
+      <div class="mobile-nav-links"><a href="about.html">About</a><a href="contact.html">Contact</a></div>
+    </div>
+  </nav>
+
+  <!-- PAGE HERO -->
+  <section class="page-hero hero">
+    <div class="hero-media"><img src="img/WhatsApp Image 2026-04-26 at 11.32.45 PM.jpeg" alt="Contact us" class="hero-img"></div>
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="page-hero-title">Contact Us</h1>
+        <nav class="breadcrumb" aria-label="Breadcrumb">
+          <a href="../index.html">Home</a>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">Contact</span>
+        </nav>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT LAYOUT -->
+  <main class="container" style="padding:var(--space-xl) 0 var(--space-section);">
+    <div class="contact-layout">
+      <!-- FORM -->
+      <div class="contact-form-wrap">
+        <h2 class="contact-form-title">Send Us a Message</h2>
+        <form data-contact-form>
+          <div class="form-row-2col">
+            <div class="form-group">
+              <label for="fname">First Name</label>
+              <input type="text" id="fname" class="form-input" placeholder="John" required>
+            </div>
+            <div class="form-group">
+              <label for="lname">Last Name</label>
+              <input type="text" id="lname" class="form-input" placeholder="Doe" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" class="form-input" placeholder="john@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Phone (optional)</label>
+            <input type="tel" id="phone" class="form-input" placeholder="+1 (555) 000-0000">
+          </div>
+          <div class="form-group">
+            <label for="subject">Subject</label>
+            <select id="subject" class="form-input form-select">
+              <option value="">Select a subject</option>
+              <option>Order Inquiry</option>
+              <option>Product Question</option>
+              <option>Shipping & Returns</option>
+              <option>General Feedback</option>
+              <option>Partnership</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" class="form-input form-textarea" placeholder="How can we help you?" required></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg">Send Message</button>
+        </form>
+      </div>
+
+      <!-- INFO -->
+      <div class="contact-info-wrap">
+        <h2 class="contact-info-title">Get In Touch</h2>
+        <div class="contact-info-card">
+          <div class="contact-info-item">
+            <i class="fa-solid fa-location-dot"></i>
+            <div>
+              <strong>Visit Us</strong>
+              <p>123 Beauty Lane, Suite 400<br>New York, NY 10001</p>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <i class="fa-solid fa-envelope"></i>
+            <div>
+              <strong>Email</strong>
+              <a href="mailto:hello@mdboutiquee2.com">hello@mdboutiquee2.com</a>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <i class="fa-solid fa-phone"></i>
+            <div>
+              <strong>Phone</strong>
+              <a href="tel:+201001234567">+20 100 123 4567</a>
+            </div>
+          </div>
+          <div class="contact-info-item">
+            <i class="fa-solid fa-clock"></i>
+            <div>
+              <strong>Business Hours</strong>
+              <p>Mon–Fri: 9 AM – 6 PM EST<br>Sat–Sun: 10 AM – 4 PM EST</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-social">
+          <h3>Follow Us</h3>
+          <div class="contact-social-links">
+            <a href="#" class="social-link-large"><i class="fa-brands fa-instagram"></i> @mdboutiquee2</a>
+            <a href="#" class="social-link-large"><i class="fa-brands fa-tiktok"></i> @mdboutiquee2</a>
+            <a href="#" class="social-link-large"><i class="fa-brands fa-x-twitter"></i> @mdboutiquee2</a>
+            <a href="#" class="social-link-large"><i class="fa-brands fa-facebook-f"></i> MDBoutiquee</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand"><a href="../index.html" class="footer-logo-text">MDBOUTIQUEE</a><p class="footer-tagline">Premium beauty and home essentials curated for the modern lifestyle.</p><div class="footer-social"><a href="https://www.instagram.com/md_boutiquee2" target="_blank" class="social-link" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a><a href="#" class="social-link" aria-label="TikTok"><i class="fa-brands fa-tiktok"></i></a><a href="#" class="social-link" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a><a href="#" class="social-link" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a></div></div>
+        <div class="footer-column"><h4 class="footer-col-title">Shop</h4><ul class="footer-links"><li><a href="../collections/makeup.html">Makeup</a></li><li><a href="../collections/skincare.html">Skincare</a></li><li><a href="#">New Arrivals</a></li></ul></div>
+        <div class="footer-column"><h4 class="footer-col-title">Help</h4><ul class="footer-links"><li><a href="contact.html">Contact Us</a></li><li><a href="shipping-policy.html">Shipping Policy</a></li><li><a href="#">Returns & Exchanges</a></li><li><a href="#">FAQ</a></li></ul></div>
+        <div class="footer-column"><h4 class="footer-col-title">Company</h4><ul class="footer-links"><li><a href="about.html">About Us</a></li><li><a href="#">Privacy Policy</a></li><li><a href="#">Terms of Service</a></li></ul><div class="footer-contact-info"><p><i class="fa-solid fa-envelope"></i> hello@mdboutiquee2.com</p><p><i class="fa-solid fa-phone"></i> +20 100 123 4567</p></div></div>
+      </div>
+    </div>
+    <div class="footer-bottom"><div class="container"><p class="footer-copyright">&copy; 2025 <a href="../index.html">MDBoutiquee</a>. All rights reserved.</p><div class="footer-payment"><i class="fa-brands fa-cc-visa payment-icon"></i><i class="fa-brands fa-cc-mastercard payment-icon"></i><i class="fa-brands fa-cc-amex payment-icon"></i><i class="fa-brands fa-cc-apple-pay payment-icon"></i><span class="cash-icon">CASH</span></div></div></div>
+  </footer>
+
+  <!-- MINI CART DRAWER -->
+  <div class="cart-drawer-overlay"></div>
+  <aside class="cart-drawer" aria-label="Shopping cart">
+    <div class="cart-drawer-header"><span class="cart-drawer-title">Your Cart</span><button class="cart-drawer-close" aria-label="Close cart"><i class="fa-solid fa-xmark"></i></button></div>
+    <div class="cart-drawer-body"></div>
+    <div class="cart-drawer-footer">
+      <div class="cart-subtotal"><span>Subtotal</span><span class="cart-subtotal-value">0 LE</span></div>
+      <p class="cart-shipping-note"><i class="fa-solid fa-truck-fast"></i> Free shipping on orders over 500 LE</p>
+      <a href="../cart.html" class="btn btn-primary btn-full">View Cart</a>
+    </div>
+  </aside>
+
+  <button class="scroll-top" aria-label="Scroll to top"><i class="fa-solid fa-chevron-up"></i></button>
+
+  <!-- MOBILE BOTTOM NAV -->
+  <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+    <div class="mobile-bottom-nav-inner">
+      <a href="../index.html"><i class="fa-solid fa-house"></i>Home</a>
+      <a href="../collections/makeup.html"><i class="fa-solid fa-swatchbook"></i>Shop</a>
+      <a href="#" data-cart-toggle><i class="fa-solid fa-bag-shopping"></i>Cart<span class="mob-cart-badge" style="display:none">0</span></a>
+      <a href="#"><i class="fa-regular fa-user"></i>Account</a>
+    </div>
+  </nav>
+
+  <script src="../js/app.js"></script>
+</body>
+</html>
