@@ -186,20 +186,23 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
 .product-card{background:var(--color-bg);border-radius:var(--border-radius-sm);overflow:hidden;transition:transform var(--transition-base),box-shadow var(--transition-base);cursor:pointer}
 .product-card:hover{transform:translateY(-4px);box-shadow:0 4px 16px var(--color-card-shadow-hover)}
 .product-card-image-wrap{position:relative;overflow:hidden;aspect-ratio:3/4;background:var(--color-accent-light)}
-.product-card-img{width:100%;height:100%;object-fit:cover;transition:opacity var(--transition-slow),transform var(--transition-slow)}
+.product-card-img{width:100%;height:100%;object-fit:cover;transition:opacity 0.4s ease,transform 0.4s ease}
 .product-card-img-primary{position:relative;z-index:1}
-.product-card-img-secondary{position:absolute;inset:0;z-index:2;opacity:0}
+.product-card-img-secondary{position:absolute;inset:0;z-index:2;opacity:0;transition:opacity 0.4s ease}
 .product-card:hover .product-card-img-secondary{opacity:1}
-.product-card:hover .product-card-img-primary{transform:scale(1.03)}
+.product-card:hover .product-card-img-primary{opacity:0;transform:scale(1.05)}
+.product-card-image-wrap:hover img{transform:scale(1.05)}
 .product-card-badges{position:absolute;top:12px;left:12px;z-index:5;display:flex;flex-direction:column;gap:4px}
 .badge{padding:3px 8px;font-size:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;border-radius:3px;color:white}
 .badge-new{background:var(--color-badge-new)}.badge-sale{background:var(--color-badge-sale)}
 .product-card-wishlist{position:absolute;top:12px;right:12px;z-index:5;width:36px;height:36px;border-radius:50%;background:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--color-text-secondary);box-shadow:var(--shadow-sm);transition:color var(--transition-fast),transform var(--transition-fast)}
 .product-card-wishlist:hover,.product-card-wishlist.active{color:#e8323c;transform:scale(1.15)}
-.product-card-actions{position:absolute;bottom:0;left:0;right:0;z-index:5;transform:translateY(100%);transition:transform var(--transition-base);padding:0 12px 12px}
-.product-card:hover .product-card-actions{transform:translateY(0)}
-.product-card-quickview{width:100%;padding:10px;background:rgba(255,255,255,0.95);border:1px solid var(--color-border);border-radius:var(--border-radius-sm);font-size:12px;font-weight:500;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:background var(--transition-fast),color var(--transition-fast)}
-.product-card-quickview:hover{background:var(--color-bg-dark);color:var(--color-text-white);border-color:var(--color-bg-dark)}
+.product-card-actions{position:absolute;bottom:20px;left:50%;z-index:5;transform:translateX(-50%) translateY(20px);display:flex;flex-direction:column;gap:8px;opacity:0;transition:all 0.3s ease}
+.product-card:hover .product-card-actions{opacity:1;transform:translateX(-50%) translateY(0)}
+.product-card-quickview{padding:10px 20px;background:white;border:none;border-radius:20px;font-size:12px;font-weight:500;letter-spacing:0.5px;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+.product-card-quickview:hover{background:var(--color-accent);color:white}
+.product-card-overlay-atc{padding:10px 20px;background:var(--color-bg-dark);color:white;border:none;border-radius:20px;font-size:12px;font-weight:500;letter-spacing:0.5px;cursor:pointer;transition:all 0.3s ease;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.product-card-overlay-atc:hover{background:var(--color-accent)}
 .product-card-info{padding:14px 4px 8px}
 .product-card-brand{font-size:var(--font-size-xs);text-transform:uppercase;letter-spacing:1.5px;color:var(--color-text-light);display:block;margin-bottom:4px}
 .product-card-name{font-size:14px;font-weight:400;color:var(--color-text-primary);margin:0 0 8px;line-height:1.4}
@@ -609,7 +612,8 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
   .product-card-wishlist{width:32px;height:32px;font-size:13px;top:8px;right:8px}
   .product-card-badges{top:8px;left:8px}
   .badge{padding:2px 6px;font-size:9px}
-  .product-card-actions{display:none}
+  .product-card-actions{bottom:12px;gap:6px}
+  .product-card-quickview,.product-card-overlay-atc{padding:8px 14px;font-size:11px}
 
   /* Promo banner */
   .promo-banner{min-height:220px}
