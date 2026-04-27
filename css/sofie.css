@@ -76,7 +76,7 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
 .mega-link{display:block;padding:10px 24px;font-size:14px;color:var(--color-text-secondary);transition:all var(--transition-fast)}
 .mega-link:hover{color:var(--color-accent);padding-left:28px}
 .header-logo{position:absolute;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;justify-content:center;text-decoration:none}
-.logo-img{height:76px;width:auto;max-width:400px;object-fit:contain}
+.logo-img{height:78px;width:auto;max-width:420px;object-fit:contain}
 .logo-text{font-family:var(--font-heading);font-size:28px;font-weight:700;color:var(--color-text-primary)}
 .header-icons{display:flex;align-items:center;gap:20px;flex-shrink:0}
 .icon-btn{position:relative;width:48px;height:48px;display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--color-text-primary);background:none;border:none;cursor:pointer;transition:color var(--transition-fast)}
@@ -543,7 +543,7 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
   .header-nav{display:none}
   .hamburger{display:flex}
   .header-logo{position:absolute;left:50%;transform:translateX(-50%);z-index:2;max-width:340px;display:flex;align-items:center;justify-content:center}
-  .logo-img{height:66px;width:auto;max-width:360px;object-fit:contain}
+  .logo-img{height:68px;width:auto;max-width:380px;object-fit:contain}
   .header-icons{gap:8px;position:relative;z-index:5}
   .icon-btn{width:40px;height:40px;font-size:20px}
   .header-icons a[aria-label="Account"]{display:none}
