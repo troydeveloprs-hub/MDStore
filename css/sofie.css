@@ -300,11 +300,11 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
 .footer-bottom .container{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-md)}
 .footer-copyright{font-size:var(--font-size-sm);color:rgba(255,255,255,0.4)}
 .footer-copyright a{color:var(--color-accent)}
-.footer-payment{display:flex;gap:12px;align-items:center}
+.footer-payment{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
 .payment-icon{font-size:24px;color:#666;transition:color var(--transition-fast)}
 .payment-icon:hover{color:var(--color-accent)}
 .cash-icon{font-size:11px;font-weight:700;letter-spacing:1px;border:1px solid #444;padding:2px 6px;border-radius:3px;color:#666}
-.payment-text{font-size:11px;font-weight:700;letter-spacing:0.5px;border:1px solid #444;padding:3px 8px;border-radius:3px;color:#666;white-space:nowrap}
+.payment-text{font-size:11px;font-weight:700;letter-spacing:0.5px;border:1px solid #444;padding:4px 10px;border-radius:4px;color:#999;background:#1a1a1a;white-space:nowrap;display:inline-flex;align-items:center;height:28px}
 
 /* COLLECTION PAGE */
 .collection-layout{display:grid;grid-template-columns:1fr;gap:var(--space-xl)}
@@ -649,7 +649,8 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
   .footer-inner{gap:var(--space-lg)}
   .footer-col-title{margin-bottom:12px}
   .footer-bottom .container{flex-direction:column;text-align:center;gap:var(--space-sm)}
-  .footer-payment{justify-content:center}
+  .footer-payment{justify-content:center;gap:10px}
+  .payment-text{font-size:10px;padding:2px 6px}
 
   /* Collection page */
   .collection-layout{gap:var(--space-md)}
