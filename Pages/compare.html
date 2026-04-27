@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare Products — MDBoutiquee</title>
+  <link rel="stylesheet" href="../css/sofie.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .compare-page{min-height:70vh;padding:80px 0 60px}
+    .compare-title{font-size:1.4rem;font-weight:700;margin-bottom:24px}
+    .compare-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px}
+    .compare-card{border:1.5px solid var(--color-border);border-radius:14px;overflow:hidden;text-align:center;position:relative}
+    .compare-card img{width:100%;aspect-ratio:3/4;object-fit:cover}
+    .compare-card-body{padding:16px}
+    .compare-card-brand{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-light)}
+    .compare-card-name{font-size:.95rem;font-weight:600;margin:4px 0 8px}
+    .compare-card-price{font-size:1.1rem;font-weight:700;margin-bottom:12px}
+    .compare-card-row{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--color-border);font-size:.82rem}
+    .compare-card-row .label{color:var(--color-text-light)}
+    .compare-card-row .value{font-weight:600}
+    .compare-card-actions{padding:12px;border-top:1px solid var(--color-border);display:flex;gap:8px}
+    .compare-card-actions button{flex:1;padding:10px;border-radius:8px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+    .compare-atc{background:var(--color-bg-dark);color:#fff;border:none}
+    .compare-atc:hover{background:var(--color-accent)}
+    .compare-remove{background:none;border:1.5px solid var(--color-border);color:var(--color-text-light)}
+    .compare-remove:hover{border-color:#e74c3c;color:#e74c3c}
+    .compare-remove-top{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+    .compare-empty{text-align:center;padding:80px 20px;color:var(--color-text-light)}
+    .compare-empty i{font-size:3rem;margin-bottom:16px;opacity:.3;display:block}
+  </style>
+</head>
+<body>
+  <header class="header"><div class="header-inner container"><a href="../index.html" class="header-logo"><span class="logo-text">MDBOUTIQUEE</span></a><div class="header-icons"><button class="icon-btn" data-cart-toggle><i class="fa-solid fa-bag-shopping"></i><span class="cart-badge">0</span></button></div></div></header>
+
+  <main class="compare-page">
+    <div class="container">
+      <nav class="breadcrumb"><a href="../index.html">Home</a><span class="breadcrumb-sep">/</span><span class="breadcrumb-current">Compare Products</span></nav>
+      <h1 class="compare-title">Compare Products</h1>
+      <div id="compare-content"></div>
+    </div>
+  </main>
+
+  <footer class="footer"><div class="footer-bottom"><div class="container"><p class="footer-copyright">&copy; 2025 <a href="../index.html">MDBoutiquee</a>. All rights reserved.</p></div></div></footer>
+
+  <script src="../js/store.js"></script>
+  <script src="../js/app.js"></script>
+  <script src="../js/features.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    renderCompare();
+  });
+
+  async function renderCompare() {
+    const items = MDB.Compare.get();
+    const el = document.getElementById('compare-content');
+
+    if (!items.length) {
+      el.innerHTML = '<div class="compare-empty"><i class="fa-solid fa-scale-balanced"></i><p>No products to compare</p><p style="margin-top:8px"><a href="../collections/makeup.html" class="btn btn-primary">Browse Products</a></p></div>';
+      return;
+    }
+
+    // Fetch full details
+    const products = [];
+    for (const item of items) {
+      const p = await MDB.Products.getById(item.id);
+      products.push(p || item);
+    }
+
+    el.innerHTML = `<div class="compare-grid">${products.map(p => `
+      <div class="compare-card">
+        <button class="compare-remove-top" onclick="MDB.Compare.remove('${p.id}');renderCompare()">&times;</button>
+        <img src="../${p.image}" alt="${p.name}">
+        <div class="compare-card-body">
+          <div class="compare-card-brand">${p.brand}</div>
+          <div class="compare-card-name">${p.name}</div>
+          <div class="compare-card-price">${MDB.UI.formatPrice(p.price)}</div>
+          <div class="compare-card-row"><span class="label">Category</span><span class="value">${p.category||'-'}</span></div>
+          <div class="compare-card-row"><span class="label">Stock</span><span class="value">${p.stock !== undefined ? (p.stock <= 10 ? '<span style="color:#e74c3c">'+p.stock+' left</span>' : p.stock) : 'N/A'}</span></div>
+          <div class="compare-card-row"><span class="label">Rating</span><span class="value">${p.rating ? '⭐ '+p.rating+'/5' : 'N/A'}</span></div>
+          ${p.originalPrice ? `<div class="compare-card-row"><span class="label">Original</span><span class="value" style="text-decoration:line-through;color:#888">${MDB.UI.formatPrice(p.originalPrice)}</span></div>` : ''}
+          ${p.originalPrice ? `<div class="compare-card-row"><span class="label">You Save</span><span class="value" style="color:#059669">${MDB.UI.formatPrice(p.originalPrice - p.price)}</span></div>` : ''}
+        </div>
+        <div class="compare-card-actions">
+          <button class="compare-atc" onclick="MDB.Cart.add({id:'${p.id}',name:'${p.name}',brand:'${p.brand}',price:${p.price},image:'${p.image}',variant:'Default',qty:1});MDB.UI.toast('Added!','success')"><i class="fa-solid fa-bag-shopping"></i> Add</button>
+          <button class="compare-remove" onclick="MDB.Compare.remove('${p.id}');renderCompare()"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>
+    `).join('')}</div>
+    <div style="text-align:center;margin-top:24px"><button class="btn btn-outline" onclick="MDB.Compare.clear();renderCompare()"><i class="fa-solid fa-trash"></i> Clear All</button></div>`;
+  }
+  </script>
+</body>
+</html>

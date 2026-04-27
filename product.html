@@ -7,6 +7,8 @@
   <meta name="description" content="Shop the Velvet Matte Lipstick by CHANEL at MDBoutiquee. Premium beauty with free shipping over 500 LE.">
   <link rel="stylesheet" href="css/sofie.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1a1a1a">
 </head>
 <body>
 
@@ -137,8 +139,39 @@
         <p><strong>Returns:</strong> 30-day return policy. Items must be unused and in original packaging.</p>
       </div>
     </div>
+<<<<<<< HEAD
   </main>
 
+=======
+    </div>
+  </main>
+
+  <section class="container" style="padding-bottom: 60px;">
+    <!-- REVIEWS -->
+    <div id="product-reviews" class="product-reviews-list">
+      <div class="reviews-write">
+        <h3>Write a Review</h3>
+        <div class="star-rating-input" id="review-stars">
+          <i class="fa-regular fa-star" data-val="1"></i>
+          <i class="fa-regular fa-star" data-val="2"></i>
+          <i class="fa-regular fa-star" data-val="3"></i>
+          <i class="fa-regular fa-star" data-val="4"></i>
+          <i class="fa-regular fa-star" data-val="5"></i>
+        </div>
+        <textarea id="review-text" class="review-textarea" placeholder="What do you think about this product?"></textarea>
+        <button class="review-submit" onclick="submitReview()">Submit Review</button>
+      </div>
+      <div id="reviews-list"></div>
+    </div>
+    
+    <!-- RELATED PRODUCTS -->
+    <div style="margin-top:60px">
+      <div class="section-header"><h2 class="section-title">You May Also Like</h2></div>
+      <div class="products-grid products-grid-4" id="related-products"></div>
+    </div>
+  </section>
+
+>>>>>>> fe93837 (first commit)
   <!-- FOOTER -->
   <footer class="footer">
     <div class="container">
@@ -176,6 +209,113 @@
     </div>
   </nav>
 
+<<<<<<< HEAD
   <script src="js/app.js"></script>
+=======
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script><script src="js/features.js"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', async () => {
+    const params = new URLSearchParams(window.location.search);
+    const pid = params.get('id');
+    if (!pid) return;
+    const p = await MDB.Products.getById(pid);
+    if (!p) return;
+
+    // Update page title
+    document.title = p.name + ' — MDBoutiquee';
+
+    // Update product details
+    const brand = document.querySelector('.product-detail-brand');
+    const title = document.querySelector('.product-detail-title');
+    const price = document.querySelector('.price-current');
+    const rating = document.querySelector('.product-detail-rating .count');
+    const mainImg = document.querySelector('.product-main-image img');
+    const desc = document.querySelector('.accordion-body p');
+    const breadcrumbCurrent = document.querySelector('.breadcrumb-current');
+
+    if (brand) brand.textContent = p.brand;
+    if (title) title.textContent = p.name;
+    if (price) price.textContent = MDB.UI.formatPrice(p.price);
+    if (rating) rating.textContent = '(' + p.reviewCount + ' reviews)';
+    if (mainImg) { mainImg.src = p.image; mainImg.alt = p.name; }
+    if (desc) desc.textContent = p.description;
+    if (breadcrumbCurrent) breadcrumbCurrent.textContent = p.name;
+
+    // Update thumbnails
+    document.querySelectorAll('.gallery-thumb img').forEach(img => {
+      img.src = p.image; img.alt = p.name;
+    });
+
+    // Update variants
+    if (p.variants && p.variants.length) {
+      const btnsWrap = document.querySelector('.variant-btns');
+      if (btnsWrap) {
+        btnsWrap.innerHTML = p.variants.map((v, i) => `<button class="variant-btn${i===0?' active':''}">${v}</button>`).join('');
+        btnsWrap.querySelectorAll('.variant-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            btnsWrap.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+          });
+        });
+      }
+    }
+
+    renderReviews(pid);
+    renderRelated(pid);
+  });
+
+  // --- REVIEWS LOGIC ---
+  let selectedRating = 5;
+  document.querySelectorAll('.star-rating-input i').forEach(star => {
+    star.addEventListener('click', function() {
+      selectedRating = parseInt(this.dataset.val);
+      document.querySelectorAll('.star-rating-input i').forEach(s => {
+        if(parseInt(s.dataset.val) <= selectedRating) s.classList.replace('fa-regular','fa-solid');
+        else s.classList.replace('fa-solid','fa-regular');
+      });
+      document.querySelectorAll('.star-rating-input i').forEach(s => s.classList.add('active')); // color
+    });
+  });
+
+  function submitReview() {
+    const text = document.getElementById('review-text').value.trim();
+    if(!text) return MDB.UI.toast('Please write a review text', 'warning');
+    const pid = new URLSearchParams(window.location.search).get('id');
+    
+    MDB.Reviews.add({ productId: pid, rating: selectedRating, text: text });
+    document.getElementById('review-text').value = '';
+    MDB.UI.toast('Review submitted successfully!', 'success');
+    renderReviews(pid);
+  }
+
+  function renderReviews(pid) {
+    const reviews = MDB.Reviews.getForProduct(pid);
+    const list = document.getElementById('reviews-list');
+    if(!reviews.length) {
+      list.innerHTML = '<p style="color:#888;padding:20px 0">No reviews yet. Be the first to review this product!</p>';
+      return;
+    }
+    list.innerHTML = reviews.map(r => `
+      <div style="padding:16px 0;border-bottom:1px solid var(--color-border)">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+          <div><strong style="font-size:14px">${r.authorName}</strong> ${r.isVerified?'<i class="fa-solid fa-circle-check" style="color:#059669;font-size:12px" title="Verified Buyer"></i>':''}</div>
+          <div style="color:var(--color-accent);font-size:12px">${Array(5).fill().map((_,i)=>`<i class="fa-${i<r.rating?'solid':'regular'} fa-star"></i>`).join('')}</div>
+        </div>
+        <p style="font-size:14px;color:var(--color-text-secondary);line-height:1.5">${r.text}</p>
+        <div style="font-size:11px;color:#aaa;margin-top:8px">${new Date(r.createdAt).toLocaleDateString()}</div>
+      </div>
+    `).join('');
+  }
+
+  // --- RELATED PRODUCTS LOGIC ---
+  async function renderRelated(pid) {
+    const related = await MDB.Products.getRelated(pid, 4);
+    const el = document.getElementById('related-products');
+    if(!related.length) { document.getElementById('related-products').parentElement.style.display = 'none'; return; }
+    el.innerHTML = related.map(p => MDB.UI.productCardHTML(p)).join('');
+  }
+  </script>
+  <script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js')}</script>
 </body>
 </html>

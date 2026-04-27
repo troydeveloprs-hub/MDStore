@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order — MDBoutiquee</title>
+  <link rel="stylesheet" href="../css/sofie.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .track-page{min-height:70vh;padding:80px 0 60px}
+    .track-form{max-width:520px;margin:0 auto;text-align:center}
+    .track-icon{font-size:3rem;color:var(--color-accent);margin-bottom:20px}
+    .track-title{font-size:1.6rem;font-weight:700;margin-bottom:8px}
+    .track-desc{color:var(--color-text-light);font-size:.92rem;margin-bottom:32px}
+    .track-input-group{display:flex;gap:10px;margin-bottom:24px}
+    .track-input{flex:1;padding:14px 18px;border:1.5px solid var(--color-border);border-radius:10px;font-size:.95rem;font-family:inherit}
+    .track-input:focus{border-color:var(--color-accent);outline:none}
+    .track-btn{padding:14px 28px;background:var(--color-bg-dark);color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+    .track-btn:hover{background:var(--color-accent)}
+    .track-result{max-width:600px;margin:32px auto 0;animation:panelIn .4s ease}
+    @keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    .track-card{border:1.5px solid var(--color-border);border-radius:14px;padding:28px;background:#fff}
+    .track-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;flex-wrap:wrap;gap:8px}
+    .track-order-id{font-weight:700;font-size:1rem}
+    .track-timeline{position:relative;padding-left:36px}
+    .track-timeline::before{content:'';position:absolute;left:12px;top:0;bottom:0;width:2px;background:var(--color-border)}
+    .track-step{position:relative;padding-bottom:24px}
+    .track-step:last-child{padding-bottom:0}
+    .track-dot{position:absolute;left:-36px;top:2px;width:26px;height:26px;border-radius:50%;border:2px solid var(--color-border);background:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--color-text-light)}
+    .track-step.completed .track-dot{border-color:#059669;background:#059669;color:#fff}
+    .track-step.active .track-dot{border-color:var(--color-accent);background:var(--color-accent);color:#fff;animation:pulse 2s infinite}
+    .track-step-title{font-weight:600;font-size:.9rem}
+    .track-step-date{font-size:.78rem;color:var(--color-text-light)}
+    .track-step-note{font-size:.82rem;color:var(--color-text-secondary);margin-top:2px}
+    .track-items{margin-top:20px;border-top:1px solid var(--color-border);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+    .track-item{display:flex;gap:12px;align-items:center}
+    .track-item img{width:48px;height:48px;border-radius:8px;object-fit:cover}
+    .track-item-name{font-size:.85rem;font-weight:500;flex:1}
+    .track-item-qty{font-size:.82rem;color:var(--color-text-light)}
+    .track-total{display:flex;justify-content:space-between;font-weight:700;font-size:1rem;margin-top:16px;padding-top:12px;border-top:2px solid var(--color-border)}
+    .track-wa{margin-top:16px;text-align:center}
+    .track-wa a{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:#25d366;color:#fff;border-radius:8px;font-size:.85rem;font-weight:600}
+    .track-wa a:hover{opacity:.9}
+    .track-error{color:#e74c3c;font-size:.9rem;margin-top:16px}
+    @media(max-width:480px){.track-input-group{flex-direction:column}.track-btn{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="announcement-bar"><div class="announcement-content"><span class="announcement-text">Free shipping on orders over 500 LE</span></div><button class="announcement-close"><i class="fa-solid fa-xmark"></i></button></div>
+  <header class="header"><div class="header-inner container"><a href="../index.html" class="header-logo"><span class="logo-text">MDBOUTIQUEE</span></a><div class="header-icons"><a href="login.html" class="icon-btn"><i class="fa-regular fa-user"></i></a><button class="icon-btn" data-cart-toggle><i class="fa-solid fa-bag-shopping"></i><span class="cart-badge">0</span></button></div></div></header>
+
+  <main class="track-page">
+    <div class="container">
+      <div class="track-form">
+        <div class="track-icon"><i class="fa-solid fa-truck-fast"></i></div>
+        <h1 class="track-title">Track Your Order</h1>
+        <p class="track-desc">Enter your order ID to check the status of your delivery</p>
+        <div class="track-input-group">
+          <input type="text" class="track-input" id="track-input" placeholder="e.g. MDB-M1ABC-XY2Z" autofocus>
+          <button class="track-btn" onclick="trackOrder()"><i class="fa-solid fa-magnifying-glass"></i> Track</button>
+        </div>
+        <div id="track-error" class="track-error" style="display:none"></div>
+      </div>
+      <div id="track-result" class="track-result" style="display:none"></div>
+    </div>
+  </main>
+
+  <footer class="footer"><div class="footer-bottom"><div class="container"><p class="footer-copyright">&copy; 2025 <a href="../index.html">MDBoutiquee</a>. All rights reserved.</p></div></div></footer>
+
+  <script src="../js/store.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+  document.getElementById('track-input').addEventListener('keydown', e => { if (e.key === 'Enter') trackOrder(); });
+
+  function trackOrder() {
+    const id = document.getElementById('track-input').value.trim();
+    const errEl = document.getElementById('track-error');
+    const resultEl = document.getElementById('track-result');
+
+    if (!id) { errEl.textContent = 'Please enter an order ID'; errEl.style.display = 'block'; resultEl.style.display = 'none'; return; }
+
+    const order = MDB.Orders.getById(id);
+    if (!order) { errEl.textContent = 'Order not found. Please check the ID and try again.'; errEl.style.display = 'block'; resultEl.style.display = 'none'; return; }
+
+    errEl.style.display = 'none';
+    const statuses = ['pending', 'processing', 'shipped', 'delivered'];
+    const statusLabels = { pending: 'Order Placed', processing: 'Processing', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled' };
+    const statusIcons = { pending: 'fa-clock', processing: 'fa-spinner', shipped: 'fa-truck', delivered: 'fa-check', cancelled: 'fa-xmark' };
+    const currentIdx = statuses.indexOf(order.status);
+
+    resultEl.innerHTML = `<div class="track-card">
+      <div class="track-header">
+        <span class="track-order-id">${order.id}</span>
+        <span class="order-status-badge ${order.status}" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;text-transform:uppercase;
+          ${order.status==='pending'?'background:#fef3c7;color:#d97706':''}
+          ${order.status==='processing'?'background:#dbeafe;color:#2563eb':''}
+          ${order.status==='shipped'?'background:#e0e7ff;color:#4f46e5':''}
+          ${order.status==='delivered'?'background:#d1fae5;color:#059669':''}
+          ${order.status==='cancelled'?'background:#fef2f2;color:#e74c3c':''}
+        ">${statusLabels[order.status]}</span>
+      </div>
+      <div class="track-timeline">
+        ${order.statusHistory.map((h, i) => {
+          const isLast = i === order.statusHistory.length - 1;
+          return `<div class="track-step ${isLast ? 'active' : 'completed'}">
+            <div class="track-dot"><i class="fa-solid ${statusIcons[h.status]||'fa-circle'}"></i></div>
+            <div class="track-step-title">${statusLabels[h.status]||h.status}</div>
+            <div class="track-step-date">${new Date(h.date).toLocaleString()}</div>
+            ${h.note ? `<div class="track-step-note">${h.note}</div>` : ''}
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="track-items">
+        ${order.items.map(i => `<div class="track-item"><img src="../${i.image}" alt="${i.name}"><span class="track-item-name">${i.name}</span><span class="track-item-qty">x${i.qty}</span></div>`).join('')}
+      </div>
+      <div class="track-total"><span>Total</span><span>${MDB.UI.formatPrice(order.total)}</span></div>
+      <div class="track-wa"><a href="https://wa.me/201001234567?text=${encodeURIComponent('Hi! I want to check on my order: '+order.id)}" target="_blank"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a></div>
+    </div>`;
+    resultEl.style.display = 'block';
+  }
+
+  // Auto-track from URL
+  const urlId = new URLSearchParams(window.location.search).get('id');
+  if (urlId) { document.getElementById('track-input').value = urlId; trackOrder(); }
+  </script>
+</body>
+</html>
