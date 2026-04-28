@@ -15,6 +15,7 @@ const MDB = (() => {
     REVIEWS:   'mdb_reviews',
     ADDRESSES: 'mdb_addresses',
     PROMO:     'mdb_applied_promo',
+    CUSTOM_PRODUCTS: 'mdb_custom_products',
   };
 
   /* ─── Helpers ─── */
@@ -39,16 +40,74 @@ const MDB = (() => {
 
     async getAll() {
       if (this._cache) return this._cache;
+      
+      let all = [];
       // Determine base path (works from any subfolder)
       const paths = ['data/products.json', '../data/products.json', '../../data/products.json'];
       for (const p of paths) {
         try {
           const res = await fetch(p);
-          if (res.ok) { this._cache = await res.json(); return this._cache; }
+          if (res.ok) { all = await res.json(); break; }
         } catch { /* try next */ }
       }
-      console.warn('Products JSON not found');
-      return [];
+      
+      // Merge with custom products from localStorage
+      const custom = _get(KEYS.CUSTOM_PRODUCTS) || [];
+      
+      // Handle deleted products (stored as IDs in custom products with a deleted flag)
+      const deletedIds = custom.filter(p => p.isDeleted).map(p => p.id);
+      all = all.filter(p => !deletedIds.includes(p.id));
+      
+      // Handle updated products
+      custom.filter(p => !p.isDeleted).forEach(cp => {
+        const idx = all.findIndex(p => p.id === cp.id);
+        if (idx > -1) all[idx] = { ...all[idx], ...cp };
+        else all.push(cp);
+      });
+
+      this._cache = all;
+      return all;
+    },
+
+    async save(product) {
+      const custom = _get(KEYS.CUSTOM_PRODUCTS) || [];
+      const idx = custom.findIndex(p => p.id === product.id);
+      
+      if (idx > -1) custom[idx] = { ...custom[idx], ...product };
+      else {
+        if (!product.id) product.id = 'P' + Date.now();
+        custom.push(product);
+      }
+      
+      _set(KEYS.CUSTOM_PRODUCTS, custom);
+      this._cache = null; // Invalidate cache
+      return product;
+    },
+
+    async delete(id) {
+      const custom = _get(KEYS.CUSTOM_PRODUCTS) || [];
+      const idx = custom.findIndex(p => p.id === id);
+      
+      // Check if it's a JSON product or a custom one
+      const res = await fetch('data/products.json').catch(() => null);
+      let isJson = false;
+      if (res && res.ok) {
+        const json = await res.json();
+        isJson = json.some(p => p.id === id);
+      }
+
+      if (isJson) {
+        // Mark as deleted in custom storage
+        const deletedEntry = custom.find(p => p.id === id);
+        if (deletedEntry) deletedEntry.isDeleted = true;
+        else custom.push({ id, isDeleted: true });
+      } else {
+        // Remove from custom storage
+        if (idx > -1) custom.splice(idx, 1);
+      }
+
+      _set(KEYS.CUSTOM_PRODUCTS, custom);
+      this._cache = null;
     },
 
     async getById(id) {

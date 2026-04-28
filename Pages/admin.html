@@ -607,9 +607,14 @@
       <td><strong>${MDB.UI.formatPrice(o.total)}</strong></td>
       <td><span class="order-status-badge ${o.status}">${o.status}</span></td>
       <td>${new Date(o.createdAt).toLocaleDateString()}</td>
-      <td><select class="status-select" onchange="updateOrderStatus('${o.id}',this.value)">
-        ${['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
-      </select></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <select class="status-select" onchange="updateOrderStatus('${o.id}',this.value)">
+            ${['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+          <button class="admin-btn admin-btn-danger" onclick="deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
     </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;color:#888">No orders yet</td></tr>';
 
       // Search
@@ -632,12 +637,47 @@
       const tbody = document.querySelector('#products-table tbody');
       tbody.innerHTML = products.map(p => `<tr>
       <td><img src="../${p.image}" class="admin-product-img" alt="${p.name}"></td>
-      <td><strong>${p.name}</strong></td>
+      <td><strong>${p.name}</strong><br><small style="color:#888">ID: ${p.id}</small></td>
       <td>${p.brand}</td>
       <td>${MDB.UI.formatPrice(p.price)}${p.originalPrice ? `<br><s style="color:#888;font-size:12px">${MDB.UI.formatPrice(p.originalPrice)}</s>` : ''}</td>
       <td>${p.stock <= 10 ? `<span style="color:#e74c3c;font-weight:700">${p.stock}</span>` : p.stock}</td>
       <td>${p.category}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="admin-btn" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="admin-btn admin-btn-danger" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
     </tr>`).join('');
+    }
+
+    let editingProductId = null;
+
+    async function editProduct(id) {
+      const p = await MDB.Products.getById(id);
+      if (!p) return;
+      
+      editingProductId = id;
+      document.getElementById('pf-name').value = p.name;
+      document.getElementById('pf-brand').value = p.brand;
+      document.getElementById('pf-price').value = p.price;
+      document.getElementById('pf-oprice').value = p.originalPrice || '';
+      document.getElementById('pf-cat').value = p.category;
+      document.getElementById('pf-stock').value = p.stock;
+      document.getElementById('pf-desc').value = p.description || '';
+      document.getElementById('pf-image').value = p.image;
+      
+      const wrap = document.getElementById('product-form-wrap');
+      wrap.style.display = 'block';
+      wrap.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Are you sure you want to delete this product?')) return;
+      await MDB.Products.delete(id);
+      MDB.UI.toast('Product deleted', 'success');
+      renderProducts();
+      renderStats();
     }
 
     function renderCustomers() {
@@ -693,14 +733,45 @@
 
     function toggleProductForm() {
       const wrap = document.getElementById('product-form-wrap');
-      wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+      const isHidden = wrap.style.display === 'none';
+      wrap.style.display = isHidden ? 'block' : 'none';
+      if (isHidden) {
+          editingProductId = null;
+          document.getElementById('product-form').reset();
+      }
     }
 
-    document.getElementById('product-form')?.addEventListener('submit', e => {
+    document.getElementById('product-form')?.addEventListener('submit', async e => {
       e.preventDefault();
-      MDB.UI.toast('Product saved! (Note: in this local version, products are read-only from JSON. To add products, edit data/products.json directly)', 'info', 5000);
+      const productData = {
+        id: editingProductId,
+        name: document.getElementById('pf-name').value,
+        brand: document.getElementById('pf-brand').value,
+        price: parseFloat(document.getElementById('pf-price').value),
+        originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
+        category: document.getElementById('pf-cat').value,
+        stock: parseInt(document.getElementById('pf-stock').value),
+        description: document.getElementById('pf-desc').value,
+        image: document.getElementById('pf-image').value || 'img/placeholder.jpg',
+        isNewArrival: true
+      };
+
+      await MDB.Products.save(productData);
+      MDB.UI.toast(editingProductId ? 'Product updated!' : 'Product added successfully!', 'success');
       toggleProductForm();
+      renderProducts();
+      renderStats();
     });
+
+    function deleteOrder(id) {
+        if (!confirm('Are you sure you want to delete this order?')) return;
+        const orders = MDB.Orders.get().filter(o => o.id !== id);
+        localStorage.setItem('mdb_orders', JSON.stringify(orders));
+        MDB.UI.toast('Order deleted', 'success');
+        renderOrders();
+        renderStats();
+    }
+
   </script>
 </body>
 
