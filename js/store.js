@@ -16,6 +16,7 @@ const MDB = (() => {
     ADDRESSES: 'mdb_addresses',
     PROMO:     'mdb_applied_promo',
     CUSTOM_PRODUCTS: 'mdb_custom_products',
+    PRODUCT_OVERRIDES: 'mdb_product_overrides',
     CUSTOM_COUPONS: 'mdb_custom_coupons',
     SETTINGS: 'mdb_settings',
   };
@@ -40,26 +41,35 @@ const MDB = (() => {
   const Products = {
     _cache: null,
 
+    async _loadBaseProducts() {
+      const paths = ['data/products.json', '../data/products.json', '../../data/products.json'];
+      for (const path of paths) {
+        try {
+          const res = await fetch(path);
+          if (res.ok) return await res.json();
+        } catch {
+          // Try the next relative path.
+        }
+      }
+      return [];
+    },
+
     async getAll() {
       if (this._cache) return this._cache;
-      
-      let all = [];
-      // Determine base path (works from any subfolder)
-      const paths = ['data/products.json', '../data/products.json', '../../data/products.json'];
-      for (const p of paths) {
-        try {
-          const res = await fetch(p);
-          if (res.ok) { all = await res.json(); break; }
-        } catch { /* try next */ }
-      }
-      
+
+      const baseProducts = await this._loadBaseProducts();
+      const overrides = _get(KEYS.PRODUCT_OVERRIDES) || {};
+      let all = baseProducts.map(product => (
+        overrides[product.id] ? { ...product, ...overrides[product.id] } : product
+      ));
+
       // Merge with custom products from localStorage
       const custom = _get(KEYS.CUSTOM_PRODUCTS) || [];
-      
+
       // Handle deleted products (stored as IDs in custom products with a deleted flag)
       const deletedIds = custom.filter(p => p.isDeleted).map(p => p.id);
       all = all.filter(p => !deletedIds.includes(p.id));
-      
+
       // Handle updated products
       custom.filter(p => !p.isDeleted).forEach(cp => {
         const idx = all.findIndex(p => p.id === cp.id);
@@ -74,13 +84,27 @@ const MDB = (() => {
     async save(product) {
       const custom = _get(KEYS.CUSTOM_PRODUCTS) || [];
       const idx = custom.findIndex(p => p.id === product.id);
-      
+
+      if (!product.id) product.id = 'P' + Date.now();
+
       if (idx > -1) custom[idx] = { ...custom[idx], ...product };
       else {
-        if (!product.id) product.id = 'P' + Date.now();
-        custom.push(product);
+        custom.push({
+          variants: [],
+          images: product.image ? [product.image] : [],
+          description: '',
+          details: '',
+          ingredients: [],
+          stock: 0,
+          rating: 0,
+          reviewCount: 0,
+          isFeatured: false,
+          isNewArrival: false,
+          createdAt: _dateNow().slice(0, 10),
+          ...product
+        });
       }
-      
+
       _set(KEYS.CUSTOM_PRODUCTS, custom);
       this._cache = null; // Invalidate cache
       return product;
@@ -89,14 +113,11 @@ const MDB = (() => {
     async delete(id) {
       const custom = _get(KEYS.CUSTOM_PRODUCTS) || [];
       const idx = custom.findIndex(p => p.id === id);
-      
+      const overrides = _get(KEYS.PRODUCT_OVERRIDES) || {};
+
       // Check if it's a JSON product or a custom one
-      const res = await fetch('data/products.json').catch(() => null);
-      let isJson = false;
-      if (res && res.ok) {
-        const json = await res.json();
-        isJson = json.some(p => p.id === id);
-      }
+      const json = await this._loadBaseProducts();
+      const isJson = json.some(p => p.id === id);
 
       if (isJson) {
         // Mark as deleted in custom storage
@@ -108,7 +129,9 @@ const MDB = (() => {
         if (idx > -1) custom.splice(idx, 1);
       }
 
+      delete overrides[id];
       _set(KEYS.CUSTOM_PRODUCTS, custom);
+      _set(KEYS.PRODUCT_OVERRIDES, overrides);
       this._cache = null;
     },
 

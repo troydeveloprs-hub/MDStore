@@ -483,7 +483,7 @@
     <div class="container">
       <!-- LOGIN GATE -->
       <div id="admin-login" class="admin-login">
-        <h2>🔐 Admin Access</h2>
+        <h2><i class="fa-solid fa-lock"></i> Admin Access</h2>
         <p>Enter admin password to continue</p>
         <input type="password" id="admin-pass" placeholder="Password" autofocus>
         <button onclick="checkAdminPass()">Access Dashboard</button>
@@ -493,7 +493,7 @@
       <!-- DASHBOARD -->
       <div id="admin-dashboard" style="display:none">
         <div class="admin-header">
-          <h1>📊 Admin Dashboard</h1>
+          <h1><i class="fa-solid fa-chart-line"></i> Admin Dashboard</h1>
           <div style="display:flex;gap:8px;align-items:center">
             <a href="../index.html" class="admin-btn"><i class="fa-solid fa-arrow-left"></i> Back to Store</a>
             <button class="admin-btn admin-btn-danger" onclick="MDB.Auth.logout(); window.location.href='login.html';"><i
@@ -506,8 +506,8 @@
 
         <!-- TABS -->
         <div class="admin-tabs" id="admin-tabs">
-          <button class="admin-tab active" data-tab="orders">📦 Orders</button>
-          <button class="admin-tab" data-tab="products">🛍️ Products</button>
+          <button class="admin-tab active" data-tab="orders"><i class="fa-solid fa-box"></i> Orders</button>
+          <button class="admin-tab" data-tab="products"><i class="fa-solid fa-bag-shopping"></i> Products</button>
           <button class="admin-tab" data-tab="customers">Customers</button>
           <button class="admin-tab" data-tab="reviews">Reviews</button>
           <button class="admin-tab" data-tab="coupons">Coupons</button>
@@ -783,26 +783,15 @@
     }
 
     async function adjustStock(pid, delta) {
-      const products = await MDB.Products.getAll();
-      const p = products.find(x => x.id === pid);
-      if (p) {
-        p.stock = Math.max(0, (p.stock || 0) + delta);
-        // Save back to localStorage if it's a custom product, or handle it via a global override
-        const customs = JSON.parse(localStorage.getItem('mdb_custom_products') || '[]');
-        const cIdx = customs.findIndex(x => x.id === pid);
-        if (cIdx > -1) {
-          customs[cIdx].stock = p.stock;
-          localStorage.setItem('mdb_custom_products', JSON.stringify(customs));
-        } else {
-          // If it's a built-in product, we save an override
-          const overrides = JSON.parse(localStorage.getItem('mdb_product_overrides') || '{}');
-          overrides[pid] = { ...overrides[pid], stock: p.stock };
-          localStorage.setItem('mdb_product_overrides', JSON.stringify(overrides));
-        }
-        renderInventory();
-        renderProducts();
-        MDB.UI.toast(`Stock updated for ${p.name}`, 'success');
-      }
+      const p = await MDB.Products.getById(pid);
+      if (!p) return;
+      await MDB.Products.save({
+        ...p,
+        stock: Math.max(0, (p.stock || 0) + delta)
+      });
+      renderInventory();
+      renderProducts();
+      MDB.UI.toast(`Stock updated for ${p.name}`, 'success');
     }
 
     function renderStats() {
@@ -880,7 +869,7 @@
         return;
       }
       tbody.innerHTML = products.map(p => `<tr>
-      <td><img src="../${p.image}" class="admin-product-img" onerror="this.src='../img/placeholder.jpg'"></td>
+      <td><img src="../${p.image}" class="admin-product-img" onerror="this.src='../img/logo.svg'"></td>
       <td><strong>${p.name}</strong><br><small style="color:#888">${p.id}</small></td>
       <td>${p.brand}</td>
       <td>${MDB.UI.formatPrice(p.price)}</td>
@@ -909,7 +898,14 @@
         document.getElementById('product-form-wrap').style.display = 'block';
     }
 
-    async function deleteProduct(id) { if(confirm('Delete product?')){ await MDB.Products.delete(id); renderProducts(); } }
+    async function deleteProduct(id) {
+      if (confirm('Delete product?')) {
+        await MDB.Products.delete(id);
+        renderProducts();
+        renderInventory();
+        MDB.UI.toast('Product deleted');
+      }
+    }
 
     document.getElementById('product-form').onsubmit = async e => {
         e.preventDefault();
@@ -922,12 +918,13 @@
             category: document.getElementById('pf-cat').value,
             stock: parseInt(document.getElementById('pf-stock').value),
             description: document.getElementById('pf-desc').value,
-            image: document.getElementById('pf-image').value || 'img/placeholder.jpg'
+            image: document.getElementById('pf-image').value || 'img/logo.svg'
         };
         await MDB.Products.save(data);
         MDB.UI.toast('Product saved');
         toggleProductForm();
         renderProducts();
+        renderInventory();
     };
 
     function toggleProductForm() { 
@@ -945,7 +942,7 @@
           return;
         }
         tbody.innerHTML = rs.map(r => `<tr>
-            <td>${r.productId}</td><td>${r.authorName}</td><td>${r.rating}⭐</td>
+            <td>${r.productId}</td><td>${r.authorName}</td><td>${r.rating} <i class="fa-solid fa-star" style="color:#f59e0b"></i></td>
             <td>${r.text ? r.text.substring(0,40) + '...' : '-'}</td><td>${new Date(r.createdAt).toLocaleDateString()}</td>
             <td><button class="admin-btn admin-btn-danger" onclick="deleteReview('${r.id}')"><i class="fa-solid fa-trash"></i></button></td>
         </tr>`).join('');
@@ -1003,27 +1000,45 @@
 
     function renderCustomers() {
         const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
+        const orders = MDB.Orders.get();
         const tbody = document.querySelector('#customers-table tbody');
         if (!users.length) {
           tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-users"></i><p>No registered customers yet</p></div></td></tr>';
           return;
         }
-        tbody.innerHTML = users.map(u => `<tr><td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.phone||'-'}</td><td>${u.city||'-'}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td>-</td></tr>`).join('');
+        tbody.innerHTML = users.map(u => {
+          const orderCount = orders.filter(o => o.customer.email.toLowerCase() === u.email.toLowerCase()).length;
+          return `<tr><td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.phone||'-'}</td><td>${u.city||'-'}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td>${orderCount}</td></tr>`;
+        }).join('');
     }
 
     function renderAnalytics() {
         const a = JSON.parse(localStorage.getItem('mdb_analytics') || '{}');
-        const views = a.views || [];
+        const views = Array.isArray(a.views) ? a.views : [];
+        const searches = Array.isArray(a.searches) ? a.searches : [];
+        const orderCount = Number(a.orders || 0);
+        const revenue = Number(a.revenue || 0);
         document.getElementById('analytics-stats').innerHTML = `
           <div class="stat-card">
             <div class="stat-value">${views.length}</div>
             <div class="stat-label">Page Views</div>
           </div>
+          <div class="stat-card">
+            <div class="stat-value">${orderCount}</div>
+            <div class="stat-label">Tracked Orders</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">${MDB.UI.formatPrice(revenue)}</div>
+            <div class="stat-label">Tracked Revenue</div>
+          </div>
         `;
-        
-        const searches = a.searches || [];
+
         const topSearches = {};
-        searches.forEach(s => { topSearches[s] = (topSearches[s] || 0) + 1; });
+        searches.forEach(entry => {
+          const term = (entry && entry.query ? entry.query : '').trim();
+          if (!term) return;
+          topSearches[term] = (topSearches[term] || 0) + 1;
+        });
         const sortedSearches = Object.entries(topSearches).sort((a, b) => b[1] - a[1]).slice(0, 5);
         
         document.getElementById('top-searches').innerHTML = sortedSearches.length ? 
@@ -1031,10 +1046,24 @@
           '<p style="color:var(--admin-text-light);font-size:13px">No search data yet</p>';
         
         const chartEl = document.getElementById('views-chart');
-        if (chartEl && views.length > 0) {
-          chartEl.innerHTML = views.slice(-7).map((v, i) => {
-            const height = Math.max(10, Math.min(100, (v.count || 1) * 10));
-            return `<div class="chart-col" style="--height:${height}%" title="Day ${i+1}: ${v.count || 1} views"></div>`;
+        if (chartEl) {
+          const dailyViews = [];
+          for (let i = 6; i >= 0; i--) {
+            const day = new Date();
+            day.setHours(0, 0, 0, 0);
+            day.setDate(day.getDate() - i);
+            const dateKey = day.toISOString().slice(0, 10);
+            const count = views.filter(v => (v.date || '').slice(0, 10) === dateKey).length;
+            dailyViews.push({
+              label: day.toLocaleDateString('en-US', { weekday: 'short' }),
+              count
+            });
+          }
+
+          const maxCount = Math.max(...dailyViews.map(v => v.count), 1);
+          chartEl.innerHTML = dailyViews.map(day => {
+            const height = Math.max(10, Math.round((day.count / maxCount) * 100));
+            return `<div class="chart-col" style="--height:${height}%" title="${day.label}: ${day.count} views"><span class="chart-col-label">${day.label}</span></div>`;
           }).join('');
         }
     }
