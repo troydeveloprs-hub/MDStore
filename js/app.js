@@ -174,12 +174,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (mobileClose) on(mobileClose, 'click', () => { hamburger && hamburger.classList.remove('active'); closeMobileNav(); });
   if (mobileOverlay) on(mobileOverlay, 'click', () => { hamburger && hamburger.classList.remove('active'); closeMobileNav(); });
 
-  // Mobile nav accordion
-  $$('.mobile-nav-parent').forEach(btn => {
+  // Mobile nav accordion (multi-level)
+  $$('.mobile-nav-parent, .mobile-nav-subparent').forEach(btn => {
     on(btn, 'click', () => {
       btn.classList.toggle('active');
       const sub = btn.nextElementSibling;
-      if (sub && sub.classList.contains('mobile-nav-submenu')) {
+      if (sub && (sub.classList.contains('mobile-nav-submenu') || sub.classList.contains('mobile-nav-subsubmenu'))) {
         sub.classList.toggle('open');
       }
     });
