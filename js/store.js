@@ -651,13 +651,19 @@ const MDB = (() => {
     },
 
     /** Generate product card HTML */
-    productCardHTML(p) {
-      const basePath = window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '';
+    productCardHTML(p, basePathOverride = null) {
+      const basePath = typeof basePathOverride === 'string'
+        ? basePathOverride
+        : (window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '');
+      const image = p.image || 'img/logo.svg';
+      const oldPrice = p.originalPrice || p.oldPrice;
+      const badge = typeof p.badge === 'string' ? p.badge.trim() : '';
+      const badgeText = badge ? badge.charAt(0).toUpperCase() + badge.slice(1) : '';
       return `
-        <div class="product-card" data-id="${p.id}">
+        <div class="product-card" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand || ''}" data-price="${p.price}" data-image="${basePath}${image}" data-variant="${(p.variants && p.variants[0]) || 'Default'}">
           <div class="product-card-media">
-            ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
-            <a href="${basePath}product.html?id=${p.id}"><img src="${basePath}${p.image}" alt="${p.name}" class="product-card-img" loading="lazy"></a>
+            ${badgeText ? `<span class="product-badge">${badgeText}</span>` : ''}
+            <a href="${basePath}product.html?id=${p.id}"><img src="${basePath}${image}" alt="${p.name}" class="product-card-img" loading="lazy" onerror="this.src='${basePath}img/logo.svg'"></a>
             <div class="product-card-actions">
               <button class="action-btn" data-quick-view="${p.id}" title="Quick View"><i class="fa-regular fa-eye"></i></button>
               <button class="action-btn" data-wishlist="${p.id}" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
@@ -667,7 +673,7 @@ const MDB = (() => {
             <span class="product-card-brand">${p.brand}</span>
             <h3 class="product-card-title"><a href="${basePath}product.html?id=${p.id}">${p.name}</a></h3>
             <div class="product-card-price">
-              ${p.oldPrice ? `<span class="price-old">${this.formatPrice(p.oldPrice)}</span>` : ''}
+              ${oldPrice ? `<span class="price-old">${this.formatPrice(oldPrice)}</span>` : ''}
               <span class="price-current">${this.formatPrice(p.price)}</span>
             </div>
             <button class="btn btn-atc btn-full" data-id="${p.id}">Add to Cart</button>
