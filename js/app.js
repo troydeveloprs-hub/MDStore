@@ -12,6 +12,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const emit = (el, evt, detail) => el && el.dispatchEvent(new CustomEvent(evt, { detail }));
 
   /* ============================================
+     HERO SLIDER — Auto Rotation
+     ============================================ */
+  const heroSlider = () => {
+    const slides = $$('.slide');
+    if (slides.length === 0) return;
+    
+    let index = 0;
+    
+    setInterval(() => {
+      slides[index].classList.remove('active');
+      index = (index + 1) % slides.length;
+      slides[index].classList.add('active');
+    }, 4000); // 4 seconds
+  };
+  heroSlider();
+
+  /* ============================================
      CART — LocalStorage Persistence
      ============================================ */
   const CART_KEY = 'mdboutiquee_cart';
