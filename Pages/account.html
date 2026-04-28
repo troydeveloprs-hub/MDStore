@@ -550,6 +550,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     if (!MDB.Auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
     const user = MDB.Auth.getUser();
+    if (user && user.role === 'admin') { window.location.href = 'admin.html'; return; }
 
     // Greeting
     const initials = ((user.firstName||'')[0]||'') + ((user.lastName||'')[0]||'');
