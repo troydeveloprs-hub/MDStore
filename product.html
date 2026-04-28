@@ -139,14 +139,16 @@
         <p><strong>Returns:</strong> 30-day return policy. Items must be unused and in original packaging.</p>
       </div>
     </div>
-<<<<<<< HEAD
-  </main>
-
-=======
     </div>
   </main>
 
   <section class="container" style="padding-bottom: 60px;">
+    <!-- HUDA BEAUTY BRAND BANNER -->
+    <div id="huda-banner" style="display:none; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: #fff; padding: 30px; border-radius: 12px; margin-bottom: 40px; text-align: center;">
+      <div style="font-size: 32px; font-weight: 700; margin-bottom: 10px; font-family: 'Playfair Display', serif;">Huda Beauty</div>
+      <div style="font-size: 16px; color: #aaa;">Premium Collection — Exclusively at MDBoutiquee</div>
+    </div>
+    
     <!-- REVIEWS -->
     <div id="product-reviews" class="product-reviews-list">
       <div class="reviews-write">
@@ -170,8 +172,6 @@
       <div class="products-grid products-grid-4" id="related-products"></div>
     </div>
   </section>
-
->>>>>>> fe93837 (first commit)
   <!-- FOOTER -->
   <footer class="footer">
     <div class="container">
@@ -209,15 +209,33 @@
     </div>
   </nav>
 
-<<<<<<< HEAD
-  <script src="js/app.js"></script>
-=======
   <script src="js/store.js"></script>
-  <script src="js/app.js"></script><script src="js/features.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/features.js"></script>
   <script>
+  // Huda Beauty products list
+  const hudaBeautyProducts = ['p2', 'p3', 'p4', 's1'];
+  
   document.addEventListener('DOMContentLoaded', async () => {
     const params = new URLSearchParams(window.location.search);
     const pid = params.get('id');
+    
+    // Show Huda Beauty banner for specific products
+    if (hudaBeautyProducts.includes(pid)) {
+      const hudaBanner = document.getElementById('huda-banner');
+      if (hudaBanner) {
+        hudaBanner.style.display = 'block';
+        // Update brand to Huda Beauty
+        const brand = document.querySelector('.product-detail-brand');
+        if (brand) {
+          brand.textContent = 'HUDA BEAUTY';
+          brand.style.color = '#d4a373';
+          brand.style.fontSize = '14px';
+          brand.style.letterSpacing = '2px';
+        }
+      }
+    }
+    
     if (!pid) return;
     const p = await MDB.Products.getById(pid);
     if (!p) return;
@@ -234,7 +252,8 @@
     const desc = document.querySelector('.accordion-body p');
     const breadcrumbCurrent = document.querySelector('.breadcrumb-current');
 
-    if (brand) brand.textContent = p.brand;
+    // Only update brand if not Huda Beauty
+    if (brand && !hudaBeautyProducts.includes(pid)) brand.textContent = p.brand;
     if (title) title.textContent = p.name;
     if (price) price.textContent = MDB.UI.formatPrice(p.price);
     if (rating) rating.textContent = '(' + p.reviewCount + ' reviews)';
