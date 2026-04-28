@@ -938,12 +938,24 @@
         btn.disabled = true; btn.textContent = 'Signing in...';
 
         setTimeout(() => {
+          console.log('Attempting login for:', email);
           const result = MDB.Auth.login(email, password);
+          console.log('Login result:', result);
+          
           if (result.success) {
             msg.className = 'auth-message success'; msg.textContent = 'Welcome back! Redirecting...';
             MDB.UI.toast('Welcome back, ' + result.user.firstName + '!', 'success');
+            
             setTimeout(() => { 
-                window.location.href = result.isAdmin ? 'admin.html' : 'account.html'; 
+                const user = MDB.Auth.getUser();
+                console.log('Session user after login:', user);
+                if (result.isAdmin || (user && user.role === 'admin')) {
+                  console.log('Redirecting to admin.html');
+                  window.location.href = 'admin.html';
+                } else {
+                  console.log('Redirecting to account.html');
+                  window.location.href = 'account.html';
+                }
             }, 1000);
           } else {
             msg.className = 'auth-message error'; msg.textContent = result.message;

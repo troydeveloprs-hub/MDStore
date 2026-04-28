@@ -335,8 +335,7 @@
           <h1>📊 Admin Dashboard</h1>
           <div style="display:flex;gap:8px;align-items:center">
             <a href="../index.html" class="admin-btn"><i class="fa-solid fa-arrow-left"></i> Back to Store</a>
-            <button class="admin-btn admin-btn-danger"
-              onclick="localStorage.setItem('mdb_admin','');location.reload()"><i
+            <button class="admin-btn admin-btn-danger" onclick="MDB.Auth.logout(); window.location.href='login.html';"><i
                 class="fa-solid fa-right-from-bracket"></i> Logout</button>
           </div>
         </div>
