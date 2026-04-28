@@ -708,6 +708,9 @@ const MDB = (() => {
       document.querySelectorAll('[data-guest-only]').forEach(el => {
         el.style.display = user ? 'none' : '';
       });
+      document.querySelectorAll('[data-admin-only]').forEach(el => {
+        el.style.display = (user && user.role === 'admin') ? '' : 'none';
+      });
       document.querySelectorAll('[data-user-name]').forEach(el => {
         el.textContent = user ? (user.firstName || user.email) : '';
       });

@@ -348,11 +348,12 @@
         <div class="admin-tabs" id="admin-tabs">
           <button class="admin-tab active" data-tab="orders">📦 Orders</button>
           <button class="admin-tab" data-tab="products">🛍️ Products</button>
-          <button class="admin-tab" data-tab="customers">👥 Customers</button>
-          <button class="admin-tab" data-tab="analytics">📈 Analytics</button>
-          <button class="admin-tab" data-tab="reviews">💬 Reviews</button>
-          <button class="admin-tab" data-tab="coupons">🏷️ Coupons</button>
-          <button class="admin-tab" data-tab="settings">⚙️ Settings</button>
+          <button class="admin-tab" data-tab="customers">Customers</button>
+          <button class="admin-tab" data-tab="reviews">Reviews</button>
+          <button class="admin-tab" data-tab="coupons">Coupons</button>
+          <button class="admin-tab" data-tab="inventory">Inventory</button>
+          <button class="admin-tab" data-tab="settings">Settings</button>
+          <button class="admin-tab" data-tab="analytics">Analytics</button>
         </div>
 
         <!-- ORDERS PANEL -->
@@ -503,6 +504,25 @@
           </div>
         </div>
 
+        <!-- INVENTORY PANEL -->
+        <div class="admin-panel" id="panel-inventory">
+          <div class="admin-panel-title"><span>Inventory Management</span></div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="inventory-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>SKU/ID</th>
+                  <th>Current Stock</th>
+                  <th>Adjustment</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- SETTINGS PANEL -->
         <div class="admin-panel" id="panel-settings">
           <div class="admin-panel-title"><span>Site Settings</span></div>
@@ -540,7 +560,15 @@
     }
     document.getElementById('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') checkAdminPass(); });
 
-    if (localStorage.getItem('mdb_admin') === '1') showDashboard();
+    function checkAdminSession() {
+      const user = MDB.Auth.getUser();
+      if (user && user.role === 'admin') {
+        showDashboard();
+      } else {
+        document.getElementById('admin-login').style.display = 'block';
+      }
+    }
+    checkAdminSession();
 
     function showDashboard() {
       document.getElementById('admin-login').style.display = 'none';
@@ -567,6 +595,48 @@
       renderAnalytics();
       renderReviews();
       renderCoupons();
+      renderInventory();
+    }
+
+    async function renderInventory() {
+      const products = await MDB.Products.getAll();
+      const tbody = document.querySelector('#inventory-table tbody');
+      tbody.innerHTML = products.map(p => `<tr>
+        <td><strong>${p.name}</strong><br><small style="color:#888">${p.brand}</small></td>
+        <td>${p.id}</td>
+        <td><span class="stock-badge ${p.stock < 10 ? 'low' : ''}" style="padding:4px 8px; border-radius:4px; font-weight:600; ${p.stock < 10 ? 'background:#fef2f2;color:#dc2626' : 'background:#f0fdf4;color:#16a34a'}">${p.stock} units</span></td>
+        <td>
+          <div style="display:flex;gap:4px">
+            <button class="admin-btn" onclick="adjustStock('${p.id}', -1)">-1</button>
+            <button class="admin-btn" onclick="adjustStock('${p.id}', 1)">+1</button>
+            <button class="admin-btn" onclick="adjustStock('${p.id}', 10)">+10</button>
+          </div>
+        </td>
+        <td>${p.stock > 0 ? '<span style="color:#10b981"><i class="fa-solid fa-check"></i> In Stock</span>' : '<span style="color:#ef4444"><i class="fa-solid fa-xmark"></i> Out of Stock</span>'}</td>
+      </tr>`).join('');
+    }
+
+    async function adjustStock(pid, delta) {
+      const products = await MDB.Products.getAll();
+      const p = products.find(x => x.id === pid);
+      if (p) {
+        p.stock = Math.max(0, (p.stock || 0) + delta);
+        // Save back to localStorage if it's a custom product, or handle it via a global override
+        const customs = JSON.parse(localStorage.getItem('mdb_custom_products') || '[]');
+        const cIdx = customs.findIndex(x => x.id === pid);
+        if (cIdx > -1) {
+          customs[cIdx].stock = p.stock;
+          localStorage.setItem('mdb_custom_products', JSON.stringify(customs));
+        } else {
+          // If it's a built-in product, we save an override
+          const overrides = JSON.parse(localStorage.getItem('mdb_product_overrides') || '{}');
+          overrides[pid] = { ...overrides[pid], stock: p.stock };
+          localStorage.setItem('mdb_product_overrides', JSON.stringify(overrides));
+        }
+        renderInventory();
+        renderProducts();
+        MDB.UI.toast(`Stock updated for ${p.name}`, 'success');
+      }
     }
 
     function renderStats() {
