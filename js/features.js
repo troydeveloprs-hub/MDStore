@@ -452,4 +452,37 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   window.MDB.Coupons = Coupons;
+
+  /* ===================================================================
+     11. DYNAMIC SETTINGS — Sync UI with Admin settings
+     =================================================================== */
+  const DynamicSettings = {
+    init() {
+      if (!MDB.Settings) return;
+      const s = MDB.Settings.get();
+      
+      // 1. Announcement Bar
+      const annText = document.querySelector('.announcement-text');
+      if (annText && s.announcement) {
+          // preserve the link if it exists
+          const link = annText.querySelector('a');
+          const prefix = s.announcement + ' — ';
+          annText.innerHTML = prefix;
+          if (link) annText.appendChild(link);
+      }
+
+      // 2. Cart Shipping Note
+      const cartNote = document.querySelector('.cart-shipping-note');
+      if (cartNote) {
+          cartNote.innerHTML = `<i class="fa-solid fa-truck-fast"></i> Free shipping on orders over ${s.shippingThreshold} LE`;
+      }
+
+      // 3. Contact Email in footer
+      const footerEmail = document.querySelector('.footer-contact-info p:first-child');
+      if (footerEmail && s.contactEmail) {
+          footerEmail.innerHTML = `<i class="fa-solid fa-envelope"></i> ${s.contactEmail}`;
+      }
+    }
+  };
+  DynamicSettings.init();
 });

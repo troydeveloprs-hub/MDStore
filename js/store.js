@@ -215,7 +215,8 @@ const MDB = (() => {
 
     shipping() {
       const sub = this.subtotal();
-      return sub >= 500 ? 0 : 50;
+      const threshold = Settings.get().shippingThreshold || 3500;
+      return sub >= threshold ? 0 : 50;
     },
 
     total() {

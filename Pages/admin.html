@@ -350,13 +350,14 @@
           <button class="admin-tab" data-tab="products">🛍️ Products</button>
           <button class="admin-tab" data-tab="customers">👥 Customers</button>
           <button class="admin-tab" data-tab="analytics">📈 Analytics</button>
-          <button class="admin-tab" data-tab="newsletter">📧 Newsletter</button>
+          <button class="admin-tab" data-tab="reviews">💬 Reviews</button>
           <button class="admin-tab" data-tab="coupons">🏷️ Coupons</button>
+          <button class="admin-tab" data-tab="settings">⚙️ Settings</button>
         </div>
 
         <!-- ORDERS PANEL -->
         <div class="admin-panel active" id="panel-orders">
-          <div class="admin-panel-title"><span>Orders Management</span></div>
+          <div class="admin-panel-title"><span>Orders Management</span><button class="admin-btn" onclick="exportOrders()"><i class="fa-solid fa-download"></i> Export CSV</button></div>
           <input type="text" class="admin-search" placeholder="Search by order ID or customer..." id="order-search">
           <div class="admin-table-wrap">
             <table class="admin-table" id="orders-table">
@@ -380,6 +381,11 @@
         <div class="admin-panel" id="panel-products">
           <div class="admin-panel-title"><span>Product Catalog</span><button class="admin-btn"
               onclick="toggleProductForm()"><i class="fa-solid fa-plus"></i> Add Product</button></div>
+          
+          <div id="low-stock-alert" style="display:none;background:#fff5f5;border:1px solid #feb2b2;padding:12px;border-radius:8px;margin-bottom:16px;color:#c53030;font-size:14px">
+            <i class="fa-solid fa-triangle-exclamation"></i> <strong>Low Stock Alert:</strong> Some products are running low (below 10 units).
+          </div>
+
           <div id="product-form-wrap" style="display:none;margin-bottom:24px">
             <h3 style="font-size:1rem;margin-bottom:12px">Add / Edit Product</h3>
             <form class="admin-form" id="product-form">
@@ -395,11 +401,13 @@
                 <div><label>Category</label><select id="pf-cat">
                     <option>makeup</option>
                     <option>skincare</option>
+                    <option>hair</option>
+                    <option>fragrance</option>
                   </select></div>
                 <div><label>Stock</label><input type="number" id="pf-stock" value="50"></div>
               </div>
               <div><label>Description</label><textarea id="pf-desc"></textarea></div>
-              <div><label>Image Path</label><input id="pf-image" placeholder="images/product.jpg"></div>
+              <div><label>Image Path</label><input id="pf-image" placeholder="img/product.jpg"></div>
               <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary btn-sm">Save
                   Product</button><button type="button" class="admin-btn" onclick="toggleProductForm()">Cancel</button>
               </div>
@@ -415,6 +423,7 @@
                   <th>Price</th>
                   <th>Stock</th>
                   <th>Category</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -442,6 +451,69 @@
           </div>
         </div>
 
+        <!-- REVIEWS PANEL -->
+        <div class="admin-panel" id="panel-reviews">
+          <div class="admin-panel-title"><span>Customer Reviews</span></div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="reviews-table">
+              <thead>
+                <tr>
+                  <th>Product ID</th>
+                  <th>Author</th>
+                  <th>Rating</th>
+                  <th>Comment</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- COUPONS PANEL -->
+        <div class="admin-panel" id="panel-coupons">
+          <div class="admin-panel-title"><span>Manage Coupons</span><button class="admin-btn" onclick="toggleCouponForm()"><i class="fa-solid fa-plus"></i> New Coupon</button></div>
+          <div id="coupon-form-wrap" style="display:none;margin-bottom:24px;max-width:500px">
+              <form class="admin-form" id="coupon-form">
+                  <div class="form-row">
+                      <div><label>Code</label><input id="cf-code" placeholder="SAVE20" required></div>
+                      <div><label>Type</label><select id="cf-type"><option value="percent">Percentage (%)</option><option value="fixed">Fixed Amount (LE)</option></select></div>
+                  </div>
+                  <div class="form-row">
+                      <div><label>Value</label><input type="number" id="cf-val" required></div>
+                      <div><label>Min Order</label><input type="number" id="cf-min" value="0"></div>
+                  </div>
+                  <button type="submit" class="btn btn-primary btn-sm">Create Coupon</button>
+              </form>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="coupons-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Type</th>
+                  <th>Value</th>
+                  <th>Min Order</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SETTINGS PANEL -->
+        <div class="admin-panel" id="panel-settings">
+          <div class="admin-panel-title"><span>Site Settings</span></div>
+          <form class="admin-form" id="settings-form" style="max-width:500px">
+              <div><label>Announcement Text</label><input id="sf-ann"></div>
+              <div><label>Free Shipping Threshold (LE)</label><input type="number" id="sf-ship"></div>
+              <div><label>Contact Email</label><input id="sf-email"></div>
+              <button type="submit" class="btn btn-primary btn-sm">Save Site Settings</button>
+          </form>
+        </div>
+
         <!-- ANALYTICS PANEL -->
         <div class="admin-panel" id="panel-analytics">
           <div class="admin-panel-title"><span>Store Analytics</span></div>
@@ -450,98 +522,6 @@
           <div id="top-searches"></div>
           <h3 style="font-size:.95rem;margin:16px 0 8px">Page Views (Last 7 Days)</h3>
           <div class="chart-bar" id="views-chart"></div>
-        </div>
-
-        <!-- NEWSLETTER PANEL -->
-        <div class="admin-panel" id="panel-newsletter">
-          <div class="admin-panel-title"><span>Newsletter Subscribers</span><span id="newsletter-count"
-              style="font-size:13px;color:var(--color-text-light)"></span></div>
-          <div class="subs-list" id="subs-list"></div>
-        </div>
-
-        <!-- COUPONS PANEL -->
-        <div class="admin-panel" id="panel-coupons">
-          <div class="admin-panel-title"><span>Coupon Codes</span></div>
-          <div class="admin-table-wrap">
-            <table class="admin-table">
-              <thead>
-                <tr>
-                  <th>Code</th>
-                  <th>Type</th>
-                  <th>Value</th>
-                  <th>Min Order</th>
-                  <th>Max Uses</th>
-                  <th>Expires</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><strong>MDB10</strong></td>
-                  <td>Percent</td>
-                  <td>10%</td>
-                  <td>0 LE</td>
-                  <td>99</td>
-                  <td>2027-12-31</td>
-                </tr>
-                <tr>
-                  <td><strong>MDB20</strong></td>
-                  <td>Percent</td>
-                  <td>20%</td>
-                  <td>500 LE</td>
-                  <td>5</td>
-                  <td>2027-06-30</td>
-                </tr>
-                <tr>
-                  <td><strong>WELCOME15</strong></td>
-                  <td>Percent</td>
-                  <td>15%</td>
-                  <td>0 LE</td>
-                  <td>1</td>
-                  <td>2027-12-31</td>
-                </tr>
-                <tr>
-                  <td><strong>BEAUTY25</strong></td>
-                  <td>Percent</td>
-                  <td>25%</td>
-                  <td>300 LE</td>
-                  <td>2</td>
-                  <td>2027-09-30</td>
-                </tr>
-                <tr>
-                  <td><strong>VIP30</strong></td>
-                  <td>Percent</td>
-                  <td>30%</td>
-                  <td>1,000 LE</td>
-                  <td>1</td>
-                  <td>2027-03-31</td>
-                </tr>
-                <tr>
-                  <td><strong>SAVE50</strong></td>
-                  <td>Fixed</td>
-                  <td>50 LE</td>
-                  <td>200 LE</td>
-                  <td>10</td>
-                  <td>2027-12-31</td>
-                </tr>
-                <tr>
-                  <td><strong>SAVE100</strong></td>
-                  <td>Fixed</td>
-                  <td>100 LE</td>
-                  <td>800 LE</td>
-                  <td>3</td>
-                  <td>2027-06-30</td>
-                </tr>
-                <tr>
-                  <td><strong>FREESHIP</strong></td>
-                  <td>Fixed</td>
-                  <td>50 LE</td>
-                  <td>0 LE</td>
-                  <td>99</td>
-                  <td>2027-12-31</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
         </div>
       </div>
     </div>
@@ -565,12 +545,7 @@
     function showDashboard() {
       document.getElementById('admin-login').style.display = 'none';
       document.getElementById('admin-dashboard').style.display = 'block';
-      renderStats();
-      renderOrders();
-      renderProducts();
-      renderCustomers();
-      renderAnalytics();
-      renderNewsletter();
+      refreshAll();
 
       // Tab switching
       document.querySelectorAll('.admin-tab').forEach(tab => {
@@ -579,8 +554,19 @@
           tab.classList.add('active');
           document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
           document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+          if (tab.dataset.tab === 'settings') loadSettings();
         });
       });
+    }
+
+    function refreshAll() {
+      renderStats();
+      renderOrders();
+      renderProducts();
+      renderCustomers();
+      renderAnalytics();
+      renderReviews();
+      renderCoupons();
     }
 
     function renderStats() {
@@ -593,7 +579,6 @@
       <div class="admin-stat"><div class="admin-stat-value">${MDB.UI.formatPrice(revenue)}</div><div class="admin-stat-label">Total Revenue</div></div>
       <div class="admin-stat"><div class="admin-stat-value">${users.length}</div><div class="admin-stat-label">Customers</div></div>
       <div class="admin-stat"><div class="admin-stat-value">${orders.filter(o => o.status === 'pending').length}</div><div class="admin-stat-label">Pending Orders</div></div>
-      <div class="admin-stat"><div class="admin-stat-value">${subs.length}</div><div class="admin-stat-label">Newsletter Subs</div></div>
     `;
     }
 
@@ -603,175 +588,157 @@
       tbody.innerHTML = orders.map(o => `<tr>
       <td><strong>${o.id}</strong></td>
       <td>${o.customer.name}<br><small style="color:#888">${o.customer.email}</small></td>
-      <td>${o.items.length} item${o.items.length > 1 ? 's' : ''}</td>
+      <td>${o.items.length} items</td>
       <td><strong>${MDB.UI.formatPrice(o.total)}</strong></td>
       <td><span class="order-status-badge ${o.status}">${o.status}</span></td>
       <td>${new Date(o.createdAt).toLocaleDateString()}</td>
       <td>
         <div style="display:flex;gap:4px">
-          <select class="status-select" onchange="updateOrderStatus('${o.id}',this.value)">
-            ${['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
-          </select>
+          <select onchange="updateStatus('${o.id}',this.value)">${['pending','processing','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('')}</select>
           <button class="admin-btn admin-btn-danger" onclick="deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
         </div>
       </td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;color:#888">No orders yet</td></tr>';
-
-      // Search
-      document.getElementById('order-search').addEventListener('input', function () {
-        const q = this.value.toLowerCase();
-        document.querySelectorAll('#orders-table tbody tr').forEach(row => {
-          row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
-        });
-      });
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px">No orders</td></tr>';
     }
 
-    function updateOrderStatus(id, status) {
-      MDB.Orders.updateStatus(id, status, 'Updated by admin');
-      MDB.UI.toast('Order status updated to ' + status, 'success');
-      renderStats();
-    }
+    function updateStatus(id, s) { MDB.Orders.updateStatus(id, s); MDB.UI.toast('Updated'); renderOrders(); renderStats(); }
+    function deleteOrder(id) { if(confirm('Delete?')){ let os = MDB.Orders.get().filter(o=>o.id!==id); localStorage.setItem('mdb_orders', JSON.stringify(os)); renderOrders(); renderStats(); } }
 
     async function renderProducts() {
       const products = await MDB.Products.getAll();
+      const lowStock = products.filter(p => p.stock < 10);
+      document.getElementById('low-stock-alert').style.display = lowStock.length ? 'block' : 'none';
+
       const tbody = document.querySelector('#products-table tbody');
       tbody.innerHTML = products.map(p => `<tr>
-      <td><img src="../${p.image}" class="admin-product-img" alt="${p.name}"></td>
-      <td><strong>${p.name}</strong><br><small style="color:#888">ID: ${p.id}</small></td>
+      <td><img src="../${p.image}" class="admin-product-img"></td>
+      <td><strong>${p.name}</strong><br><small>${p.id}</small></td>
       <td>${p.brand}</td>
-      <td>${MDB.UI.formatPrice(p.price)}${p.originalPrice ? `<br><s style="color:#888;font-size:12px">${MDB.UI.formatPrice(p.originalPrice)}</s>` : ''}</td>
-      <td>${p.stock <= 10 ? `<span style="color:#e74c3c;font-weight:700">${p.stock}</span>` : p.stock}</td>
+      <td>${MDB.UI.formatPrice(p.price)}</td>
+      <td style="color:${p.stock<10?'red':'inherit'}">${p.stock}</td>
       <td>${p.category}</td>
       <td>
-        <div style="display:flex;gap:4px">
-          <button class="admin-btn" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i></button>
-          <button class="admin-btn admin-btn-danger" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
-        </div>
+        <button class="admin-btn" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+        <button class="admin-btn admin-btn-danger" onclick="deleteProduct('${p.id}')"><i class="fa-solid fa-trash"></i></button>
       </td>
     </tr>`).join('');
     }
 
-    let editingProductId = null;
-
+    let editingPid = null;
     async function editProduct(id) {
-      const p = await MDB.Products.getById(id);
-      if (!p) return;
-      
-      editingProductId = id;
-      document.getElementById('pf-name').value = p.name;
-      document.getElementById('pf-brand').value = p.brand;
-      document.getElementById('pf-price').value = p.price;
-      document.getElementById('pf-oprice').value = p.originalPrice || '';
-      document.getElementById('pf-cat').value = p.category;
-      document.getElementById('pf-stock').value = p.stock;
-      document.getElementById('pf-desc').value = p.description || '';
-      document.getElementById('pf-image').value = p.image;
-      
-      const wrap = document.getElementById('product-form-wrap');
-      wrap.style.display = 'block';
-      wrap.scrollIntoView({ behavior: 'smooth' });
+        const p = await MDB.Products.getById(id);
+        if(!p) return;
+        editingPid = id;
+        document.getElementById('pf-name').value = p.name;
+        document.getElementById('pf-brand').value = p.brand;
+        document.getElementById('pf-price').value = p.price;
+        document.getElementById('pf-oprice').value = p.originalPrice || '';
+        document.getElementById('pf-cat').value = p.category;
+        document.getElementById('pf-stock').value = p.stock;
+        document.getElementById('pf-desc').value = p.description || '';
+        document.getElementById('pf-image').value = p.image;
+        document.getElementById('product-form-wrap').style.display = 'block';
     }
 
-    async function deleteProduct(id) {
-      if (!confirm('Are you sure you want to delete this product?')) return;
-      await MDB.Products.delete(id);
-      MDB.UI.toast('Product deleted', 'success');
-      renderProducts();
-      renderStats();
+    async function deleteProduct(id) { if(confirm('Delete product?')){ await MDB.Products.delete(id); renderProducts(); } }
+
+    document.getElementById('product-form').onsubmit = async e => {
+        e.preventDefault();
+        const data = {
+            id: editingPid,
+            name: document.getElementById('pf-name').value,
+            brand: document.getElementById('pf-brand').value,
+            price: parseFloat(document.getElementById('pf-price').value),
+            originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
+            category: document.getElementById('pf-cat').value,
+            stock: parseInt(document.getElementById('pf-stock').value),
+            description: document.getElementById('pf-desc').value,
+            image: document.getElementById('pf-image').value || 'img/placeholder.jpg'
+        };
+        await MDB.Products.save(data);
+        MDB.UI.toast('Saved');
+        toggleProductForm();
+        renderProducts();
+    };
+
+    function toggleProductForm() { 
+        editingPid = null;
+        document.getElementById('product-form').reset();
+        const w = document.getElementById('product-form-wrap');
+        w.style.display = w.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function renderReviews() {
+        const rs = MDB.Reviews.get();
+        const tbody = document.querySelector('#reviews-table tbody');
+        tbody.innerHTML = rs.map(r => `<tr>
+            <td>${r.productId}</td><td>${r.authorName}</td><td>${r.rating}⭐</td>
+            <td>${r.text.substring(0,30)}...</td><td>${new Date(r.createdAt).toLocaleDateString()}</td>
+            <td><button class="admin-btn admin-btn-danger" onclick="deleteReview('${r.id}')"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px">No reviews</td></tr>';
+    }
+    function deleteReview(id) { if(confirm('Delete review?')){ MDB.Reviews.delete(id); renderReviews(); } }
+
+    function renderCoupons() {
+        const cs = MDB.Coupons.get();
+        const tbody = document.querySelector('#coupons-table tbody');
+        tbody.innerHTML = cs.map(c => `<tr>
+            <td><strong>${c.code}</strong></td><td>${c.type}</td><td>${c.value}${c.type==='percent'?'%':' LE'}</td>
+            <td>${c.minOrder} LE</td>
+            <td><button class="admin-btn admin-btn-danger" onclick="deleteCoupon('${c.code}')"><i class="fa-solid fa-trash"></i></button></td>
+        </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px">No custom coupons</td></tr>';
+    }
+    function toggleCouponForm() { let w = document.getElementById('coupon-form-wrap'); w.style.display = w.style.display === 'none' ? 'block' : 'none'; }
+    document.getElementById('coupon-form').onsubmit = e => {
+        e.preventDefault();
+        MDB.Coupons.add({
+            code: document.getElementById('cf-code').value.toUpperCase(),
+            type: document.getElementById('cf-type').value,
+            value: parseFloat(document.getElementById('cf-val').value),
+            minOrder: parseFloat(document.getElementById('cf-min').value)
+        });
+        MDB.UI.toast('Coupon added');
+        toggleCouponForm();
+        renderCoupons();
+    };
+    function deleteCoupon(code) { if(confirm('Delete?')){ MDB.Coupons.delete(code); renderCoupons(); } }
+
+    function loadSettings() {
+        const s = MDB.Settings.get();
+        document.getElementById('sf-ann').value = s.announcement;
+        document.getElementById('sf-ship').value = s.shippingThreshold;
+        document.getElementById('sf-email').value = s.contactEmail;
+    }
+    document.getElementById('settings-form').onsubmit = e => {
+        e.preventDefault();
+        MDB.Settings.save({
+            announcement: document.getElementById('sf-ann').value,
+            shippingThreshold: parseInt(document.getElementById('sf-ship').value),
+            contactEmail: document.getElementById('sf-email').value
+        });
+        MDB.UI.toast('Settings saved! Note: Some changes require page refresh.');
+    };
+
+    function exportOrders() {
+        const os = MDB.Orders.get();
+        let csv = 'Order ID,Customer,Email,Total,Status,Date\n';
+        os.forEach(o => { csv += `${o.id},${o.customer.name},${o.customer.email},${o.total},${o.status},${o.createdAt}\n`; });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'orders.csv'; a.click();
     }
 
     function renderCustomers() {
-      const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
-      const orders = MDB.Orders.get();
-      const tbody = document.querySelector('#customers-table tbody');
-      tbody.innerHTML = users.map(u => {
-        const userOrders = orders.filter(o => o.customer.email.toLowerCase() === u.email.toLowerCase());
-        return `<tr>
-        <td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.phone || '-'}</td>
-        <td>${u.city || '-'}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td>
-        <td><strong>${userOrders.length}</strong></td>
-      </tr>`;
-      }).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:#888">No customers yet</td></tr>';
+        const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
+        const tbody = document.querySelector('#customers-table tbody');
+        tbody.innerHTML = users.map(u => `<tr><td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.phone||'-'}</td><td>${u.city||'-'}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td>-</td></tr>`).join('');
     }
 
     function renderAnalytics() {
-      const analytics = JSON.parse(localStorage.getItem('mdb_analytics') || '{}');
-      const stats = document.getElementById('analytics-stats');
-      const views = analytics.views || [];
-      const today = new Date().toDateString();
-      stats.innerHTML = `
-      <div class="admin-stat"><div class="admin-stat-value">${views.length}</div><div class="admin-stat-label">Total Page Views</div></div>
-      <div class="admin-stat"><div class="admin-stat-value">${views.filter(v => new Date(v.date).toDateString() === today).length}</div><div class="admin-stat-label">Views Today</div></div>
-      <div class="admin-stat"><div class="admin-stat-value">${(analytics.searches || []).length}</div><div class="admin-stat-label">Total Searches</div></div>
-    `;
-
-      // Top searches
-      const searches = analytics.searches || [];
-      const freq = {};
-      searches.forEach(s => freq[s.query] = (freq[s.query] || 0) + 1);
-      const top = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 8);
-      document.getElementById('top-searches').innerHTML = top.length ? top.map(([q, c]) => `<span style="display:inline-block;padding:4px 12px;margin:4px;border:1px solid var(--color-border);border-radius:20px;font-size:13px">${q} <strong>(${c})</strong></span>`).join('') : '<p style="color:#888;font-size:14px">No searches yet</p>';
-
-      // Views chart (last 7 days)
-      const chart = document.getElementById('views-chart');
-      const days = [];
-      for (let i = 6; i >= 0; i--) {
-        const d = new Date(); d.setDate(d.getDate() - i);
-        const ds = d.toDateString();
-        const count = views.filter(v => new Date(v.date).toDateString() === ds).length;
-        days.push({ label: d.toLocaleDateString('en', { weekday: 'short' }), count });
-      }
-      const max = Math.max(...days.map(d => d.count), 1);
-      chart.innerHTML = days.map(d => `<div class="chart-col" style="height:${Math.max(4, (d.count / max) * 100)}%"><span class="chart-col-label">${d.label}</span></div>`).join('');
+        const a = JSON.parse(localStorage.getItem('mdb_analytics') || '{}');
+        const views = a.views || [];
+        document.getElementById('analytics-stats').innerHTML = `<div class="admin-stat"><div class="admin-stat-value">${views.length}</div><div class="admin-stat-label">Page Views</div></div>`;
     }
-
-    function renderNewsletter() {
-      const subs = JSON.parse(localStorage.getItem('mdb_newsletter') || '[]');
-      document.getElementById('newsletter-count').textContent = `${subs.length} subscriber${subs.length !== 1 ? 's' : ''}`;
-      document.getElementById('subs-list').innerHTML = subs.map(s => `<div class="sub-item"><span>${s.email}</span><span class="sub-date">${new Date(s.date).toLocaleDateString()}</span></div>`).join('') || '<p style="text-align:center;padding:40px;color:#888">No subscribers yet</p>';
-    }
-
-    function toggleProductForm() {
-      const wrap = document.getElementById('product-form-wrap');
-      const isHidden = wrap.style.display === 'none';
-      wrap.style.display = isHidden ? 'block' : 'none';
-      if (isHidden) {
-          editingProductId = null;
-          document.getElementById('product-form').reset();
-      }
-    }
-
-    document.getElementById('product-form')?.addEventListener('submit', async e => {
-      e.preventDefault();
-      const productData = {
-        id: editingProductId,
-        name: document.getElementById('pf-name').value,
-        brand: document.getElementById('pf-brand').value,
-        price: parseFloat(document.getElementById('pf-price').value),
-        originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
-        category: document.getElementById('pf-cat').value,
-        stock: parseInt(document.getElementById('pf-stock').value),
-        description: document.getElementById('pf-desc').value,
-        image: document.getElementById('pf-image').value || 'img/placeholder.jpg',
-        isNewArrival: true
-      };
-
-      await MDB.Products.save(productData);
-      MDB.UI.toast(editingProductId ? 'Product updated!' : 'Product added successfully!', 'success');
-      toggleProductForm();
-      renderProducts();
-      renderStats();
-    });
-
-    function deleteOrder(id) {
-        if (!confirm('Are you sure you want to delete this order?')) return;
-        const orders = MDB.Orders.get().filter(o => o.id !== id);
-        localStorage.setItem('mdb_orders', JSON.stringify(orders));
-        MDB.UI.toast('Order deleted', 'success');
-        renderOrders();
-        renderStats();
-    }
-
   </script>
 </body>
 
