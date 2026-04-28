@@ -133,9 +133,9 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
 .mob-cart-badge{position:absolute;top:4px;right:8px;background:var(--color-accent);color:var(--color-text-white);font-size:9px;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 
 /* HERO */
-.hero{position:relative;overflow:hidden;height:500px;min-height:350px}
+.hero{position:relative;overflow:hidden;height:calc(100vh - var(--header-height));min-height:400px;max-height:800px}
 .hero-slider{position:absolute;inset:0;z-index:0;background:var(--color-bg-light)}
-.slide{position:absolute;width:100%;height:100%;object-fit:contain;object-position:center;opacity:0;transition:opacity 1s ease;display:block;pointer-events:none;z-index:0}
+.slide{position:absolute;width:100%;height:100%;opacity:0;transition:opacity 1s ease;display:block;pointer-events:none;z-index:0}
 .slide.active{opacity:1;animation:zoomEffect 6s ease forwards;pointer-events:auto;z-index:1}
 .slide img{width:100%;height:100%;object-fit:cover;object-position:center}
 .slide:hover{cursor:pointer}
@@ -585,7 +585,7 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
   body{padding-bottom:80px}
 
   /* Hero */
-  .hero{height:350px;min-height:280px}
+  .hero{height:calc(100vh - var(--header-height));min-height:350px;max-height:600px}
   .hero::after{background:linear-gradient(to top,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.2) 50%,rgba(0,0,0,0.1) 100%)}
   .slide{object-position:center center}
   .slide img{object-position:center center}
@@ -744,7 +744,7 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
   :root{--space-section:40px;--container-padding:12px}
   .hero-heading{font-size:24px}
   .hero-content{padding:40px 12px 0}
-  .hero{height:300px;min-height:250px}
+  .hero{height:calc(100vh - var(--header-height));min-height:300px;max-height:500px}
   .promo-banner-title{font-size:22px}
   .section-title{font-size:20px}
   .products-grid{gap:10px}
