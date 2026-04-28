@@ -136,15 +136,15 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
 .hero{position:relative;display:flex;flex-direction:column}
 .hero-slider, .hero-media{position:relative;width:100%;height:auto;aspect-ratio:16/9;background:var(--color-bg-light);overflow:hidden}
 @media(max-width:768px){
-  .hero-slider, .hero-media{aspect-ratio:4/5}
+  .hero-slider, .hero-media{aspect-ratio:16/9;background:#fff}
+  .slide img, .hero-media img{object-fit:contain}
 }
 .slide{position:absolute;width:100%;height:100%;opacity:0;transition:opacity 1s ease;display:block;pointer-events:none;z-index:0}
-.slide.active{opacity:1;animation:zoomEffect 6s ease forwards;pointer-events:auto;z-index:1}
+.slide.active{opacity:1;pointer-events:auto;z-index:1}
 .slide img{width:100%;height:100%;object-fit:cover;object-position:center}
 .slide:hover{cursor:pointer}
 .slide::after{content:'Shop Now';position:absolute;bottom:40px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,0.8);color:#fff;padding:12px 24px;font-size:14px;opacity:0;transition:all 0.3s ease;pointer-events:none}
 .slide.active:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
-@keyframes zoomEffect{from{transform:scale(1)}to{transform:scale(1.05)}}
 .hero-content{position:relative;z-index:2;color:var(--color-text-primary);padding:40px 0;max-width:800px;animation:fadeInUp 0.8s ease forwards;text-align:center;margin:0 auto}
 @media(max-width:768px){
   .hero-content{padding:32px 16px}
