@@ -4841,6 +4841,72 @@ h6 {
 }
 
 /* ============================================
+   RESPONSIVE MEGA MENU
+   ============================================ */
+@media (max-width: 1280px) {
+   .mega-menu-inner {
+      grid-template-columns: repeat(4, 1fr) !important;
+      gap: 20px;
+   }
+}
+
+@media (max-width: 1024px) {
+   .mega-menu-inner {
+      grid-template-columns: repeat(3, 1fr) !important;
+   }
+}
+
+/* ============================================
+   MOBILE NAV REFINEMENTS
+   ============================================ */
+.mobile-nav-parent {
+   font-family: var(--font-heading);
+   letter-spacing: 1.5px;
+   transition: background 0.3s;
+}
+
+.mobile-nav-parent.active {
+   background: rgba(0,0,0,0.02);
+   color: var(--color-accent);
+}
+
+.mobile-nav-submenu {
+   border-top: 1px solid rgba(0,0,0,0.03);
+}
+
+.mobile-nav-subparent {
+   font-weight: 500;
+   letter-spacing: 0.5px;
+   padding-top: 14px;
+   padding-bottom: 14px;
+   transition: color 0.3s;
+}
+
+.mobile-nav-subparent.active {
+   color: var(--color-accent);
+}
+
+.mobile-nav-subsubmenu a {
+   position: relative;
+}
+
+.mobile-nav-subsubmenu a::before {
+   content: "";
+   position: absolute;
+   left: 44px;
+   top: 50%;
+   width: 4px;
+   height: 4px;
+   background: var(--color-border);
+   border-radius: 50%;
+   transform: translateY(-50%);
+}
+
+.mobile-nav-body {
+   padding-bottom: 60px;
+}
+
+/* ============================================
    PRINT STYLES
    ============================================ */
 @media print {
