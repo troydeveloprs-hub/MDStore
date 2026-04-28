@@ -592,5 +592,38 @@ document.addEventListener('DOMContentLoaded', () => {
   };
   QuickView.init();
 
+  // Handle dynamically rendered product cards from store.js
+  document.addEventListener('click', async (e) => {
+    const atcBtn = e.target.closest('.btn-atc[data-id]');
+    if (!atcBtn) return;
+
+    e.preventDefault();
+    const card = atcBtn.closest('.product-card');
+    if (!card) return;
+
+    const pid = atcBtn.dataset.id || card.dataset.id;
+    const product = await MDB.Products.getById(pid);
+    const payload = product ? {
+      id: product.id,
+      name: product.name,
+      brand: product.brand,
+      price: product.price,
+      image: product.image,
+      variant: (product.variants && product.variants[0]) || 'Default',
+      qty: 1
+    } : {
+      id: pid,
+      name: card.dataset.name || '',
+      brand: card.dataset.brand || '',
+      price: parseFloat(card.dataset.price || 0),
+      image: (card.dataset.image || '').replace(/^(\.\.\/)+/, ''),
+      variant: card.dataset.variant || 'Default',
+      qty: 1
+    };
+
+    MDB.Cart.add(payload);
+    MDB.UI.toast('Added to cart', 'success');
+  });
+
   DynamicSettings.init();
 });
