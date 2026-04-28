@@ -543,7 +543,9 @@ const MDB = (() => {
       const reviews = this.get().filter(r => r.id !== reviewId);
       this._save(reviews);
       return reviews;
-    }
+    },
+
+    delete(reviewId) { return this.remove(reviewId); }
   };
 
   /* ===================================================================

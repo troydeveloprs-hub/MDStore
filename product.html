@@ -100,7 +100,51 @@
           padding: 14px;
         }
       }
+
+      /* Delivery Info Styles */
+      .delivery-info {
+        margin-top: 25px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+        background: #fdfdfd;
+        border-radius: 12px;
+        border: 1px solid #f0f0f0;
+      }
+
+      .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .icon {
+        font-size: 20px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+      }
+
+      .info-item .title {
+        font-weight: 600;
+        font-size: 14px;
+        margin: 0;
+        color: #1a1a1a;
+      }
+
+      .info-item .desc {
+        font-size: 13px;
+        color: #777;
+        margin: 0;
+      }
     </style>
+
 
     
 </head>
@@ -362,6 +406,33 @@
             More payment options
           </a>
         </div>
+
+        <div class="delivery-info">
+          <div class="info-item">
+            <span class="icon">🚚</span>
+            <div>
+              <p class="title">Fast delivery</p>
+              <p class="desc">Delivered within 2–4 working days</p>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <span class="icon">💳</span>
+            <div>
+              <p class="title">Secure payment</p>
+              <p class="desc">Visa, Apple Pay, Vodafone Cash, InstaPay</p>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <span class="icon">↩️</span>
+            <div>
+              <p class="title">Easy returns</p>
+              <p class="desc">7 days return policy</p>
+            </div>
+          </div>
+        </div>
+
 
         <button class="product-wishlist-btn"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
       </div>

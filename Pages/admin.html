@@ -809,39 +809,47 @@
       const orders = MDB.Orders.get();
       const revenue = orders.reduce((s, o) => s + o.total, 0);
       const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
-      const subs = JSON.parse(localStorage.getItem('mdb_newsletter') || '[]');
+      const products = JSON.parse(localStorage.getItem('mdb_custom_products') || '[]');
+      const pendingOrders = orders.filter(o => o.status === 'pending').length;
+      
       document.getElementById('admin-stats').innerHTML = `
-      <div class="admin-stat"><div class="admin-stat-value">${orders.length}</div><div class="admin-stat-label">Total Orders</div></div>
-      <div class="admin-stat"><div class="admin-stat-value">${MDB.UI.formatPrice(revenue)}</div><div class="admin-stat-label">Total Revenue</div></div>
-      <div class="admin-stat"><div class="admin-stat-value">${users.length}</div><div class="admin-stat-label">Customers</div></div>
-      <div class="admin-stat"><div class="admin-stat-value">${orders.filter(o => o.status === 'pending').length}</div><div class="admin-stat-label">Pending Orders</div></div>
-    `;
-    }
-
-    function renderOrders() {
-      const orders = MDB.Orders.get();
-      const tbody = document.querySelector('#orders-table tbody');
-      tbody.innerHTML = orders.map(o => `<tr>
-      <td><strong>${o.id}</strong></td>
-      <td>${o.customer.name}<br><small style="color:#888">${o.customer.email}</small></td>
-      <td>${o.items.length} items</td>
-      <td><strong>${MDB.UI.formatPrice(o.total)}</strong></td>
-      <td><span class="order-status-badge ${o.status}">${o.status}</span></td>
-      <td>${new Date(o.createdAt).toLocaleDateString()}</td>
-      <td>
-        <div style="display:flex;gap:4px">
-          <select onchange="updateStatus('${o.id}',this.value)">${['pending','processing','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('')}</select>
-          <button class="admin-btn admin-btn-danger" onclick="deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
+        <div class="stat-card">
+          <div class="stat-value">${orders.length}</div>
+          <div class="stat-label">Total Orders</div>
         </div>
-      </td>
-    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px">No orders</td></tr>';
-    }
-
-    function updateStatus(id, s) { MDB.Orders.updateStatus(id, s); MDB.UI.toast('Updated'); renderOrders(); renderStats(); }
-    function deleteOrder(id) { if(confirm('Delete?')){ let os = MDB.Orders.get().filter(o=>o.id!==id); localStorage.setItem('mdb_orders', JSON.stringify(os)); renderOrders(); renderStats(); } }
-
-    async function renderProducts() {
-      const products = await MDB.Products.getAll();
+        <div class="stat-card">
+          <div class="stat-value">${MDB.UI ? MDB.UI.formatPrice(revenue) : revenue + ' LE'}</div>
+          <div class="stat-label">Total Revenue</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${users.length}</div>
+          <div class="stat-label">Customers</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color:${pendingOrders > 0 ? 'var(--admin-warning)' : 'var(--admin-success)'}">${pendingOrders}</div>
+        </div>
+      `;
+      
+      // Top searches
+      const searches = a.searches || [];
+      const topSearches = {};
+      searches.forEach(s => { topSearches[s] = (topSearches[s] || 0) + 1; });
+      const sortedSearches = Object.entries(topSearches).sort((a, b) => b[1] - a[1]).slice(0, 5);
+      
+      document.getElementById('top-searches').innerHTML = sortedSearches.length ? 
+        sortedSearches.map(([term, count]) => `<span style="display:inline-block;padding:4px 12px;background:var(--admin-bg);border-radius:20px;margin:4px;font-size:13px">${term} <strong>${count}</strong></span>`).join('') :
+        '<p style="color:var(--admin-text-light);font-size:13px">No search data yet</p>';
+      
+      // Simple chart
+      const chartEl = document.getElementById('views-chart');
+      if (chartEl && views.length > 0) {
+        chartEl.innerHTML = views.slice(-7).map((v, i) => {
+          const height = Math.max(10, Math.min(100, (v.count || 1) * 10));
+          return `<div class="chart-col" style="--height:${height}%" title="Day ${i+1}: ${v.count || 1} views"></div>`;
+        }).join('');
+      }
+  }
+</script>
       const lowStock = products.filter(p => p.stock < 10);
       document.getElementById('low-stock-alert').style.display = lowStock.length ? 'block' : 'none';
 
@@ -973,7 +981,31 @@
     function renderAnalytics() {
         const a = JSON.parse(localStorage.getItem('mdb_analytics') || '{}');
         const views = a.views || [];
-        document.getElementById('analytics-stats').innerHTML = `<div class="admin-stat"><div class="admin-stat-value">${views.length}</div><div class="admin-stat-label">Page Views</div></div>`;
+        document.getElementById('analytics-stats').innerHTML = `
+          <div class="stat-card">
+            <div class="stat-value">${views.length}</div>
+            <div class="stat-label">Page Views</div>
+          </div>
+        `;
+        
+        // Top searches
+        const searches = a.searches || [];
+        const topSearches = {};
+        searches.forEach(s => { topSearches[s] = (topSearches[s] || 0) + 1; });
+        const sortedSearches = Object.entries(topSearches).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        
+        document.getElementById('top-searches').innerHTML = sortedSearches.length ? 
+          sortedSearches.map(([term, count]) => `<span style="display:inline-block;padding:4px 12px;background:var(--admin-bg);border-radius:20px;margin:4px;font-size:13px">${term} <strong>${count}</strong></span>`).join('') :
+          '<p style="color:var(--admin-text-light);font-size:13px">No search data yet</p>';
+        
+        // Simple chart
+        const chartEl = document.getElementById('views-chart');
+        if (chartEl && views.length > 0) {
+          chartEl.innerHTML = views.slice(-7).map((v, i) => {
+            const height = Math.max(10, Math.min(100, (v.count || 1) * 10));
+            return `<div class="chart-col" style="--height:${height}%" title="Day ${i+1}: ${v.count || 1} views"></div>`;
+          }).join('');
+        }
     }
   </script>
 </body>
