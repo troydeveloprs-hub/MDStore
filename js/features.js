@@ -484,5 +484,70 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   };
+  /* ===================================================================
+     12. QUICK VIEW — Product preview modal
+     =================================================================== */
+  const QuickView = {
+    init() {
+      // Create modal if not exists
+      if (!document.querySelector('.qv-modal')) {
+        const modal = document.createElement('div');
+        modal.className = 'qv-modal';
+        modal.innerHTML = `
+          <div class="qv-content">
+            <button class="qv-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+            <div class="qv-left"><img src="" alt="" id="qv-img"></div>
+            <div class="qv-right">
+              <span class="qv-brand" id="qv-brand"></span>
+              <h2 class="qv-title" id="qv-title"></h2>
+              <div class="qv-price" id="qv-price"></div>
+              <p class="qv-desc" id="qv-desc"></p>
+              <div class="qv-actions">
+                <button class="btn btn-primary btn-full" id="qv-atc-btn">Add to Cart</button>
+                <a href="" class="btn btn-outline btn-full" id="qv-view-details" style="margin-top:10px; text-align:center; display:block; border:1px solid var(--color-border); padding:12px; border-radius:8px; font-weight:600;">View Full Details</a>
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        modal.querySelector('.qv-close').addEventListener('click', () => modal.classList.remove('open'));
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
+      }
+
+      // Listen for quick view clicks (delegated)
+      document.addEventListener('click', async (e) => {
+        const btn = e.target.closest('[data-quick-view]');
+        if (btn) {
+          e.preventDefault();
+          const pid = btn.dataset.quickView;
+          const p = await MDB.Products.getById(pid);
+          if (p) this.show(p);
+        }
+      });
+    },
+
+    show(p) {
+      const modal = document.querySelector('.qv-modal');
+      const basePath = window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '';
+      
+      document.getElementById('qv-img').src = basePath + p.image;
+      document.getElementById('qv-brand').textContent = p.brand;
+      document.getElementById('qv-title').textContent = p.name;
+      document.getElementById('qv-price').textContent = MDB.UI.formatPrice(p.price);
+      document.getElementById('qv-desc').textContent = p.description.substring(0, 150) + '...';
+      document.getElementById('qv-view-details').href = basePath + 'product.html?id=' + p.id;
+      
+      const atcBtn = document.getElementById('qv-atc-btn');
+      atcBtn.onclick = () => {
+        MDB.Cart.add(p.id);
+        modal.classList.remove('open');
+      };
+
+      modal.classList.add('open');
+    }
+  };
+  QuickView.init();
+
   DynamicSettings.init();
 });

@@ -425,8 +425,15 @@ const MDB = (() => {
     },
 
     login(email, password) {
-      const users = this._getUsers();
       const target = (email || '').trim().toLowerCase();
+      // Special check for Admin
+      if (target === 'admin@mdboutiquee.com' && password === 'admin123') {
+        const adminUser = { id: 'admin', firstName: 'Site', lastName: 'Admin', email: target, role: 'admin' };
+        this._setSession(adminUser);
+        return { success: true, user: adminUser, isAdmin: true };
+      }
+
+      const users = this._getUsers();
       const user = users.find(u => u.email === target && u.password === btoa(password));
       if (!user) {
         return { success: false, message: 'Invalid email or password' };
@@ -633,35 +640,29 @@ const MDB = (() => {
     },
 
     /** Generate product card HTML */
-    productCardHTML(p, basePath = '') {
-      const imgPath = basePath + p.image;
-      const productUrl = basePath + 'product.html?id=' + p.id;
-      const badgeHTML = p.badge ? `<span class="badge badge-${p.badge}">${p.badge === 'new' ? 'New' : 'Sale'}</span>` : '';
-      const priceHTML = p.originalPrice
-        ? `<span class="price-current price-sale">${this.formatPrice(p.price)}</span><span class="price-original">${this.formatPrice(p.originalPrice)}</span>`
-        : `<span class="price-current">${this.formatPrice(p.price)}</span>`;
-      const wishlisted = Wishlist.has(p.id);
-
+    productCardHTML(p) {
+      const basePath = window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '';
       return `
-        <div class="product-card" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand}" data-price="${p.price}" data-image="${imgPath}">
-          <div class="product-card-image-wrap">
-            <a href="${productUrl}"><img src="${imgPath}" alt="${p.name}" class="product-card-img product-card-img-primary"></a>
-            <a href="${productUrl}"><img src="${imgPath}" alt="${p.name} alternate" class="product-card-img product-card-img-secondary"></a>
-            ${badgeHTML ? `<div class="product-card-badges">${badgeHTML}</div>` : ''}
-            <button class="product-card-wishlist${wishlisted ? ' active' : ''}" aria-label="Add to wishlist" data-wishlist-toggle="${p.id}">
-              <i class="${wishlisted ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
-            </button>
+        <div class="product-card" data-id="${p.id}">
+          <div class="product-card-media">
+            ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
+            <a href="${basePath}product.html?id=${p.id}"><img src="${basePath}${p.image}" alt="${p.name}" class="product-card-img" loading="lazy"></a>
             <div class="product-card-actions">
-              <button class="product-card-quickview" data-quickview="${p.id}">Quick View</button>
+              <button class="action-btn" data-quick-view="${p.id}" title="Quick View"><i class="fa-regular fa-eye"></i></button>
+              <button class="action-btn" data-wishlist="${p.id}" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
             </div>
           </div>
           <div class="product-card-info">
             <span class="product-card-brand">${p.brand}</span>
-            <h3 class="product-card-name"><a href="${productUrl}">${p.name}</a></h3>
-            <div class="product-card-price">${priceHTML}</div>
-            <button class="product-card-atc" data-atc="${p.id}">Add to Cart</button>
+            <h3 class="product-card-title"><a href="${basePath}product.html?id=${p.id}">${p.name}</a></h3>
+            <div class="product-card-price">
+              ${p.oldPrice ? `<span class="price-old">${this.formatPrice(p.oldPrice)}</span>` : ''}
+              <span class="price-current">${this.formatPrice(p.price)}</span>
+            </div>
+            <button class="btn btn-atc btn-full" data-id="${p.id}">Add to Cart</button>
           </div>
-        </div>`;
+        </div>
+      `;
     },
 
     /** Show toast notification */
