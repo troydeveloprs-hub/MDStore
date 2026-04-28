@@ -712,7 +712,7 @@ const MDB = (() => {
               <span class="product-card-stock ${stockClass}">${stockLabel}</span>
               <a href="${basePath}product.html?id=${p.id}" class="product-card-link">Details</a>
             </div>
-            <button class="btn btn-atc btn-full" data-id="${p.id}" ${stock === 0 ? 'disabled' : ''}>
+            <button class="btn btn-atc product-card-atc btn-full" data-id="${p.id}" ${stock === 0 ? 'disabled' : ''}>
               <i class="fa-solid fa-bag-shopping"></i>
               ${stock === 0 ? 'Out of Stock' : 'Add to Cart'}
             </button>
