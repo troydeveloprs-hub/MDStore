@@ -243,7 +243,7 @@
   <!-- PRODUCT LAYOUT -->
   <main class="product-layout container">
     <div class="product-gallery">
-      <div class="product-main-image"><img src="img/placeholder.jpg" alt="Product"></div>
+      <div class="product-main-image"><img src="img/logo.svg" alt="Product"></div>
       <div class="gallery-thumbs"></div>
     </div>
 
@@ -437,10 +437,18 @@
       const buyNowBtn = document.querySelector('.buy-now-btn');
       if (buyNowBtn) {
         buyNowBtn.onclick = () => {
-          console.log("Proceed to payment");
-          if (typeof MDB !== 'undefined' && MDB.UI) {
-            MDB.UI.toast("Proceeding to checkout...", "info");
-          }
+          const variant = document.querySelector('.variant-btn.active')?.textContent || 'Default';
+          const qty = parseInt(document.querySelector('.qty-input')?.value || 1, 10);
+          MDB.Cart.add({
+            id: p.id,
+            name: p.name,
+            brand: p.brand,
+            price: p.price,
+            image: p.image,
+            variant,
+            qty
+          });
+          window.location.href = 'checkout.html';
         };
       }
 
@@ -448,9 +456,9 @@
       if (applePayBtn) {
         applePayBtn.onclick = () => {
           if (window.ApplePaySession) {
-            console.log("Apple Pay available");
+            MDB.UI.toast('Apple Pay is available on this device.', 'success');
           } else {
-            alert("Apple Pay not supported on this device");
+            MDB.UI.toast('Apple Pay is not supported on this device.', 'warning');
           }
         };
       }
@@ -459,7 +467,7 @@
       if (moreOptions) {
         moreOptions.onclick = (e) => {
           e.preventDefault();
-          console.log("Show payment methods");
+          MDB.UI.toast('Choose your preferred payment method at checkout.', 'info');
         };
       }
     });

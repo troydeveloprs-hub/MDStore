@@ -40,6 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
     },
 
     async search(query, dropdown, input) {
+      if (window.MDB && window.MDB.Analytics) {
+        window.MDB.Analytics.trackSearch(query);
+      }
       const results = await MDB.Products.search(query);
       if (!results.length) {
         dropdown.innerHTML = `<div class="search-no-results"><i class="fa-solid fa-magnifying-glass"></i><p>No products found for "${query}"</p></div>`;
@@ -547,23 +550,39 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const atcBtn = document.getElementById('qv-atc-btn');
       atcBtn.onclick = () => {
-        MDB.Cart.add(p.id);
+        MDB.Cart.add({
+          id: p.id,
+          name: p.name,
+          brand: p.brand,
+          price: p.price,
+          image: p.image,
+          variant: (p.variants && p.variants[0]) || 'Default',
+          qty: 1
+        });
         modal.classList.remove('open');
         MDB.UI.toast('Added to cart', 'success');
       };
 
       const buyNow = modal.querySelector('.qv-buy-now');
       if (buyNow) buyNow.onclick = () => {
-        console.log("Quick View: Proceed to payment");
-        MDB.UI.toast("Proceeding to checkout...", "info");
+        MDB.Cart.add({
+          id: p.id,
+          name: p.name,
+          brand: p.brand,
+          price: p.price,
+          image: p.image,
+          variant: (p.variants && p.variants[0]) || 'Default',
+          qty: 1
+        });
+        window.location.href = basePath + 'checkout.html';
       };
 
       const applePay = modal.querySelector('.qv-apple-pay');
       if (applePay) applePay.onclick = () => {
         if (window.ApplePaySession) {
-          console.log("Quick View: Apple Pay");
+          MDB.UI.toast('Apple Pay is available on this device.', 'success');
         } else {
-          alert("Apple Pay not supported on this device");
+          MDB.UI.toast('Apple Pay is not supported on this device.', 'warning');
         }
       };
 

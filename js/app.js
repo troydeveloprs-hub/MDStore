@@ -70,16 +70,36 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================
      CART — LocalStorage Persistence
      ============================================ */
-  const CART_KEY = 'mdboutiquee_cart';
+  const CART_KEY = 'mdb_cart';
+  const LEGACY_CART_KEY = 'mdboutiquee_cart';
   const Cart = {
-    get() { try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; } catch { return []; } },
-    set(items) { localStorage.setItem(CART_KEY, JSON.stringify(items)); this.updateBadge(); },
+    get() {
+      try {
+        const current = JSON.parse(localStorage.getItem(CART_KEY));
+        if (Array.isArray(current)) return current;
+
+        const legacy = JSON.parse(localStorage.getItem(LEGACY_CART_KEY));
+        if (Array.isArray(legacy) && legacy.length) {
+          localStorage.setItem(CART_KEY, JSON.stringify(legacy));
+          localStorage.removeItem(LEGACY_CART_KEY);
+          return legacy;
+        }
+      } catch {}
+      return [];
+    },
+    set(items) {
+      localStorage.setItem(CART_KEY, JSON.stringify(items));
+      localStorage.removeItem(LEGACY_CART_KEY);
+      this.updateBadge();
+      emit(document, 'mdb:cart:updated', { count: this.count(), total: this.total() });
+    },
     add(item) {
       const items = this.get();
       const idx = items.findIndex(i => i.id === item.id && i.variant === item.variant);
       if (idx > -1) { items[idx].qty += item.qty || 1; }
       else { items.push({ ...item, qty: item.qty || 1 }); }
       this.set(items);
+      if (window.MDB && window.MDB.Analytics && item.id) window.MDB.Analytics.trackCartAdd(item.id);
     },
     remove(id, variant) {
       const items = this.get().filter(i => !(i.id === id && i.variant === variant));

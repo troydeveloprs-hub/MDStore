@@ -737,6 +737,12 @@
             notes: document.getElementById('co-notes').value.trim(),
             paymentMethod: document.querySelector('input[name="payment"]:checked').value
           });
+          if (window.MDB && window.MDB.Analytics) {
+            window.MDB.Analytics.trackOrder(order.total);
+          }
+          if (window.MDB && window.MDB.Notifications) {
+            window.MDB.Notifications.add('New order received', `Order ${order.id} was placed for ${MDB.UI.formatPrice(order.total)}.`, 'success');
+          }
           window.location.href = 'order-confirmation.html?id=' + order.id;
         }, 1200);
       });
