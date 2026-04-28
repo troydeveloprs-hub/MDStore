@@ -914,55 +914,69 @@
       });
 
       // LOGIN
-      document.getElementById('login-form').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const msg = document.getElementById('login-message');
-        msg.className = 'auth-message'; msg.textContent = '';
-
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value;
-
-        let valid = true;
-        if (!email || !email.includes('@')) {
-          document.getElementById('login-email-error').textContent = 'Please enter a valid email';
-          document.getElementById('login-email').classList.add('error'); valid = false;
-        } else { document.getElementById('login-email-error').textContent = ''; document.getElementById('login-email').classList.remove('error'); }
-        if (!password) {
-          document.getElementById('login-password-error').textContent = 'Password is required';
-          valid = false;
-        } else { document.getElementById('login-password-error').textContent = ''; }
-
-        if (!valid) return;
-
-        const btn = e.target.querySelector('.auth-submit');
-        btn.disabled = true; btn.textContent = 'Signing in...';
-
-        setTimeout(() => {
-          console.log('Attempting login for:', email);
-          const result = MDB.Auth.login(email, password);
-          console.log('Login result:', result);
+      const loginForm = document.getElementById('login-form');
+      if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
           
-          if (result.success) {
-            msg.className = 'auth-message success'; msg.textContent = 'Welcome back! Redirecting...';
-            MDB.UI.toast('Welcome back, ' + result.user.firstName + '!', 'success');
-            
-            setTimeout(() => { 
-                const user = MDB.Auth.getUser();
-                console.log('Session user after login:', user);
-                if (result.isAdmin || (user && user.role === 'admin')) {
-                  console.log('Redirecting to admin.html');
-                  window.location.href = 'admin.html';
-                } else {
-                  console.log('Redirecting to account.html');
-                  window.location.href = 'account.html';
-                }
-            }, 1000);
-          } else {
-            msg.className = 'auth-message error'; msg.textContent = result.message;
-            btn.disabled = false; btn.textContent = 'Sign In';
+          const msg = document.getElementById('login-message');
+          const emailInput = document.getElementById('login-email');
+          const passInput = document.getElementById('login-password');
+          
+          const email = emailInput.value.trim();
+          const password = passInput.value;
+
+          console.log('Login Submit Triggered:', { email });
+
+          if (!email || !email.includes('@')) {
+            document.getElementById('login-email-error').textContent = 'Please enter a valid email';
+            emailInput.classList.add('error');
+            return false;
           }
-        }, 600);
-      });
+          
+          const btn = this.querySelector('.auth-submit');
+          const originalText = btn.textContent;
+          btn.disabled = true;
+          btn.textContent = 'Verifying...';
+
+          // Simulate slight delay for premium feel
+          setTimeout(() => {
+            try {
+              const result = MDB.Auth.login(email, password);
+              console.log('Auth Result:', result);
+
+              if (result.success) {
+                msg.className = 'auth-message success';
+                msg.textContent = 'Welcome back! Redirecting...';
+                MDB.UI.toast('Success! Redirecting to dashboard...', 'success');
+                
+                // Final Redirect Logic
+                setTimeout(() => {
+                  const user = MDB.Auth.getUser();
+                  if (result.isAdmin || (user && user.role === 'admin')) {
+                    window.location.replace('admin.html');
+                  } else {
+                    window.location.replace('account.html');
+                  }
+                }, 800);
+              } else {
+                msg.className = 'auth-message error';
+                msg.textContent = result.message;
+                btn.disabled = false;
+                btn.textContent = originalText;
+              }
+            } catch (err) {
+              console.error('Login Error:', err);
+              btn.disabled = false;
+              btn.textContent = originalText;
+              alert('An error occurred during login. Please try again.');
+            }
+          }, 600);
+          
+          return false;
+        });
+      }
 
       // REGISTER
       document.getElementById('register-form').addEventListener('submit', (e) => {

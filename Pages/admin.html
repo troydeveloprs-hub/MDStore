@@ -553,7 +553,8 @@
     function checkAdminPass() {
       const pass = document.getElementById('admin-pass').value;
       if (pass === ADMIN_PASS) {
-        localStorage.setItem('mdb_admin', '1');
+        // Sync with MDB Auth
+        MDB.Auth.login('admin@mdboutiquee.com', 'admin123');
         showDashboard();
       } else { alert('Wrong password'); }
     }
@@ -561,7 +562,12 @@
 
     function checkAdminSession() {
       const user = MDB.Auth.getUser();
-      if (user && user.role === 'admin') {
+      const legacyAdmin = localStorage.getItem('mdb_admin') === '1';
+      if ((user && user.role === 'admin') || legacyAdmin) {
+        // If legacy but no session, create session
+        if (legacyAdmin && (!user || user.role !== 'admin')) {
+            MDB.Auth.login('admin@mdboutiquee.com', 'admin123');
+        }
         showDashboard();
       } else {
         document.getElementById('admin-login').style.display = 'block';
