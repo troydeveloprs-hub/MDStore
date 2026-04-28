@@ -437,7 +437,7 @@
         <h2 class="section-title">New In Makeup</h2>
         <a href="collections/makeup.html" class="section-link">View All <i class="fa-solid fa-arrow-right"></i></a>
       </div>
-      <div class="products-grid products-grid-4">
+      <div class="products-grid products-grid-4" id="home-new-grid">
         <div class="product-card scroll-reveal scroll-reveal-delay-1" data-id="p1" data-name="Velvet Matte Lipstick"
           data-brand="CHANEL" data-price="850.00" data-image="img/lipstick.jpg">
           <div class="product-card-image-wrap">
@@ -551,7 +551,7 @@
         <h2 class="section-title">Skincare Essentials</h2>
         <a href="collections/skincare.html" class="section-link">View All <i class="fa-solid fa-arrow-right"></i></a>
       </div>
-      <div class="products-grid products-grid-4">
+      <div class="products-grid products-grid-4" id="home-skincare-grid">
         <div class="product-card scroll-reveal scroll-reveal-delay-1" data-id="s1" data-name="Hydra Glow Serum"
           data-brand="LA MER" data-price="1850.00" data-image="img/serum.jpg">
           <div class="product-card-image-wrap">
@@ -876,7 +876,46 @@
     </div>
   </nav>
 
+  <script src="js/store.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/features.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (!window.MDB || !MDB.Products || !MDB.UI) return;
+
+      const newGrid = document.getElementById('home-new-grid');
+      const skincareGrid = document.getElementById('home-skincare-grid');
+      const products = await MDB.Products.getAll();
+
+      if (newGrid) {
+        const newInMakeup = products
+          .filter(p => (p.category || '').toLowerCase() === 'makeup')
+          .sort((a, b) => {
+            if (!!b.isNewArrival !== !!a.isNewArrival) return Number(!!b.isNewArrival) - Number(!!a.isNewArrival);
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+          })
+          .slice(0, 4);
+
+        if (newInMakeup.length) {
+          newGrid.innerHTML = newInMakeup.map(p => MDB.UI.productCardHTML(p)).join('');
+        }
+      }
+
+      if (skincareGrid) {
+        const skincare = products
+          .filter(p => (p.category || '').toLowerCase() === 'skincare')
+          .sort((a, b) => {
+            if (!!b.isFeatured !== !!a.isFeatured) return Number(!!b.isFeatured) - Number(!!a.isFeatured);
+            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+          })
+          .slice(0, 4);
+
+        if (skincare.length) {
+          skincareGrid.innerHTML = skincare.map(p => MDB.UI.productCardHTML(p)).join('');
+        }
+      }
+    });
+  </script>
 </body>
 
 </html>

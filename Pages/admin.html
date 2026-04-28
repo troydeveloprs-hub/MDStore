@@ -565,10 +565,23 @@
                     <option>hair</option>
                     <option>fragrance</option>
                   </select></div>
+                <div><label>Subcategory</label><input id="pf-subcat" placeholder="lips / serums / face"></div>
+              </div>
+              <div class="form-row">
                 <div><label>Stock</label><input type="number" id="pf-stock" value="50"></div>
+                <div><label>Badge</label><select id="pf-badge">
+                    <option value="">None</option>
+                    <option value="new">New</option>
+                    <option value="sale">Sale</option>
+                    <option value="hot">Hot</option>
+                  </select></div>
               </div>
               <div><label>Description</label><textarea id="pf-desc"></textarea></div>
               <div><label>Image Path</label><input id="pf-image" placeholder="img/product.jpg"></div>
+              <div class="form-row">
+                <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="pf-featured"> Featured</label>
+                <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="pf-new"> New Arrival</label>
+              </div>
               <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary btn-sm">Save
                   Product</button><button type="button" class="admin-btn" onclick="toggleProductForm()">Cancel</button>
               </div>
@@ -892,9 +905,13 @@
         document.getElementById('pf-price').value = p.price;
         document.getElementById('pf-oprice').value = p.originalPrice || '';
         document.getElementById('pf-cat').value = p.category;
+        document.getElementById('pf-subcat').value = p.subcategory || '';
         document.getElementById('pf-stock').value = p.stock;
+        document.getElementById('pf-badge').value = p.badge || '';
         document.getElementById('pf-desc').value = p.description || '';
         document.getElementById('pf-image').value = p.image;
+        document.getElementById('pf-featured').checked = !!p.isFeatured;
+        document.getElementById('pf-new').checked = !!p.isNewArrival;
         document.getElementById('product-form-wrap').style.display = 'block';
     }
 
@@ -909,16 +926,21 @@
 
     document.getElementById('product-form').onsubmit = async e => {
         e.preventDefault();
+        const imageValue = document.getElementById('pf-image').value.trim().replace(/^\.\//, '').replace(/^(\.\.\/)+/, '');
         const data = {
             id: editingPid,
-            name: document.getElementById('pf-name').value,
-            brand: document.getElementById('pf-brand').value,
+            name: document.getElementById('pf-name').value.trim(),
+            brand: document.getElementById('pf-brand').value.trim(),
             price: parseFloat(document.getElementById('pf-price').value),
             originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
             category: document.getElementById('pf-cat').value,
+            subcategory: document.getElementById('pf-subcat').value.trim().toLowerCase(),
             stock: parseInt(document.getElementById('pf-stock').value),
-            description: document.getElementById('pf-desc').value,
-            image: document.getElementById('pf-image').value || 'img/logo.svg'
+            badge: document.getElementById('pf-badge').value || null,
+            description: document.getElementById('pf-desc').value.trim(),
+            image: imageValue || 'img/logo.svg',
+            isFeatured: document.getElementById('pf-featured').checked,
+            isNewArrival: document.getElementById('pf-new').checked
         };
         await MDB.Products.save(data);
         MDB.UI.toast('Product saved');
@@ -930,6 +952,8 @@
     function toggleProductForm() { 
         editingPid = null;
         document.getElementById('product-form').reset();
+        document.getElementById('pf-stock').value = 50;
+        document.getElementById('pf-badge').value = '';
         const w = document.getElementById('product-form-wrap');
         w.style.display = w.style.display === 'none' ? 'block' : 'none';
     }

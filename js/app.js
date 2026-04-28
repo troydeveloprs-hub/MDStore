@@ -251,11 +251,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const brand = $('.quickview-brand', quickviewModal);
     const name = $('.quickview-name', quickviewModal);
     const price = $('.quickview-price', quickviewModal);
+    const link = $('.quickview-link', quickviewModal);
+    const basePath = window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '';
     if (img) img.src = data.image || '';
     if (img) img.alt = data.name || '';
     if (brand) brand.textContent = data.brand || '';
     if (name) name.textContent = data.name || '';
     if (price) price.textContent = data.price || '';
+    if (link) link.href = data.id ? `${basePath}product.html?id=${data.id}` : `${basePath}product.html`;
+    if (data.id) quickviewModal.dataset.productId = data.id;
+    quickviewModal.dataset.variant = data.variant || 'Default';
+    quickviewModal.dataset.productName = data.name || '';
+    quickviewModal.dataset.productBrand = data.brand || '';
+    quickviewModal.dataset.productImage = data.image || '';
     quickviewModal.classList.add('open');
     if (modalOverlay) modalOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -273,10 +281,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const card = btn.closest('.product-card');
       if (!card) return;
       const data = {
+        id: card.dataset.id || '',
         image: card.dataset.image || ($('.product-card-img-primary', card)?.src || ''),
         brand: card.dataset.brand || ($('.product-card-brand', card)?.textContent || ''),
         name: card.dataset.name || ($('.product-card-name', card)?.textContent || ''),
         price: card.dataset.price || ($('.price-current', card)?.textContent || ''),
+        variant: card.dataset.variant || 'Default'
       };
       openQuickView(data);
     });
@@ -288,17 +298,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Quick view ATC
   const qvAtc = $('.quickview-atc', quickviewModal);
   if (qvAtc) on(qvAtc, 'click', () => {
+    const id = quickviewModal?.dataset.productId || $('.quickview-name', quickviewModal)?.textContent;
     const brand = $('.quickview-brand', quickviewModal)?.textContent;
     const name = $('.quickview-name', quickviewModal)?.textContent;
     const price = parseFloat($('.quickview-price', quickviewModal)?.textContent?.replace(/[^0-9.]/g, '') || 0);
     const image = $('.quickview-image img', quickviewModal)?.src || '';
-    Cart.add({ id: name, name, brand, price, image, variant: 'Default', qty: 1 });
+    const variant = quickviewModal?.dataset.variant || 'Default';
+    Cart.add({ id, name, brand, price, image, variant, qty: 1 });
     closeQuickView();
     openCartDrawer();
   });
 
   // Add to Cart (product cards)
-  $$('.product-card-atc').forEach(btn => {
+  $$('.product-card-atc, .product-card-overlay-atc').forEach(btn => {
     on(btn, 'click', (e) => {
       e.stopPropagation();
       const card = btn.closest('.product-card');
