@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const emit = (el, evt, detail) => el && el.dispatchEvent(new CustomEvent(evt, { detail }));
 
   /* ============================================
-     HERO SLIDER — Scroll Triggered + Click to Shop
+     HERO SLIDER — Auto Slide + Scroll Triggered + Click to Shop
      ============================================ */
   const heroSlider = () => {
     const slides = $$('.slide');
@@ -23,19 +23,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const changeSlide = (direction) => {
       slides[index].classList.remove('active');
       
-      if (direction === 'down') {
+      if (direction === 'down' || direction === 'next') {
         index++;
-        if (index >= slides.length) {
-          index = slides.length - 1;
-          return;
-        }
-      } else if (direction === 'up') {
+        if (index >= slides.length) index = 0;
+      } else if (direction === 'up' || direction === 'prev') {
         index--;
-        if (index < 0) index = 0;
+        if (index < 0) index = slides.length - 1;
       }
       
       slides[index].classList.add('active');
     };
+    
+    // Auto slide every 4 seconds
+    let slideInterval = setInterval(() => {
+      changeSlide('next');
+    }, 4000);
     
     let lastScrollY = window.scrollY;
     
@@ -45,8 +47,10 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (currentScrollY < window.innerHeight) {
         if (Math.abs(scrollDiff) > 50) {
+          clearInterval(slideInterval);
           changeSlide(scrollDiff > 0 ? 'down' : 'up');
           lastScrollY = currentScrollY;
+          slideInterval = setInterval(() => changeSlide('next'), 4000);
         }
       }
     });
