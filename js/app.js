@@ -609,6 +609,20 @@ document.addEventListener('DOMContentLoaded', () => {
     revealEls.forEach(el => observer.observe(el));
   }
 
+  /* SCROLL REVEAL ANIMATION */
+  const scrollRevealEls = document.querySelectorAll('.scroll-reveal, .scroll-reveal-scale, .scroll-reveal-left, .scroll-reveal-right');
+  if (scrollRevealEls.length) {
+    const scrollObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          scrollObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+    scrollRevealEls.forEach(el => scrollObserver.observe(el));
+  }
+
   /* ============================================
      ESCAPE KEY — Close all overlays
      ============================================ */
