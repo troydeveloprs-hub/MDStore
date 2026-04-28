@@ -809,7 +809,6 @@
       const orders = MDB.Orders.get();
       const revenue = orders.reduce((s, o) => s + o.total, 0);
       const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
-      const products = JSON.parse(localStorage.getItem('mdb_custom_products') || '[]');
       const pendingOrders = orders.filter(o => o.status === 'pending').length;
       
       document.getElementById('admin-stats').innerHTML = `
@@ -827,39 +826,65 @@
         </div>
         <div class="stat-card">
           <div class="stat-value" style="color:${pendingOrders > 0 ? 'var(--admin-warning)' : 'var(--admin-success)'}">${pendingOrders}</div>
+          <div class="stat-label">Pending Orders</div>
         </div>
       `;
-      
-      // Top searches
-      const searches = a.searches || [];
-      const topSearches = {};
-      searches.forEach(s => { topSearches[s] = (topSearches[s] || 0) + 1; });
-      const sortedSearches = Object.entries(topSearches).sort((a, b) => b[1] - a[1]).slice(0, 5);
-      
-      document.getElementById('top-searches').innerHTML = sortedSearches.length ? 
-        sortedSearches.map(([term, count]) => `<span style="display:inline-block;padding:4px 12px;background:var(--admin-bg);border-radius:20px;margin:4px;font-size:13px">${term} <strong>${count}</strong></span>`).join('') :
-        '<p style="color:var(--admin-text-light);font-size:13px">No search data yet</p>';
-      
-      // Simple chart
-      const chartEl = document.getElementById('views-chart');
-      if (chartEl && views.length > 0) {
-        chartEl.innerHTML = views.slice(-7).map((v, i) => {
-          const height = Math.max(10, Math.min(100, (v.count || 1) * 10));
-          return `<div class="chart-col" style="--height:${height}%" title="Day ${i+1}: ${v.count || 1} views"></div>`;
-        }).join('');
+    }
+
+    let allOrders = [];
+    function renderOrders(searchTerm = '') {
+      allOrders = MDB.Orders.get();
+      let filtered = allOrders;
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        filtered = allOrders.filter(o => 
+          o.id.toLowerCase().includes(q) ||
+          o.customer.name.toLowerCase().includes(q) ||
+          o.customer.email.toLowerCase().includes(q)
+        );
       }
-  }
-</script>
+      const tbody = document.querySelector('#orders-table tbody');
+      if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders found</p></div></td></tr>';
+        return;
+      }
+      tbody.innerHTML = filtered.map(o => `<tr>
+      <td><strong>${o.id}</strong></td>
+      <td>${o.customer.name}<br><small style="color:#888">${o.customer.email}</small></td>
+      <td>${o.items.length} items</td>
+      <td><strong>${MDB.UI.formatPrice(o.total)}</strong></td>
+      <td><span class="order-status-badge ${o.status}">${o.status}</span></td>
+      <td>${new Date(o.createdAt).toLocaleDateString()}</td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <select onchange="updateStatus('${o.id}',this.value)">${['pending','processing','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('')}</select>
+          <button class="admin-btn admin-btn-danger" onclick="deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>`).join('');
+    }
+
+    document.getElementById('order-search').addEventListener('input', e => renderOrders(e.target.value));
+
+    function updateStatus(id, s) { MDB.Orders.updateStatus(id, s); MDB.UI.toast('Updated'); renderOrders(); renderStats(); }
+    function deleteOrder(id) { if(confirm('Delete?')){ let os = MDB.Orders.get().filter(o=>o.id!==id); localStorage.setItem('mdb_orders', JSON.stringify(os)); renderOrders(); renderStats(); } }
+
+    async function renderProducts() {
+      const products = await MDB.Products.getAll();
       const lowStock = products.filter(p => p.stock < 10);
       document.getElementById('low-stock-alert').style.display = lowStock.length ? 'block' : 'none';
 
       const tbody = document.querySelector('#products-table tbody');
+      if (!products.length) {
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No products found</p></div></td></tr>';
+        return;
+      }
       tbody.innerHTML = products.map(p => `<tr>
-      <td><img src="../${p.image}" class="admin-product-img"></td>
-      <td><strong>${p.name}</strong><br><small>${p.id}</small></td>
+      <td><img src="../${p.image}" class="admin-product-img" onerror="this.src='../img/placeholder.jpg'"></td>
+      <td><strong>${p.name}</strong><br><small style="color:#888">${p.id}</small></td>
       <td>${p.brand}</td>
       <td>${MDB.UI.formatPrice(p.price)}</td>
-      <td style="color:${p.stock<10?'red':'inherit'}">${p.stock}</td>
+      <td style="color:${p.stock<10?'#ef4444':'inherit'};font-weight:${p.stock<10?'600':'normal'}">${p.stock}</td>
       <td>${p.category}</td>
       <td>
         <button class="admin-btn" onclick="editProduct('${p.id}')"><i class="fa-solid fa-pen"></i></button>
@@ -900,7 +925,7 @@
             image: document.getElementById('pf-image').value || 'img/placeholder.jpg'
         };
         await MDB.Products.save(data);
-        MDB.UI.toast('Saved');
+        MDB.UI.toast('Product saved');
         toggleProductForm();
         renderProducts();
     };
@@ -915,11 +940,15 @@
     function renderReviews() {
         const rs = MDB.Reviews.get();
         const tbody = document.querySelector('#reviews-table tbody');
+        if (!rs.length) {
+          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fa-regular fa-comment-dots"></i><p>No reviews yet</p></div></td></tr>';
+          return;
+        }
         tbody.innerHTML = rs.map(r => `<tr>
             <td>${r.productId}</td><td>${r.authorName}</td><td>${r.rating}⭐</td>
-            <td>${r.text.substring(0,30)}...</td><td>${new Date(r.createdAt).toLocaleDateString()}</td>
+            <td>${r.text ? r.text.substring(0,40) + '...' : '-'}</td><td>${new Date(r.createdAt).toLocaleDateString()}</td>
             <td><button class="admin-btn admin-btn-danger" onclick="deleteReview('${r.id}')"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;padding:20px">No reviews</td></tr>';
+        </tr>`).join('');
     }
     function deleteReview(id) { if(confirm('Delete review?')){ MDB.Reviews.delete(id); renderReviews(); } }
 
@@ -930,7 +959,7 @@
             <td><strong>${c.code}</strong></td><td>${c.type}</td><td>${c.value}${c.type==='percent'?'%':' LE'}</td>
             <td>${c.minOrder} LE</td>
             <td><button class="admin-btn admin-btn-danger" onclick="deleteCoupon('${c.code}')"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>`).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px">No custom coupons</td></tr>';
+        </tr>`).join('') || '<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-ticket"></i><p>No custom coupons</p></div></td></tr>';
     }
     function toggleCouponForm() { let w = document.getElementById('coupon-form-wrap'); w.style.display = w.style.display === 'none' ? 'block' : 'none'; }
     document.getElementById('coupon-form').onsubmit = e => {
@@ -975,6 +1004,10 @@
     function renderCustomers() {
         const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
         const tbody = document.querySelector('#customers-table tbody');
+        if (!users.length) {
+          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-users"></i><p>No registered customers yet</p></div></td></tr>';
+          return;
+        }
         tbody.innerHTML = users.map(u => `<tr><td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.phone||'-'}</td><td>${u.city||'-'}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td>-</td></tr>`).join('');
     }
 
@@ -988,7 +1021,6 @@
           </div>
         `;
         
-        // Top searches
         const searches = a.searches || [];
         const topSearches = {};
         searches.forEach(s => { topSearches[s] = (topSearches[s] || 0) + 1; });
@@ -998,7 +1030,6 @@
           sortedSearches.map(([term, count]) => `<span style="display:inline-block;padding:4px 12px;background:var(--admin-bg);border-radius:20px;margin:4px;font-size:13px">${term} <strong>${count}</strong></span>`).join('') :
           '<p style="color:var(--admin-text-light);font-size:13px">No search data yet</p>';
         
-        // Simple chart
         const chartEl = document.getElementById('views-chart');
         if (chartEl && views.length > 0) {
           chartEl.innerHTML = views.slice(-7).map((v, i) => {

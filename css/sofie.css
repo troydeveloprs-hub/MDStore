@@ -81,7 +81,8 @@ body {
    color: var(--color-text-primary);
    background: var(--color-bg);
    -webkit-font-smoothing: antialiased;
-   overflow-x: hidden
+   overflow-x: hidden;
+   font-weight: 700;
 }
 
 img {
@@ -94,6 +95,10 @@ a {
    text-decoration: none;
    color: inherit;
    transition: color var(--transition-fast)
+}
+
+h1, h2, h3, h4, h5, h6, p, a, span, button, input, textarea, label {
+   font-weight: 700 !important;
 }
 
 ul,
@@ -5010,4 +5015,124 @@ h6 {
   .qv-left { padding: 20px; }
   .qv-left img { height: 300px; }
   .qv-right { padding: 20px; }
+}
+
+/* === Payment & Delivery Sections === */
+.payment-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 15px;
+  width: 100%;
+}
+
+.buy-now-btn, .apple-pay-btn {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700 !important;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-transform: none;
+}
+
+.buy-now-btn {
+  background-color: #000;
+  color: #fff;
+}
+
+.buy-now-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.apple-pay-btn {
+  background-color: #000;
+  color: #fff;
+}
+
+.apple-pay-btn::before {
+  content: "\f179";
+  font-family: "Font Awesome 6 Brands";
+  font-size: 20px;
+  margin-right: 4px;
+}
+
+.apple-pay-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.payment-methods {
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+  margin-top: 4px;
+  letter-spacing: 0.3px;
+}
+
+.more-options {
+  font-size: 12px;
+  color: #1a1a1a;
+  text-decoration: underline;
+  text-align: center;
+  font-weight: 700 !important;
+  display: block;
+  margin-top: 4px;
+}
+
+.delivery-info {
+  margin-top: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 15px;
+  background: #fdfdfd;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.icon {
+  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+}
+
+.info-item .title {
+  font-weight: 700 !important;
+  font-size: 14px;
+  margin: 0;
+  color: #1a1a1a;
+}
+
+.info-item .desc {
+  font-size: 13px;
+  color: #777;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .buy-now-btn, .apple-pay-btn {
+    padding: 14px;
+  }
 }

@@ -504,8 +504,15 @@ document.addEventListener('DOMContentLoaded', () => {
               <p class="qv-desc" id="qv-desc"></p>
               <div class="qv-actions">
                 <button class="btn btn-primary btn-full" id="qv-atc-btn">Add to Cart</button>
+                
+                <div class="payment-section" style="margin-top:10px;">
+                  <button class="buy-now-btn qv-buy-now">Buy it now</button>
+                  <button class="apple-pay-btn qv-apple-pay">Pay</button>
+                </div>
+
                 <a href="" class="btn btn-outline btn-full" id="qv-view-details" style="margin-top:10px; text-align:center; display:block; border:1px solid var(--color-border); padding:12px; border-radius:8px; font-weight:600;">View Full Details</a>
               </div>
+
             </div>
           </div>
         `;
@@ -542,7 +549,24 @@ document.addEventListener('DOMContentLoaded', () => {
       atcBtn.onclick = () => {
         MDB.Cart.add(p.id);
         modal.classList.remove('open');
+        MDB.UI.toast('Added to cart', 'success');
       };
+
+      const buyNow = modal.querySelector('.qv-buy-now');
+      if (buyNow) buyNow.onclick = () => {
+        console.log("Quick View: Proceed to payment");
+        MDB.UI.toast("Proceeding to checkout...", "info");
+      };
+
+      const applePay = modal.querySelector('.qv-apple-pay');
+      if (applePay) applePay.onclick = () => {
+        if (window.ApplePaySession) {
+          console.log("Quick View: Apple Pay");
+        } else {
+          alert("Apple Pay not supported on this device");
+        }
+      };
+
 
       modal.classList.add('open');
     }
