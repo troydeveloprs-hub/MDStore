@@ -419,65 +419,7 @@
 
   <script src="../js/store.js"></script>
   <script src="../js/app.js"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', async () => {
-      const grid = document.getElementById('collection-grid');
-      const noProducts = document.getElementById('no-products');
-      const countEl = document.querySelector('.collection-count');
-      let allProducts = await MDB.Products.getAll();
-      allProducts = allProducts.filter(p => p.brand.toLowerCase() === 'nyx'); // ONLY NYX
-      let currentLimit = 12;
-
-      function render() {
-        // Get active filters
-        const checkedCategories = Array.from(document.querySelectorAll('.filter-check input:checked'))
-          .filter(cb => cb.closest('.filter-group').querySelector('.filter-group-toggle').textContent.includes('Category'))
-          .map(cb => cb.parentElement.textContent.trim().toLowerCase());
-
-        const checkedPrices = Array.from(document.querySelectorAll('.filter-check input:checked'))
-          .filter(cb => cb.closest('.filter-group').querySelector('.filter-group-toggle').textContent.includes('Price'))
-          .map(cb => cb.parentElement.textContent.trim());
-
-        let filtered = allProducts;
-
-        // Filter by Category
-        if (checkedCategories.length) filtered = filtered.filter(p => checkedCategories.includes(p.subcategory.toLowerCase()));
-
-        // Filter by Price
-        if (checkedPrices.length) {
-          filtered = filtered.filter(p => {
-            return checkedPrices.some(range => {
-              if (range === 'Under 3500 LE') return p.price < 3500;
-              if (range === '3500 LE - 1,000 LE') return p.price >= 3500 && p.price <= 1000;
-              if (range === '1,000 LE - 1,3500 LE') return p.price > 1000 && p.price <= 13500;
-              if (range === 'Over 1,3500 LE') return p.price > 13500;
-              return false;
-            });
-          });
-        }
-
-        // Sort
-        const sort = document.getElementById('sort').value;
-        if (sort === 'price-asc') filtered.sort((a, b) => a.price - b.price);
-        else if (sort === 'price-desc') filtered.sort((a, b) => b.price - a.price);
-        else if (sort === 'newest') filtered = filtered.filter(p => p.isNewArrival);
-
-        countEl.textContent = `${filtered.length} products`;
-
-        const visible = filtered.slice(0, currentLimit);
-        grid.innerHTML = visible.map(p => MDB.UI.productCardHTML(p, '../')).join('');
-        noProducts.style.display = filtered.length ? 'none' : 'block';
-        document.getElementById('load-more').style.display = filtered.length > currentLimit ? 'inline-block' : 'none';
-      }
-
-      // Attach listeners
-      document.querySelectorAll('.filter-check input').forEach(cb => cb.addEventListener('change', render));
-      document.getElementById('sort').addEventListener('change', render);
-      document.getElementById('load-more').addEventListener('click', () => { currentLimit += 8; render(); });
-
-      render();
-    });
-  </script>
+  <script src="../js/collection-page.js"></script>
 
   <footer class="footer">
     <div class="container">
