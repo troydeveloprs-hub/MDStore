@@ -238,6 +238,7 @@ const MDB = (() => {
       return 0;
     },
 
+    applyPromo(code) {
       const fixedPromos = {
         'MDB10':   { code: 'MDB10',   type: 'percent', value: 10, label: '10% Off' },
         'MDB20':   { code: 'MDB20',   type: 'percent', value: 20, label: '20% Off' },
@@ -426,9 +427,9 @@ const MDB = (() => {
 
     login(email, password) {
       const target = (email || '').trim().toLowerCase();
-      // Special check for Admin
-      if (target === 'admin@mdboutiquee.com' && password === 'admin123') {
-        const adminUser = { id: 'admin', firstName: 'Site', lastName: 'Admin', email: target, role: 'admin' };
+      // Special check for Admin - accepts both 'admin' username and 'admin@mdboutiquee.com' email
+      if ((target === 'admin' || target === 'admin@mdboutiquee.com') && password === 'admin123') {
+        const adminUser = { id: 'admin', firstName: 'Site', lastName: 'Admin', email: 'admin@mdboutiquee.com', role: 'admin' };
         this._setSession(adminUser);
         return { success: true, user: adminUser, isAdmin: true };
       }
@@ -540,23 +541,8 @@ const MDB = (() => {
 
     remove(reviewId) {
       const reviews = this.get().filter(r => r.id !== reviewId);
-    getForProduct(pid) { return this.get().filter(r => r.productId === pid); },
-    add(review) {
-      const all = this.get();
-      all.push({
-        id: 'R' + Date.now(),
-        authorName: _get(KEYS.USER)?.firstName || 'Anonymous',
-        rating: 5,
-        text: '',
-        isVerified: true,
-        createdAt: _dateNow(),
-        ...review
-      });
-      _set(KEYS.REVIEWS, all);
-    },
-    delete(id) {
-        const all = this.get().filter(r => r.id !== id);
-        _set(KEYS.REVIEWS, all);
+      this._save(reviews);
+      return reviews;
     }
   };
 
@@ -728,7 +714,7 @@ const MDB = (() => {
   });
 
   /* ─── Public API ─── */
-  return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, UI, KEYS };
+  return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, Settings, Coupons, UI, KEYS };
 })();
 
 /* Make globally accessible */

@@ -700,8 +700,8 @@
         <div class="auth-message" id="login-message"></div>
         <form class="auth-form" id="login-form" novalidate>
           <div class="form-group">
-            <label for="login-email">Email Address</label>
-            <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
+            <label for="login-email">Email or Username</label>
+            <input type="text" id="login-email" placeholder="you@example.com or admin" required autocomplete="username">
             <span class="form-error" id="login-email-error"></span>
           </div>
           <div class="form-group">
@@ -929,11 +929,15 @@
 
           console.log('Login Submit Triggered:', { email });
 
-          if (!email || !email.includes('@')) {
-            document.getElementById('login-email-error').textContent = 'Please enter a valid email';
+          // Allow username login (like "admin") or email
+          if (!email) {
+            document.getElementById('login-email-error').textContent = 'Please enter your email or username';
             emailInput.classList.add('error');
             return false;
           }
+          // Clear any previous error
+          document.getElementById('login-email-error').textContent = '';
+          emailInput.classList.remove('error');
           
           const btn = this.querySelector('.auth-submit');
           const originalText = btn.textContent;
