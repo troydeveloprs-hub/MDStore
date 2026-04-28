@@ -12,14 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const emit = (el, evt, detail) => el && el.dispatchEvent(new CustomEvent(evt, { detail }));
 
   /* ============================================
-     HERO SLIDER — Scroll Triggered
+     HERO SLIDER — Scroll Triggered + Click to Shop
      ============================================ */
   const heroSlider = () => {
     const slides = $$('.slide');
     if (slides.length === 0) return;
     
     let index = 0;
-    let isScrolling = false;
     
     const changeSlide = (direction) => {
       slides[index].classList.remove('active');
@@ -27,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (direction === 'down') {
         index++;
         if (index >= slides.length) {
-          index = slides.length - 1; // Stay at last image
+          index = slides.length - 1;
           return;
         }
       } else if (direction === 'up') {
@@ -44,12 +43,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const currentScrollY = window.scrollY;
       const scrollDiff = currentScrollY - lastScrollY;
       
-      // Only trigger if we're still in the hero section
       if (currentScrollY < window.innerHeight) {
-        if (Math.abs(scrollDiff) > 50) { // Threshold of 50px scroll
+        if (Math.abs(scrollDiff) > 50) {
           changeSlide(scrollDiff > 0 ? 'down' : 'up');
           lastScrollY = currentScrollY;
         }
+      }
+    });
+    
+    // Click on product slides to navigate
+    slides.forEach(slide => {
+      if (slide.tagName === 'A' && slide.hasAttribute('href')) {
+        slide.addEventListener('click', (e) => {
+          // Allow default navigation to product page
+          console.log('Navigating to:', slide.getAttribute('href'));
+        });
       }
     });
   };
