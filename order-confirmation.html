@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,39 +9,223 @@
   <link rel="stylesheet" href="css/sofie.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    .confirmation-page{min-height:70vh;padding:80px 0 60px;text-align:center}
-    .confirm-icon{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#059669,#10b981);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.2rem;margin:0 auto 28px;animation:scaleIn .6s cubic-bezier(.175,.885,.32,1.275)}
-    @keyframes scaleIn{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-    .confirm-title{font-size:1.8rem;font-weight:700;margin-bottom:8px;letter-spacing:-.3px}
-    .confirm-subtitle{color:var(--color-text-light,#888);font-size:.95rem;margin-bottom:36px}
-    .confirm-card{max-width:600px;margin:0 auto;border:1.5px solid var(--color-border,#e5e5e5);border-radius:14px;padding:32px;text-align:left;background:#fff}
-    .confirm-row{display:flex;justify-content:space-between;padding:10px 0;font-size:.9rem;border-bottom:1px solid var(--color-border,#f0f0f0)}
-    .confirm-row:last-child{border-bottom:none}
-    .confirm-row .label{color:var(--color-text-light,#888)}
-    .confirm-row .value{font-weight:600}
-    .confirm-items{margin:20px 0;display:flex;flex-direction:column;gap:12px}
-    .confirm-item{display:flex;gap:14px;align-items:center}
-    .confirm-item img{width:52px;height:52px;border-radius:8px;object-fit:cover;border:1px solid #eee}
-    .confirm-item-info{flex:1}
-    .confirm-item-name{font-size:.88rem;font-weight:600}
-    .confirm-item-meta{font-size:.78rem;color:var(--color-text-light,#888)}
-    .confirm-item-price{font-weight:700;font-size:.88rem}
-    .confirm-total{display:flex;justify-content:space-between;padding:16px 0 0;font-size:1.15rem;font-weight:700;border-top:2px solid var(--color-border,#e5e5e5);margin-top:8px}
-    .confirm-actions{display:flex;gap:14px;justify-content:center;margin-top:36px;flex-wrap:wrap}
-    .confirm-actions .btn{padding:14px 28px}
-    .status-tracker{max-width:600px;margin:28px auto 0;display:flex;justify-content:space-between;position:relative}
-    .status-tracker::before{content:'';position:absolute;top:18px;left:60px;right:60px;height:3px;background:var(--color-border,#e5e5e5)}
-    .status-step{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:1}
-    .status-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.82rem;border:3px solid var(--color-border,#e5e5e5);background:#fff;color:var(--color-text-light,#ccc);transition:all .3s}
-    .status-dot.active{border-color:#059669;background:#059669;color:#fff}
-    .status-dot.completed{border-color:#059669;background:#d1fae5;color:#059669}
-    .status-label{font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--color-text-light,#aaa)}
-    .status-step.active .status-label{color:#059669}
+    .confirmation-page {
+      min-height: 70vh;
+      padding: 80px 0 60px;
+      text-align: center
+    }
+
+    .confirm-icon {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin: 0 auto 28px;
+      animation: scaleIn .6s cubic-bezier(.175, .885, .32, 1.275)
+    }
+
+    @keyframes scaleIn {
+      from {
+        transform: scale(0);
+        opacity: 0
+      }
+
+      to {
+        transform: scale(1);
+        opacity: 1
+      }
+    }
+
+    .confirm-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -.3px
+    }
+
+    .confirm-subtitle {
+      color: var(--color-text-light, #888);
+      font-size: .95rem;
+      margin-bottom: 36px
+    }
+
+    .confirm-card {
+      max-width: 600px;
+      margin: 0 auto;
+      border: 1.5px solid var(--color-border, #e5e5e5);
+      border-radius: 14px;
+      padding: 32px;
+      text-align: left;
+      background: #fff
+    }
+
+    .confirm-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      font-size: .9rem;
+      border-bottom: 1px solid var(--color-border, #f0f0f0)
+    }
+
+    .confirm-row:last-child {
+      border-bottom: none
+    }
+
+    .confirm-row .label {
+      color: var(--color-text-light, #888)
+    }
+
+    .confirm-row .value {
+      font-weight: 600
+    }
+
+    .confirm-items {
+      margin: 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .confirm-item {
+      display: flex;
+      gap: 14px;
+      align-items: center
+    }
+
+    .confirm-item img {
+      width: 52px;
+      height: 52px;
+      border-radius: 8px;
+      object-fit: cover;
+      border: 1px solid #eee
+    }
+
+    .confirm-item-info {
+      flex: 1
+    }
+
+    .confirm-item-name {
+      font-size: .88rem;
+      font-weight: 600
+    }
+
+    .confirm-item-meta {
+      font-size: .78rem;
+      color: var(--color-text-light, #888)
+    }
+
+    .confirm-item-price {
+      font-weight: 700;
+      font-size: .88rem
+    }
+
+    .confirm-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 0 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      border-top: 2px solid var(--color-border, #e5e5e5);
+      margin-top: 8px
+    }
+
+    .confirm-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      margin-top: 36px;
+      flex-wrap: wrap
+    }
+
+    .confirm-actions .btn {
+      padding: 14px 28px
+    }
+
+    .status-tracker {
+      max-width: 600px;
+      margin: 28px auto 0;
+      display: flex;
+      justify-content: space-between;
+      position: relative
+    }
+
+    .status-tracker::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 60px;
+      right: 60px;
+      height: 3px;
+      background: var(--color-border, #e5e5e5)
+    }
+
+    .status-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      z-index: 1
+    }
+
+    .status-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .82rem;
+      border: 3px solid var(--color-border, #e5e5e5);
+      background: #fff;
+      color: var(--color-text-light, #ccc);
+      transition: all .3s
+    }
+
+    .status-dot.active {
+      border-color: #059669;
+      background: #059669;
+      color: #fff
+    }
+
+    .status-dot.completed {
+      border-color: #059669;
+      background: #d1fae5;
+      color: #059669
+    }
+
+    .status-label {
+      font-size: .72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--color-text-light, #aaa)
+    }
+
+    .status-step.active .status-label {
+      color: #059669
+    }
   </style>
 </head>
+
 <body>
-  <div class="announcement-bar" role="banner"><div class="announcement-content"><span class="announcement-text">Free shipping on orders over 500 LE</span></div><button class="announcement-close" aria-label="Close announcement"><i class="fa-solid fa-xmark"></i></button></div>
-  <header class="header"><div class="header-inner container"><a href="index.html" class="header-logo"><img src="img/logo.svg" alt="MDBoutiquee" class="logo-img"></a><div class="header-icons"><a href="pages/login.html" class="icon-btn" aria-label="Account"><i class="fa-regular fa-user"></i></a><button class="icon-btn" data-cart-toggle aria-label="Cart"><i class="fa-solid fa-bag-shopping"></i><span class="cart-badge">0</span></button></div></div></header>
+  <div class="announcement-bar" role="banner">
+    <div class="announcement-content"><span class="announcement-text">Free shipping on orders over 500 LE</span></div>
+    <button class="announcement-close" aria-label="Close announcement"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <header class="header">
+    <div class="header-inner container"><a href="index.html" class="header-logo"><img src="img/logo.svg"
+          alt="MDBoutiquee" class="logo-img"></a>
+      <div class="header-icons"><a href="pages/login.html" class="icon-btn" aria-label="Account"><i
+            class="fa-regular fa-user"></i></a><button class="icon-btn" data-cart-toggle aria-label="Cart"><i
+            class="fa-solid fa-bag-shopping"></i><span class="cart-badge">0</span></button></div>
+    </div>
+  </header>
 
   <main class="confirmation-page">
     <div class="container">
@@ -50,10 +235,18 @@
 
       <!-- Status Tracker -->
       <div class="status-tracker">
-        <div class="status-step active"><div class="status-dot active"><i class="fa-solid fa-check"></i></div><span class="status-label">Placed</span></div>
-        <div class="status-step"><div class="status-dot"><i class="fa-solid fa-spinner"></i></div><span class="status-label">Processing</span></div>
-        <div class="status-step"><div class="status-dot"><i class="fa-solid fa-truck"></i></div><span class="status-label">Shipped</span></div>
-        <div class="status-step"><div class="status-dot"><i class="fa-solid fa-box-open"></i></div><span class="status-label">Delivered</span></div>
+        <div class="status-step active">
+          <div class="status-dot active"><i class="fa-solid fa-check"></i></div><span class="status-label">Placed</span>
+        </div>
+        <div class="status-step">
+          <div class="status-dot"><i class="fa-solid fa-spinner"></i></div><span class="status-label">Processing</span>
+        </div>
+        <div class="status-step">
+          <div class="status-dot"><i class="fa-solid fa-truck"></i></div><span class="status-label">Shipped</span>
+        </div>
+        <div class="status-step">
+          <div class="status-dot"><i class="fa-solid fa-box-open"></i></div><span class="status-label">Delivered</span>
+        </div>
       </div>
 
       <div class="confirm-card" id="order-details">
@@ -67,35 +260,43 @@
     </div>
   </main>
 
-  <footer class="footer"><div class="footer-bottom"><div class="container"><p class="footer-copyright">&copy; 2025 <a href="index.html">MDBoutiquee</a>. All rights reserved.</p></div></div></footer>
+  <footer class="footer">
+    <div class="footer-bottom">
+      <div class="container">
+        <p class="footer-copyright">&copy; 2025 <a href="index.html">MDBoutiquee</a>. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
 
   <script src="js/store.js"></script>
-  <script src="js/app.js"></script><script src="js/features.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/features.js"></script>
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const orderId = params.get('id');
-    const order = orderId ? MDB.Orders.getById(orderId) : null;
-    const el = document.getElementById('order-details');
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const orderId = params.get('id');
+      const order = orderId ? MDB.Orders.getById(orderId) : null;
+      const el = document.getElementById('order-details');
 
-    if (!order) { el.innerHTML = '<p style="text-align:center;color:#e74c3c">Order not found</p>'; return; }
+      if (!order) { el.innerHTML = '<p style="text-align:center;color:#e74c3c">Order not found</p>'; return; }
 
-    const payLabels = { cash: 'Cash on Delivery', card: 'Credit/Debit Card', wallet: 'Mobile Wallet' };
-    el.innerHTML = `
+      const payLabels = { cash: 'Cash on Delivery', card: 'Credit/Debit Card', wallet: 'Mobile Wallet' };
+      el.innerHTML = `
       <div class="confirm-row"><span class="label">Order ID</span><span class="value">${order.id}</span></div>
-      <div class="confirm-row"><span class="label">Date</span><span class="value">${new Date(order.createdAt).toLocaleDateString('en-US',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div>
+      <div class="confirm-row"><span class="label">Date</span><span class="value">${new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span></div>
       <div class="confirm-row"><span class="label">Customer</span><span class="value">${order.customer.name}</span></div>
       <div class="confirm-row"><span class="label">Email</span><span class="value">${order.customer.email}</span></div>
       <div class="confirm-row"><span class="label">Phone</span><span class="value">${order.customer.phone}</span></div>
       <div class="confirm-row"><span class="label">Address</span><span class="value">${order.customer.address}, ${order.customer.city}</span></div>
-      <div class="confirm-row"><span class="label">Payment</span><span class="value">${payLabels[order.paymentMethod]||order.paymentMethod}</span></div>
+      <div class="confirm-row"><span class="label">Payment</span><span class="value">${payLabels[order.paymentMethod] || order.paymentMethod}</span></div>
       ${order.customer.notes ? `<div class="confirm-row"><span class="label">Notes</span><span class="value">${order.customer.notes}</span></div>` : ''}
-      <div class="confirm-items">${order.items.map(i => `<div class="confirm-item"><img src="${i.image}" alt="${i.name}"><div class="confirm-item-info"><div class="confirm-item-name">${i.name}</div><div class="confirm-item-meta">${i.variant} × ${i.qty}</div></div><div class="confirm-item-price">${MDB.UI.formatPrice(i.price*i.qty)}</div></div>`).join('')}</div>
+      <div class="confirm-items">${order.items.map(i => `<div class="confirm-item"><img src="${i.image}" alt="${i.name}"><div class="confirm-item-info"><div class="confirm-item-name">${i.name}</div><div class="confirm-item-meta">${i.variant} × ${i.qty}</div></div><div class="confirm-item-price">${MDB.UI.formatPrice(i.price * i.qty)}</div></div>`).join('')}</div>
       <div class="confirm-row"><span class="label">Subtotal</span><span class="value">${MDB.UI.formatPrice(order.subtotal)}</span></div>
-      <div class="confirm-row"><span class="label">Shipping</span><span class="value">${order.shipping===0?'Free':MDB.UI.formatPrice(order.shipping)}</span></div>
-      ${order.discount>0?`<div class="confirm-row"><span class="label">Discount</span><span class="value" style="color:#16a34a">-${MDB.UI.formatPrice(order.discount)}</span></div>`:''}
+      <div class="confirm-row"><span class="label">Shipping</span><span class="value">${order.shipping === 0 ? 'Free' : MDB.UI.formatPrice(order.shipping)}</span></div>
+      ${order.discount > 0 ? `<div class="confirm-row"><span class="label">Discount</span><span class="value" style="color:#16a34a">-${MDB.UI.formatPrice(order.discount)}</span></div>` : ''}
       <div class="confirm-total"><span>Total</span><span>${MDB.UI.formatPrice(order.total)}</span></div>`;
-  });
+    });
   </script>
 </body>
+
 </html>

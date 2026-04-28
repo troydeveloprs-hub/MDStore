@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,51 +8,315 @@
   <link rel="stylesheet" href="../css/sofie.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    .admin-page{min-height:100vh;padding:24px 0 60px;background:var(--color-bg-light)}
-    .admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:16px}
-    .admin-header h1{font-size:1.6rem;font-weight:700}
-    .admin-tabs{display:flex;gap:4px;background:#fff;border-radius:10px;padding:4px;border:1px solid var(--color-border);overflow-x:auto}
-    .admin-tab{padding:10px 20px;border-radius:8px;font-size:.85rem;font-weight:500;cursor:pointer;border:none;background:none;font-family:inherit;white-space:nowrap;transition:all .2s}
-    .admin-tab.active{background:var(--color-bg-dark);color:#fff}
-    .admin-tab:hover:not(.active){background:var(--color-bg-light)}
-    .admin-panel{display:none;background:#fff;border-radius:14px;border:1px solid var(--color-border);padding:24px}
-    .admin-panel.active{display:block;animation:panelIn .3s ease}
-    @keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .admin-panel-title{font-size:1.1rem;font-weight:700;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
-    .admin-table-wrap{overflow-x:auto}
-    .order-status-badge{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;text-transform:uppercase}
-    .order-status-badge.pending{background:#fef3c7;color:#d97706}
-    .order-status-badge.processing{background:#dbeafe;color:#2563eb}
-    .order-status-badge.shipped{background:#e0e7ff;color:#4f46e5}
-    .order-status-badge.delivered{background:#d1fae5;color:#059669}
-    .order-status-badge.cancelled{background:#fef2f2;color:#e74c3c}
-    .admin-product-img{width:48px;height:48px;border-radius:8px;object-fit:cover}
-    .admin-search{padding:10px 16px;border:1px solid var(--color-border);border-radius:8px;font-size:14px;font-family:inherit;width:100%;max-width:300px;margin-bottom:16px}
-    .admin-login{max-width:400px;margin:100px auto;padding:40px;background:#fff;border-radius:16px;border:1px solid var(--color-border);text-align:center}
-    .admin-login h2{margin-bottom:8px}
-    .admin-login p{color:var(--color-text-light);font-size:14px;margin-bottom:24px}
-    .admin-login input{width:100%;padding:14px;border:1.5px solid var(--color-border);border-radius:8px;font-size:15px;font-family:inherit;margin-bottom:12px;box-sizing:border-box}
-    .admin-login input:focus{border-color:var(--color-accent);outline:none}
-    .admin-login button{width:100%;padding:14px;background:var(--color-bg-dark);color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit}
-    .admin-btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;border:1px solid var(--color-border);background:#fff;transition:all .2s}
-    .admin-btn:hover{background:var(--color-bg-light)}
-    .admin-btn-danger{color:#e74c3c;border-color:#fecaca}
-    .admin-btn-danger:hover{background:#fef2f2}
-    .admin-form{display:flex;flex-direction:column;gap:14px;max-width:600px}
-    .admin-form input,.admin-form select,.admin-form textarea{padding:12px;border:1.5px solid var(--color-border);border-radius:8px;font-size:14px;font-family:inherit}
-    .admin-form input:focus,.admin-form select:focus,.admin-form textarea:focus{border-color:var(--color-accent);outline:none}
-    .admin-form textarea{min-height:80px;resize:vertical}
-    .admin-form .form-row{display:flex;gap:12px}
-    .admin-form .form-row > *{flex:1}
-    .admin-form label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:-8px}
-    .chart-bar{display:flex;align-items:flex-end;gap:8px;height:120px;margin:16px 0}
-    .chart-col{flex:1;background:linear-gradient(to top,var(--color-accent),var(--color-accent-light));border-radius:4px 4px 0 0;transition:height .5s ease;position:relative;min-width:24px}
-    .chart-col-label{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);font-size:10px;color:var(--color-text-light);white-space:nowrap}
-    .subs-list{max-height:300px;overflow-y:auto}
-    .sub-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--color-border);font-size:14px}
-    .sub-date{font-size:12px;color:var(--color-text-light)}
+    .admin-page {
+      min-height: 100vh;
+      padding: 24px 0 60px;
+      background: var(--color-bg-light)
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px
+    }
+
+    .admin-header h1 {
+      font-size: 1.6rem;
+      font-weight: 700
+    }
+
+    .admin-tabs {
+      display: flex;
+      gap: 4px;
+      background: #fff;
+      border-radius: 10px;
+      padding: 4px;
+      border: 1px solid var(--color-border);
+      overflow-x: auto
+    }
+
+    .admin-tab {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: .85rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: all .2s
+    }
+
+    .admin-tab.active {
+      background: var(--color-bg-dark);
+      color: #fff
+    }
+
+    .admin-tab:hover:not(.active) {
+      background: var(--color-bg-light)
+    }
+
+    .admin-panel {
+      display: none;
+      background: #fff;
+      border-radius: 14px;
+      border: 1px solid var(--color-border);
+      padding: 24px
+    }
+
+    .admin-panel.active {
+      display: block;
+      animation: panelIn .3s ease
+    }
+
+    @keyframes panelIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .admin-panel-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
+
+    .admin-table-wrap {
+      overflow-x: auto
+    }
+
+    .order-status-badge {
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase
+    }
+
+    .order-status-badge.pending {
+      background: #fef3c7;
+      color: #d97706
+    }
+
+    .order-status-badge.processing {
+      background: #dbeafe;
+      color: #2563eb
+    }
+
+    .order-status-badge.shipped {
+      background: #e0e7ff;
+      color: #4f46e5
+    }
+
+    .order-status-badge.delivered {
+      background: #d1fae5;
+      color: #059669
+    }
+
+    .order-status-badge.cancelled {
+      background: #fef2f2;
+      color: #e74c3c
+    }
+
+    .admin-product-img {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover
+    }
+
+    .admin-search {
+      padding: 10px 16px;
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      width: 100%;
+      max-width: 300px;
+      margin-bottom: 16px
+    }
+
+    .admin-login {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 40px;
+      background: #fff;
+      border-radius: 16px;
+      border: 1px solid var(--color-border);
+      text-align: center
+    }
+
+    .admin-login h2 {
+      margin-bottom: 8px
+    }
+
+    .admin-login p {
+      color: var(--color-text-light);
+      font-size: 14px;
+      margin-bottom: 24px
+    }
+
+    .admin-login input {
+      width: 100%;
+      padding: 14px;
+      border: 1.5px solid var(--color-border);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      margin-bottom: 12px;
+      box-sizing: border-box
+    }
+
+    .admin-login input:focus {
+      border-color: var(--color-accent);
+      outline: none
+    }
+
+    .admin-login button {
+      width: 100%;
+      padding: 14px;
+      background: var(--color-bg-dark);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit
+    }
+
+    .admin-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      border: 1px solid var(--color-border);
+      background: #fff;
+      transition: all .2s
+    }
+
+    .admin-btn:hover {
+      background: var(--color-bg-light)
+    }
+
+    .admin-btn-danger {
+      color: #e74c3c;
+      border-color: #fecaca
+    }
+
+    .admin-btn-danger:hover {
+      background: #fef2f2
+    }
+
+    .admin-form {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      max-width: 600px
+    }
+
+    .admin-form input,
+    .admin-form select,
+    .admin-form textarea {
+      padding: 12px;
+      border: 1.5px solid var(--color-border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit
+    }
+
+    .admin-form input:focus,
+    .admin-form select:focus,
+    .admin-form textarea:focus {
+      border-color: var(--color-accent);
+      outline: none
+    }
+
+    .admin-form textarea {
+      min-height: 80px;
+      resize: vertical
+    }
+
+    .admin-form .form-row {
+      display: flex;
+      gap: 12px
+    }
+
+    .admin-form .form-row>* {
+      flex: 1
+    }
+
+    .admin-form label {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin-bottom: -8px
+    }
+
+    .chart-bar {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      height: 120px;
+      margin: 16px 0
+    }
+
+    .chart-col {
+      flex: 1;
+      background: linear-gradient(to top, var(--color-accent), var(--color-accent-light));
+      border-radius: 4px 4px 0 0;
+      transition: height .5s ease;
+      position: relative;
+      min-width: 24px
+    }
+
+    .chart-col-label {
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: var(--color-text-light);
+      white-space: nowrap
+    }
+
+    .subs-list {
+      max-height: 300px;
+      overflow-y: auto
+    }
+
+    .sub-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--color-border);
+      font-size: 14px
+    }
+
+    .sub-date {
+      font-size: 12px;
+      color: var(--color-text-light)
+    }
   </style>
 </head>
+
 <body>
   <main class="admin-page">
     <div class="container">
@@ -70,7 +335,9 @@
           <h1>📊 Admin Dashboard</h1>
           <div style="display:flex;gap:8px;align-items:center">
             <a href="../index.html" class="admin-btn"><i class="fa-solid fa-arrow-left"></i> Back to Store</a>
-            <button class="admin-btn admin-btn-danger" onclick="localStorage.setItem('mdb_admin','');location.reload()"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            <button class="admin-btn admin-btn-danger"
+              onclick="localStorage.setItem('mdb_admin','');location.reload()"><i
+                class="fa-solid fa-right-from-bracket"></i> Logout</button>
           </div>
         </div>
 
@@ -91,30 +358,88 @@
         <div class="admin-panel active" id="panel-orders">
           <div class="admin-panel-title"><span>Orders Management</span></div>
           <input type="text" class="admin-search" placeholder="Search by order ID or customer..." id="order-search">
-          <div class="admin-table-wrap"><table class="admin-table" id="orders-table"><thead><tr><th>Order ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead><tbody></tbody></table></div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="orders-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Customer</th>
+                  <th>Items</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- PRODUCTS PANEL -->
         <div class="admin-panel" id="panel-products">
-          <div class="admin-panel-title"><span>Product Catalog</span><button class="admin-btn" onclick="toggleProductForm()"><i class="fa-solid fa-plus"></i> Add Product</button></div>
+          <div class="admin-panel-title"><span>Product Catalog</span><button class="admin-btn"
+              onclick="toggleProductForm()"><i class="fa-solid fa-plus"></i> Add Product</button></div>
           <div id="product-form-wrap" style="display:none;margin-bottom:24px">
             <h3 style="font-size:1rem;margin-bottom:12px">Add / Edit Product</h3>
             <form class="admin-form" id="product-form">
-              <div class="form-row"><div><label>Name</label><input id="pf-name" required></div><div><label>Brand</label><input id="pf-brand" required></div></div>
-              <div class="form-row"><div><label>Price (LE)</label><input type="number" id="pf-price" required></div><div><label>Original Price</label><input type="number" id="pf-oprice"></div></div>
-              <div class="form-row"><div><label>Category</label><select id="pf-cat"><option>makeup</option><option>skincare</option></select></div><div><label>Stock</label><input type="number" id="pf-stock" value="50"></div></div>
+              <div class="form-row">
+                <div><label>Name</label><input id="pf-name" required></div>
+                <div><label>Brand</label><input id="pf-brand" required></div>
+              </div>
+              <div class="form-row">
+                <div><label>Price (LE)</label><input type="number" id="pf-price" required></div>
+                <div><label>Original Price</label><input type="number" id="pf-oprice"></div>
+              </div>
+              <div class="form-row">
+                <div><label>Category</label><select id="pf-cat">
+                    <option>makeup</option>
+                    <option>skincare</option>
+                  </select></div>
+                <div><label>Stock</label><input type="number" id="pf-stock" value="50"></div>
+              </div>
               <div><label>Description</label><textarea id="pf-desc"></textarea></div>
               <div><label>Image Path</label><input id="pf-image" placeholder="images/product.jpg"></div>
-              <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary btn-sm">Save Product</button><button type="button" class="admin-btn" onclick="toggleProductForm()">Cancel</button></div>
+              <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary btn-sm">Save
+                  Product</button><button type="button" class="admin-btn" onclick="toggleProductForm()">Cancel</button>
+              </div>
             </form>
           </div>
-          <div class="admin-table-wrap"><table class="admin-table" id="products-table"><thead><tr><th>Image</th><th>Name</th><th>Brand</th><th>Price</th><th>Stock</th><th>Category</th></tr></thead><tbody></tbody></table></div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="products-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Name</th>
+                  <th>Brand</th>
+                  <th>Price</th>
+                  <th>Stock</th>
+                  <th>Category</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- CUSTOMERS PANEL -->
         <div class="admin-panel" id="panel-customers">
           <div class="admin-panel-title"><span>Registered Customers</span></div>
-          <div class="admin-table-wrap"><table class="admin-table" id="customers-table"><thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>City</th><th>Joined</th><th>Orders</th></tr></thead><tbody></tbody></table></div>
+          <div class="admin-table-wrap">
+            <table class="admin-table" id="customers-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>City</th>
+                  <th>Joined</th>
+                  <th>Orders</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
 
         <!-- ANALYTICS PANEL -->
@@ -129,23 +454,94 @@
 
         <!-- NEWSLETTER PANEL -->
         <div class="admin-panel" id="panel-newsletter">
-          <div class="admin-panel-title"><span>Newsletter Subscribers</span><span id="newsletter-count" style="font-size:13px;color:var(--color-text-light)"></span></div>
+          <div class="admin-panel-title"><span>Newsletter Subscribers</span><span id="newsletter-count"
+              style="font-size:13px;color:var(--color-text-light)"></span></div>
           <div class="subs-list" id="subs-list"></div>
         </div>
 
         <!-- COUPONS PANEL -->
         <div class="admin-panel" id="panel-coupons">
           <div class="admin-panel-title"><span>Coupon Codes</span></div>
-          <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Min Order</th><th>Max Uses</th><th>Expires</th></tr></thead><tbody>
-            <tr><td><strong>MDB10</strong></td><td>Percent</td><td>10%</td><td>0 LE</td><td>99</td><td>2027-12-31</td></tr>
-            <tr><td><strong>MDB20</strong></td><td>Percent</td><td>20%</td><td>500 LE</td><td>5</td><td>2027-06-30</td></tr>
-            <tr><td><strong>WELCOME15</strong></td><td>Percent</td><td>15%</td><td>0 LE</td><td>1</td><td>2027-12-31</td></tr>
-            <tr><td><strong>BEAUTY25</strong></td><td>Percent</td><td>25%</td><td>300 LE</td><td>2</td><td>2027-09-30</td></tr>
-            <tr><td><strong>VIP30</strong></td><td>Percent</td><td>30%</td><td>1,000 LE</td><td>1</td><td>2027-03-31</td></tr>
-            <tr><td><strong>SAVE50</strong></td><td>Fixed</td><td>50 LE</td><td>200 LE</td><td>10</td><td>2027-12-31</td></tr>
-            <tr><td><strong>SAVE100</strong></td><td>Fixed</td><td>100 LE</td><td>800 LE</td><td>3</td><td>2027-06-30</td></tr>
-            <tr><td><strong>FREESHIP</strong></td><td>Fixed</td><td>50 LE</td><td>0 LE</td><td>99</td><td>2027-12-31</td></tr>
-          </tbody></table></div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Type</th>
+                  <th>Value</th>
+                  <th>Min Order</th>
+                  <th>Max Uses</th>
+                  <th>Expires</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>MDB10</strong></td>
+                  <td>Percent</td>
+                  <td>10%</td>
+                  <td>0 LE</td>
+                  <td>99</td>
+                  <td>2027-12-31</td>
+                </tr>
+                <tr>
+                  <td><strong>MDB20</strong></td>
+                  <td>Percent</td>
+                  <td>20%</td>
+                  <td>500 LE</td>
+                  <td>5</td>
+                  <td>2027-06-30</td>
+                </tr>
+                <tr>
+                  <td><strong>WELCOME15</strong></td>
+                  <td>Percent</td>
+                  <td>15%</td>
+                  <td>0 LE</td>
+                  <td>1</td>
+                  <td>2027-12-31</td>
+                </tr>
+                <tr>
+                  <td><strong>BEAUTY25</strong></td>
+                  <td>Percent</td>
+                  <td>25%</td>
+                  <td>300 LE</td>
+                  <td>2</td>
+                  <td>2027-09-30</td>
+                </tr>
+                <tr>
+                  <td><strong>VIP30</strong></td>
+                  <td>Percent</td>
+                  <td>30%</td>
+                  <td>1,000 LE</td>
+                  <td>1</td>
+                  <td>2027-03-31</td>
+                </tr>
+                <tr>
+                  <td><strong>SAVE50</strong></td>
+                  <td>Fixed</td>
+                  <td>50 LE</td>
+                  <td>200 LE</td>
+                  <td>10</td>
+                  <td>2027-12-31</td>
+                </tr>
+                <tr>
+                  <td><strong>SAVE100</strong></td>
+                  <td>Fixed</td>
+                  <td>100 LE</td>
+                  <td>800 LE</td>
+                  <td>3</td>
+                  <td>2027-06-30</td>
+                </tr>
+                <tr>
+                  <td><strong>FREESHIP</strong></td>
+                  <td>Fixed</td>
+                  <td>50 LE</td>
+                  <td>0 LE</td>
+                  <td>99</td>
+                  <td>2027-12-31</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -153,88 +549,88 @@
 
   <script src="../js/store.js"></script>
   <script>
-  const ADMIN_PASS = 'admin123';
+    const ADMIN_PASS = 'admin123';
 
-  function checkAdminPass() {
-    const pass = document.getElementById('admin-pass').value;
-    if (pass === ADMIN_PASS) {
-      localStorage.setItem('mdb_admin', '1');
-      showDashboard();
-    } else { alert('Wrong password'); }
-  }
-  document.getElementById('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') checkAdminPass(); });
+    function checkAdminPass() {
+      const pass = document.getElementById('admin-pass').value;
+      if (pass === ADMIN_PASS) {
+        localStorage.setItem('mdb_admin', '1');
+        showDashboard();
+      } else { alert('Wrong password'); }
+    }
+    document.getElementById('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') checkAdminPass(); });
 
-  if (localStorage.getItem('mdb_admin') === '1') showDashboard();
+    if (localStorage.getItem('mdb_admin') === '1') showDashboard();
 
-  function showDashboard() {
-    document.getElementById('admin-login').style.display = 'none';
-    document.getElementById('admin-dashboard').style.display = 'block';
-    renderStats();
-    renderOrders();
-    renderProducts();
-    renderCustomers();
-    renderAnalytics();
-    renderNewsletter();
+    function showDashboard() {
+      document.getElementById('admin-login').style.display = 'none';
+      document.getElementById('admin-dashboard').style.display = 'block';
+      renderStats();
+      renderOrders();
+      renderProducts();
+      renderCustomers();
+      renderAnalytics();
+      renderNewsletter();
 
-    // Tab switching
-    document.querySelectorAll('.admin-tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+      // Tab switching
+      document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+          document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+        });
       });
-    });
-  }
+    }
 
-  function renderStats() {
-    const orders = MDB.Orders.get();
-    const revenue = orders.reduce((s, o) => s + o.total, 0);
-    const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
-    const subs = JSON.parse(localStorage.getItem('mdb_newsletter') || '[]');
-    document.getElementById('admin-stats').innerHTML = `
+    function renderStats() {
+      const orders = MDB.Orders.get();
+      const revenue = orders.reduce((s, o) => s + o.total, 0);
+      const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
+      const subs = JSON.parse(localStorage.getItem('mdb_newsletter') || '[]');
+      document.getElementById('admin-stats').innerHTML = `
       <div class="admin-stat"><div class="admin-stat-value">${orders.length}</div><div class="admin-stat-label">Total Orders</div></div>
       <div class="admin-stat"><div class="admin-stat-value">${MDB.UI.formatPrice(revenue)}</div><div class="admin-stat-label">Total Revenue</div></div>
       <div class="admin-stat"><div class="admin-stat-value">${users.length}</div><div class="admin-stat-label">Customers</div></div>
-      <div class="admin-stat"><div class="admin-stat-value">${orders.filter(o=>o.status==='pending').length}</div><div class="admin-stat-label">Pending Orders</div></div>
+      <div class="admin-stat"><div class="admin-stat-value">${orders.filter(o => o.status === 'pending').length}</div><div class="admin-stat-label">Pending Orders</div></div>
       <div class="admin-stat"><div class="admin-stat-value">${subs.length}</div><div class="admin-stat-label">Newsletter Subs</div></div>
     `;
-  }
+    }
 
-  function renderOrders() {
-    const orders = MDB.Orders.get();
-    const tbody = document.querySelector('#orders-table tbody');
-    tbody.innerHTML = orders.map(o => `<tr>
+    function renderOrders() {
+      const orders = MDB.Orders.get();
+      const tbody = document.querySelector('#orders-table tbody');
+      tbody.innerHTML = orders.map(o => `<tr>
       <td><strong>${o.id}</strong></td>
       <td>${o.customer.name}<br><small style="color:#888">${o.customer.email}</small></td>
-      <td>${o.items.length} item${o.items.length>1?'s':''}</td>
+      <td>${o.items.length} item${o.items.length > 1 ? 's' : ''}</td>
       <td><strong>${MDB.UI.formatPrice(o.total)}</strong></td>
       <td><span class="order-status-badge ${o.status}">${o.status}</span></td>
       <td>${new Date(o.createdAt).toLocaleDateString()}</td>
       <td><select class="status-select" onchange="updateOrderStatus('${o.id}',this.value)">
-        ${['pending','processing','shipped','delivered','cancelled'].map(s => `<option value="${s}" ${o.status===s?'selected':''}>${s}</option>`).join('')}
+        ${['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${o.status === s ? 'selected' : ''}>${s}</option>`).join('')}
       </select></td>
     </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:40px;color:#888">No orders yet</td></tr>';
 
-    // Search
-    document.getElementById('order-search').addEventListener('input', function() {
-      const q = this.value.toLowerCase();
-      document.querySelectorAll('#orders-table tbody tr').forEach(row => {
-        row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+      // Search
+      document.getElementById('order-search').addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#orders-table tbody tr').forEach(row => {
+          row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
       });
-    });
-  }
+    }
 
-  function updateOrderStatus(id, status) {
-    MDB.Orders.updateStatus(id, status, 'Updated by admin');
-    MDB.UI.toast('Order status updated to ' + status, 'success');
-    renderStats();
-  }
+    function updateOrderStatus(id, status) {
+      MDB.Orders.updateStatus(id, status, 'Updated by admin');
+      MDB.UI.toast('Order status updated to ' + status, 'success');
+      renderStats();
+    }
 
-  async function renderProducts() {
-    const products = await MDB.Products.getAll();
-    const tbody = document.querySelector('#products-table tbody');
-    tbody.innerHTML = products.map(p => `<tr>
+    async function renderProducts() {
+      const products = await MDB.Products.getAll();
+      const tbody = document.querySelector('#products-table tbody');
+      tbody.innerHTML = products.map(p => `<tr>
       <td><img src="../${p.image}" class="admin-product-img" alt="${p.name}"></td>
       <td><strong>${p.name}</strong></td>
       <td>${p.brand}</td>
@@ -242,69 +638,70 @@
       <td>${p.stock <= 10 ? `<span style="color:#e74c3c;font-weight:700">${p.stock}</span>` : p.stock}</td>
       <td>${p.category}</td>
     </tr>`).join('');
-  }
+    }
 
-  function renderCustomers() {
-    const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
-    const orders = MDB.Orders.get();
-    const tbody = document.querySelector('#customers-table tbody');
-    tbody.innerHTML = users.map(u => {
-      const userOrders = orders.filter(o => o.customer.email.toLowerCase() === u.email.toLowerCase());
-      return `<tr>
-        <td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.phone||'-'}</td>
-        <td>${u.city||'-'}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td>
+    function renderCustomers() {
+      const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
+      const orders = MDB.Orders.get();
+      const tbody = document.querySelector('#customers-table tbody');
+      tbody.innerHTML = users.map(u => {
+        const userOrders = orders.filter(o => o.customer.email.toLowerCase() === u.email.toLowerCase());
+        return `<tr>
+        <td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.phone || '-'}</td>
+        <td>${u.city || '-'}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td>
         <td><strong>${userOrders.length}</strong></td>
       </tr>`;
-    }).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:#888">No customers yet</td></tr>';
-  }
+      }).join('') || '<tr><td colspan="6" style="text-align:center;padding:40px;color:#888">No customers yet</td></tr>';
+    }
 
-  function renderAnalytics() {
-    const analytics = JSON.parse(localStorage.getItem('mdb_analytics') || '{}');
-    const stats = document.getElementById('analytics-stats');
-    const views = analytics.views || [];
-    const today = new Date().toDateString();
-    stats.innerHTML = `
+    function renderAnalytics() {
+      const analytics = JSON.parse(localStorage.getItem('mdb_analytics') || '{}');
+      const stats = document.getElementById('analytics-stats');
+      const views = analytics.views || [];
+      const today = new Date().toDateString();
+      stats.innerHTML = `
       <div class="admin-stat"><div class="admin-stat-value">${views.length}</div><div class="admin-stat-label">Total Page Views</div></div>
-      <div class="admin-stat"><div class="admin-stat-value">${views.filter(v=>new Date(v.date).toDateString()===today).length}</div><div class="admin-stat-label">Views Today</div></div>
-      <div class="admin-stat"><div class="admin-stat-value">${(analytics.searches||[]).length}</div><div class="admin-stat-label">Total Searches</div></div>
+      <div class="admin-stat"><div class="admin-stat-value">${views.filter(v => new Date(v.date).toDateString() === today).length}</div><div class="admin-stat-label">Views Today</div></div>
+      <div class="admin-stat"><div class="admin-stat-value">${(analytics.searches || []).length}</div><div class="admin-stat-label">Total Searches</div></div>
     `;
 
-    // Top searches
-    const searches = analytics.searches || [];
-    const freq = {};
-    searches.forEach(s => freq[s.query] = (freq[s.query]||0)+1);
-    const top = Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,8);
-    document.getElementById('top-searches').innerHTML = top.length ? top.map(([q,c]) => `<span style="display:inline-block;padding:4px 12px;margin:4px;border:1px solid var(--color-border);border-radius:20px;font-size:13px">${q} <strong>(${c})</strong></span>`).join('') : '<p style="color:#888;font-size:14px">No searches yet</p>';
+      // Top searches
+      const searches = analytics.searches || [];
+      const freq = {};
+      searches.forEach(s => freq[s.query] = (freq[s.query] || 0) + 1);
+      const top = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 8);
+      document.getElementById('top-searches').innerHTML = top.length ? top.map(([q, c]) => `<span style="display:inline-block;padding:4px 12px;margin:4px;border:1px solid var(--color-border);border-radius:20px;font-size:13px">${q} <strong>(${c})</strong></span>`).join('') : '<p style="color:#888;font-size:14px">No searches yet</p>';
 
-    // Views chart (last 7 days)
-    const chart = document.getElementById('views-chart');
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(); d.setDate(d.getDate()-i);
-      const ds = d.toDateString();
-      const count = views.filter(v => new Date(v.date).toDateString() === ds).length;
-      days.push({ label: d.toLocaleDateString('en',{weekday:'short'}), count });
+      // Views chart (last 7 days)
+      const chart = document.getElementById('views-chart');
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const ds = d.toDateString();
+        const count = views.filter(v => new Date(v.date).toDateString() === ds).length;
+        days.push({ label: d.toLocaleDateString('en', { weekday: 'short' }), count });
+      }
+      const max = Math.max(...days.map(d => d.count), 1);
+      chart.innerHTML = days.map(d => `<div class="chart-col" style="height:${Math.max(4, (d.count / max) * 100)}%"><span class="chart-col-label">${d.label}</span></div>`).join('');
     }
-    const max = Math.max(...days.map(d=>d.count), 1);
-    chart.innerHTML = days.map(d => `<div class="chart-col" style="height:${Math.max(4,(d.count/max)*100)}%"><span class="chart-col-label">${d.label}</span></div>`).join('');
-  }
 
-  function renderNewsletter() {
-    const subs = JSON.parse(localStorage.getItem('mdb_newsletter') || '[]');
-    document.getElementById('newsletter-count').textContent = `${subs.length} subscriber${subs.length!==1?'s':''}`;
-    document.getElementById('subs-list').innerHTML = subs.map(s => `<div class="sub-item"><span>${s.email}</span><span class="sub-date">${new Date(s.date).toLocaleDateString()}</span></div>`).join('') || '<p style="text-align:center;padding:40px;color:#888">No subscribers yet</p>';
-  }
+    function renderNewsletter() {
+      const subs = JSON.parse(localStorage.getItem('mdb_newsletter') || '[]');
+      document.getElementById('newsletter-count').textContent = `${subs.length} subscriber${subs.length !== 1 ? 's' : ''}`;
+      document.getElementById('subs-list').innerHTML = subs.map(s => `<div class="sub-item"><span>${s.email}</span><span class="sub-date">${new Date(s.date).toLocaleDateString()}</span></div>`).join('') || '<p style="text-align:center;padding:40px;color:#888">No subscribers yet</p>';
+    }
 
-  function toggleProductForm() {
-    const wrap = document.getElementById('product-form-wrap');
-    wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
-  }
+    function toggleProductForm() {
+      const wrap = document.getElementById('product-form-wrap');
+      wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+    }
 
-  document.getElementById('product-form')?.addEventListener('submit', e => {
-    e.preventDefault();
-    MDB.UI.toast('Product saved! (Note: in this local version, products are read-only from JSON. To add products, edit data/products.json directly)', 'info', 5000);
-    toggleProductForm();
-  });
+    document.getElementById('product-form')?.addEventListener('submit', e => {
+      e.preventDefault();
+      MDB.UI.toast('Product saved! (Note: in this local version, products are read-only from JSON. To add products, edit data/products.json directly)', 'info', 5000);
+      toggleProductForm();
+    });
   </script>
 </body>
+
 </html>
