@@ -16,6 +16,8 @@ const MDB = (() => {
     ADDRESSES: 'mdb_addresses',
     PROMO:     'mdb_applied_promo',
     CUSTOM_PRODUCTS: 'mdb_custom_products',
+    CUSTOM_COUPONS: 'mdb_custom_coupons',
+    SETTINGS: 'mdb_settings',
   };
 
   /* ─── Helpers ─── */
@@ -235,17 +237,21 @@ const MDB = (() => {
       return 0;
     },
 
-    applyPromo(code) {
-      const promos = {
+      const fixedPromos = {
         'MDB10':   { code: 'MDB10',   type: 'percent', value: 10, label: '10% Off' },
         'MDB20':   { code: 'MDB20',   type: 'percent', value: 20, label: '20% Off' },
         'SAVE50':  { code: 'SAVE50',  type: 'fixed',   value: 50, label: '50 LE Off' },
         'FREESHIP': { code: 'FREESHIP', type: 'fixed', value: 50, label: 'Free Shipping' },
       };
+      
+      const customPromos = _get(KEYS.CUSTOM_COUPONS) || [];
       const upper = (code || '').trim().toUpperCase();
-      if (promos[upper]) {
-        _set(KEYS.PROMO, promos[upper]);
-        return { success: true, promo: promos[upper] };
+      
+      const found = fixedPromos[upper] || customPromos.find(p => p.code.toUpperCase() === upper);
+      
+      if (found) {
+        _set(KEYS.PROMO, found);
+        return { success: true, promo: found };
       }
       return { success: false, message: 'Invalid promo code' };
     },
@@ -526,8 +532,54 @@ const MDB = (() => {
 
     remove(reviewId) {
       const reviews = this.get().filter(r => r.id !== reviewId);
-      this._save(reviews);
+    getForProduct(pid) { return this.get().filter(r => r.productId === pid); },
+    add(review) {
+      const all = this.get();
+      all.push({
+        id: 'R' + Date.now(),
+        authorName: _get(KEYS.USER)?.firstName || 'Anonymous',
+        rating: 5,
+        text: '',
+        isVerified: true,
+        createdAt: _dateNow(),
+        ...review
+      });
+      _set(KEYS.REVIEWS, all);
+    },
+    delete(id) {
+        const all = this.get().filter(r => r.id !== id);
+        _set(KEYS.REVIEWS, all);
     }
+  };
+
+  /* ===================================================================
+     SETTINGS & COUPONS (ADMIN)
+     =================================================================== */
+  const Settings = {
+      get() {
+          return _get(KEYS.SETTINGS) || {
+              announcement: 'Free shipping on orders over 3500 LE',
+              shippingThreshold: 3500,
+              contactEmail: 'hello@mdboutiquee2.com',
+              currency: 'LE'
+          };
+      },
+      save(settings) {
+          _set(KEYS.SETTINGS, { ...this.get(), ...settings });
+      }
+  };
+
+  const Coupons = {
+      get() { return _get(KEYS.CUSTOM_COUPONS) || []; },
+      add(coupon) {
+          const all = this.get();
+          all.push(coupon);
+          _set(KEYS.CUSTOM_COUPONS, all);
+      },
+      delete(code) {
+          const all = this.get().filter(c => c.code !== code);
+          _set(KEYS.CUSTOM_COUPONS, all);
+      }
   };
 
   /* ===================================================================
