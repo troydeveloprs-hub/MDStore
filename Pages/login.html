@@ -13,18 +13,27 @@
     .auth-page {
       min-height: 70vh;
       padding: 80px 0 60px;
+      background-color: #fcfcfc;
     }
 
     .auth-container {
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 0 20px;
+      max-width: 540px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+      border: 1px solid #f0f0f0;
+      padding: 40px;
+    }
+
+    .auth-container:hover {
+      box-shadow: 0 15px 50px rgba(0,0,0,0.08);
     }
 
     .auth-tabs {
       display: flex;
       gap: 0;
-      margin-bottom: 0;
+      margin-bottom: 30px;
       border-bottom: 2px solid var(--color-border, #e5e5e5);
     }
 
@@ -64,7 +73,7 @@
 
     .auth-panel {
       display: none;
-      padding: 40px 0 0;
+      padding: 0;
     }
 
     .auth-panel.active {
@@ -654,7 +663,7 @@
       <div class="mobile-nav-links">
         <a href="pages/about.html">About</a>
         <a href="pages/contact.html">Contact</a>
-        <a href="admin.html" data-admin-only style="color:var(--color-accent); font-weight:700;">Admin Dashboard</a>
+
       </div>
     </div>
     <div class="mobile-nav-footer">
@@ -705,14 +714,6 @@
           </div>
           <button type="submit" class="auth-submit">Sign In</button>
         </form>
-
-        <div class="auth-divider">or continue with</div>
-        <div class="auth-social">
-          <button class="auth-social-btn" onclick="MDB.UI.toast('Social login coming soon!','info')"><i
-              class="fa-brands fa-google"></i> Google</button>
-          <button class="auth-social-btn" onclick="MDB.UI.toast('Social login coming soon!','info')"><i
-              class="fa-brands fa-facebook-f"></i> Facebook</button>
-        </div>
 
         <p class="auth-footer-text">Don't have an account? <a href="#" data-switch-tab="register">Create one</a></p>
       </div>
