@@ -226,17 +226,47 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================
      PRODUCT CARD — Wishlist, Quick View, ATC
      ============================================ */
+  function setWishlistButtonState(btn, active) {
+    if (!btn) return;
+    btn.classList.toggle('active', active);
+    const icon = $('i', btn);
+    if (icon) {
+      icon.classList.toggle('fa-regular', !active);
+      icon.classList.toggle('fa-solid', active);
+    }
+  }
+
   // Wishlist toggle
   $$('.product-card-wishlist').forEach(btn => {
     on(btn, 'click', (e) => {
       e.stopPropagation();
-      btn.classList.toggle('active');
-      const icon = $('i', btn);
-      if (icon) {
-        icon.classList.toggle('fa-regular');
-        icon.classList.toggle('fa-solid');
-      }
+      const card = btn.closest('.product-card');
+      const active = window.MDB?.Wishlist && card?.dataset?.id
+        ? window.MDB.Wishlist.toggle({
+            id: card.dataset.id,
+            name: card.dataset.name || '',
+            brand: card.dataset.brand || '',
+            price: parseFloat(card.dataset.price || 0),
+            image: (card.dataset.image || '').replace(window.location.origin + '/', '')
+          })
+        : !btn.classList.contains('active');
+      setWishlistButtonState(btn, active);
     });
+  });
+
+  document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-wishlist]');
+    if (!btn || !window.MDB?.Wishlist) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    const product = await window.MDB.Products.getById(btn.dataset.wishlist);
+    if (!product) return;
+
+    const active = window.MDB.Wishlist.toggle(product);
+    setWishlistButtonState(btn, active);
+    window.MDB.UI.toast(active ? 'Added to wishlist' : 'Removed from wishlist', 'success');
   });
 
   // Quick View
@@ -507,9 +537,8 @@ document.addEventListener('DOMContentLoaded', () => {
   // Product wishlist
   const productWishlist = $('.product-wishlist-btn');
   if (productWishlist) on(productWishlist, 'click', () => {
-    productWishlist.classList.toggle('active');
-    const icon = $('i', productWishlist);
-    if (icon) { icon.classList.toggle('fa-regular'); icon.classList.toggle('fa-solid'); }
+    const active = !productWishlist.classList.contains('active');
+    setWishlistButtonState(productWishlist, active);
   });
 
   /* ============================================

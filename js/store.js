@@ -659,26 +659,65 @@ const MDB = (() => {
       const oldPrice = p.originalPrice || p.oldPrice;
       const badge = typeof p.badge === 'string' ? p.badge.trim() : '';
       const badgeText = badge ? badge.charAt(0).toUpperCase() + badge.slice(1) : '';
+      const reviews = parseInt(p.reviewCount, 10) || 0;
+      const ratingValue = Math.max(0, Math.min(5, parseFloat(p.rating) || 0));
+      const ratingStars = '★'.repeat(Math.round(ratingValue)) + '☆'.repeat(5 - Math.round(ratingValue));
+      const savings = oldPrice && oldPrice > p.price
+        ? Math.round(((oldPrice - p.price) / oldPrice) * 100)
+        : 0;
+      const stock = Number.isFinite(parseInt(p.stock, 10)) ? parseInt(p.stock, 10) : null;
+      const isWishlisted = Wishlist.has(p.id);
+      let stockLabel = 'Available Now';
+      let stockClass = 'in-stock';
+      if (stock === 0) {
+        stockLabel = 'Out of Stock';
+        stockClass = 'out-of-stock';
+      } else if (stock !== null && stock <= 5) {
+        stockLabel = `Only ${stock} left`;
+        stockClass = 'low-stock';
+      }
+      const categoryLabel = p.subcategory || p.category || 'Beauty Pick';
       return `
-        <div class="product-card" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand || ''}" data-price="${p.price}" data-image="${basePath}${image}" data-variant="${(p.variants && p.variants[0]) || 'Default'}">
+        <article class="product-card product-card-modern" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand || ''}" data-price="${p.price}" data-image="${basePath}${image}" data-variant="${(p.variants && p.variants[0]) || 'Default'}">
           <div class="product-card-media">
-            ${badgeText ? `<span class="product-badge">${badgeText}</span>` : ''}
-            <a href="${basePath}product.html?id=${p.id}"><img src="${basePath}${image}" alt="${p.name}" class="product-card-img" loading="lazy" onerror="this.src='${basePath}img/logo.svg'"></a>
-            <div class="product-card-actions">
-              <button class="action-btn" data-quick-view="${p.id}" title="Quick View"><i class="fa-regular fa-eye"></i></button>
-              <button class="action-btn" data-wishlist="${p.id}" title="Add to Wishlist"><i class="fa-regular fa-heart"></i></button>
+            <div class="product-card-shell">
+              <div class="product-card-badges">
+                ${badgeText ? `<span class="product-badge">${badgeText}</span>` : ''}
+                ${savings ? `<span class="product-badge product-badge-discount">Save ${savings}%</span>` : ''}
+              </div>
+              <div class="product-card-actions">
+                <button class="action-btn ${isWishlisted ? 'active' : ''}" data-wishlist="${p.id}" title="Add to Wishlist" aria-label="Add ${p.name} to wishlist"><i class="${isWishlisted ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>
+                <button class="action-btn" data-quick-view="${p.id}" title="Quick View" aria-label="Quick view ${p.name}"><i class="fa-regular fa-eye"></i></button>
+              </div>
             </div>
+            <a href="${basePath}product.html?id=${p.id}" class="product-card-image-link">
+              <img src="${basePath}${image}" alt="${p.name}" class="product-card-img" loading="lazy" onerror="this.src='${basePath}img/logo.svg'">
+            </a>
           </div>
           <div class="product-card-info">
-            <span class="product-card-brand">${p.brand}</span>
-            <h3 class="product-card-title"><a href="${basePath}product.html?id=${p.id}">${p.name}</a></h3>
-            <div class="product-card-price">
-              ${oldPrice ? `<span class="price-old">${this.formatPrice(oldPrice)}</span>` : ''}
-              <span class="price-current">${this.formatPrice(p.price)}</span>
+            <div class="product-card-meta">
+              <span class="product-card-brand">${p.brand || 'MDB'}</span>
+              <span class="product-card-chip">${categoryLabel}</span>
             </div>
-            <button class="btn btn-atc btn-full" data-id="${p.id}">Add to Cart</button>
+            <h3 class="product-card-title"><a href="${basePath}product.html?id=${p.id}">${p.name}</a></h3>
+            <div class="product-card-rating" aria-label="Rated ${ratingValue.toFixed(1)} out of 5">
+              <span class="product-card-stars">${ratingStars}</span>
+              <span class="product-card-rating-text">${ratingValue ? ratingValue.toFixed(1) : 'New'}${reviews ? ` (${reviews})` : ''}</span>
+            </div>
+            <div class="product-card-price">
+              <span class="price-current">${this.formatPrice(p.price)}</span>
+              ${oldPrice ? `<span class="price-old">${this.formatPrice(oldPrice)}</span>` : ''}
+            </div>
+            <div class="product-card-footer">
+              <span class="product-card-stock ${stockClass}">${stockLabel}</span>
+              <a href="${basePath}product.html?id=${p.id}" class="product-card-link">Details</a>
+            </div>
+            <button class="btn btn-atc btn-full" data-id="${p.id}" ${stock === 0 ? 'disabled' : ''}>
+              <i class="fa-solid fa-bag-shopping"></i>
+              ${stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+            </button>
           </div>
-        </div>
+        </article>
       `;
     },
 
