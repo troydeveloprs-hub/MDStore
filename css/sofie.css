@@ -135,6 +135,9 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
 /* HERO */
 .hero{position:relative;display:flex;flex-direction:column}
 .hero-slider, .hero-media{position:relative;width:100%;height:auto;aspect-ratio:16/9;background:var(--color-bg-light);overflow:hidden}
+@media(max-width:768px){
+  .hero-slider, .hero-media{aspect-ratio:4/5}
+}
 .slide{position:absolute;width:100%;height:100%;opacity:0;transition:opacity 1s ease;display:block;pointer-events:none;z-index:0}
 .slide.active{opacity:1;animation:zoomEffect 6s ease forwards;pointer-events:auto;z-index:1}
 .slide img{width:100%;height:100%;object-fit:cover;object-position:center}
@@ -143,9 +146,18 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-heading);font-weight:600;line-height:1.
 .slide.active:hover::after{opacity:1;transform:translateX(-50%) translateY(0)}
 @keyframes zoomEffect{from{transform:scale(1)}to{transform:scale(1.05)}}
 .hero-content{position:relative;z-index:2;color:var(--color-text-primary);padding:40px 0;max-width:800px;animation:fadeInUp 0.8s ease forwards;text-align:center;margin:0 auto}
+@media(max-width:768px){
+  .hero-content{padding:32px 16px}
+}
 .hero-eyebrow{display:block;font-size:var(--font-size-xs);font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--color-accent);margin-bottom:16px}
 .hero-heading{font-family:var(--font-heading);font-size:42px;font-weight:700;color:var(--color-text-primary);line-height:1.2;margin-bottom:20px}
+@media(max-width:768px){
+  .hero-heading{font-size:32px}
+}
 .hero-subtext{font-size:var(--font-size-md);color:var(--color-text-secondary);margin-bottom:32px;line-height:1.7}
+@media(max-width:768px){
+  .hero-subtext{font-size:var(--font-size-base);margin-bottom:24px}
+}
 .hero-ctas{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
 .page-hero{text-align:center;padding:60px 0 48px;border-bottom:1px solid var(--color-border);margin-bottom:60px}
 .page-hero-title{font-family:var(--font-heading);font-size:var(--font-size-3xl);font-weight:600;margin-bottom:16px}
