@@ -12,19 +12,46 @@ document.addEventListener('DOMContentLoaded', () => {
   const emit = (el, evt, detail) => el && el.dispatchEvent(new CustomEvent(evt, { detail }));
 
   /* ============================================
-     HERO SLIDER — Auto Rotation
+     HERO SLIDER — Scroll Triggered
      ============================================ */
   const heroSlider = () => {
     const slides = $$('.slide');
     if (slides.length === 0) return;
     
     let index = 0;
+    let isScrolling = false;
     
-    setInterval(() => {
+    const changeSlide = (direction) => {
       slides[index].classList.remove('active');
-      index = (index + 1) % slides.length;
+      
+      if (direction === 'down') {
+        index++;
+        if (index >= slides.length) {
+          index = slides.length - 1; // Stay at last image
+          return;
+        }
+      } else if (direction === 'up') {
+        index--;
+        if (index < 0) index = 0;
+      }
+      
       slides[index].classList.add('active');
-    }, 4000); // 4 seconds
+    };
+    
+    let lastScrollY = window.scrollY;
+    
+    window.addEventListener('scroll', () => {
+      const currentScrollY = window.scrollY;
+      const scrollDiff = currentScrollY - lastScrollY;
+      
+      // Only trigger if we're still in the hero section
+      if (currentScrollY < window.innerHeight) {
+        if (Math.abs(scrollDiff) > 50) { // Threshold of 50px scroll
+          changeSlide(scrollDiff > 0 ? 'down' : 'up');
+          lastScrollY = currentScrollY;
+        }
+      }
+    });
   };
   heroSlider();
 
