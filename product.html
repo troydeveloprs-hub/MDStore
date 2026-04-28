@@ -22,6 +22,86 @@
     <meta property="twitter:title" content="Product Details — MDBoutiquee">
     <meta property="twitter:description" content="Shop premium beauty products at MDBoutiquee. Free shipping on orders over 3500 LE.">
     <meta property="twitter:image" content="https://mdboutiquee.com/img/og-image.jpg">
+
+    <style>
+      .payment-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 15px;
+        width: 100%;
+      }
+
+      .buy-now-btn, .apple-pay-btn {
+        width: 100%;
+        padding: 16px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        text-transform: none;
+      }
+
+      .buy-now-btn {
+        background-color: #000;
+        color: #fff;
+      }
+
+      .buy-now-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+
+      .apple-pay-btn {
+        background-color: #000;
+        color: #fff;
+      }
+      
+      .apple-pay-btn::before {
+        content: "\f179"; /* FontAwesome Apple icon */
+        font-family: "Font Awesome 6 Brands";
+        font-size: 20px;
+        margin-right: 4px;
+      }
+
+      .apple-pay-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+
+      .payment-methods {
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+        margin-top: 4px;
+        letter-spacing: 0.3px;
+      }
+
+      .more-options {
+        font-size: 12px;
+        color: #1a1a1a;
+        text-decoration: underline;
+        text-align: center;
+        font-weight: 600;
+        display: block;
+        margin-top: 4px;
+      }
+
+      @media (max-width: 768px) {
+        .buy-now-btn, .apple-pay-btn {
+          padding: 14px;
+        }
+      }
+    </style>
+
     
 </head>
 <body>
@@ -264,6 +344,25 @@
       <div class="product-actions">
         <button class="btn btn-primary btn-lg btn-full" data-product-atc><i class="fa-solid fa-bag-shopping"></i> Add to Cart</button>
         <button class="btn btn-whatsapp btn-lg btn-full" id="wa-order-btn" style="background:#25d366; color:#fff; border:none; margin-top:10px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px;"><i class="fa-brands fa-whatsapp"></i> Order via WhatsApp</button>
+        
+        <div class="payment-section">
+          <button class="buy-now-btn">
+            Buy it now
+          </button>
+
+          <button class="apple-pay-btn">
+             Pay
+          </button>
+
+          <p class="payment-methods">
+            Pay with Visa, Vodafone Cash, InstaPay
+          </p>
+
+          <a href="#" class="more-options">
+            More payment options
+          </a>
+        </div>
+
         <button class="product-wishlist-btn"><i class="fa-regular fa-heart"></i> Add to Wishlist</button>
       </div>
 
@@ -388,7 +487,38 @@
 
       renderReviews(pid);
       renderRelated(pid);
+
+      // Payment Section Logic
+      const buyNowBtn = document.querySelector('.buy-now-btn');
+      if (buyNowBtn) {
+        buyNowBtn.onclick = () => {
+          console.log("Proceed to payment");
+          if (typeof MDB !== 'undefined' && MDB.UI) {
+            MDB.UI.toast("Proceeding to checkout...", "info");
+          }
+        };
+      }
+
+      const applePayBtn = document.querySelector('.apple-pay-btn');
+      if (applePayBtn) {
+        applePayBtn.onclick = () => {
+          if (window.ApplePaySession) {
+            console.log("Apple Pay available");
+          } else {
+            alert("Apple Pay not supported on this device");
+          }
+        };
+      }
+
+      const moreOptions = document.querySelector('.more-options');
+      if (moreOptions) {
+        moreOptions.onclick = (e) => {
+          e.preventDefault();
+          console.log("Show payment methods");
+        };
+      }
     });
+
 
     function renderReviews(pid) {
       const reviews = MDB.Reviews.getForProduct(pid);
