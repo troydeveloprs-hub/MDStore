@@ -4087,9 +4087,9 @@ h6 {
 
 @media(max-width:767px) {
    .quickview-modal {
-      width: 95%;
-      border-radius: 20px;
-      max-height: 95vh
+      width: 90%;
+      border-radius: 16px;
+      max-height: 85vh
    }
 
    .quickview-inner {
