@@ -452,7 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
     apply(code) {
       const result = this.validate(code);
       if (!result.success) return result;
-      localStorage.setItem(MDB.KEYS.PROMO, JSON.stringify(result.coupon));
+      localStorage.setItem('mdb_applied_promo', JSON.stringify(result.coupon));
       return result;
     },
 
