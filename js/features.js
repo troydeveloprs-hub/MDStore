@@ -1,5 +1,5 @@
-/* ===================================================================
-   MDBOUTIQUEE — Features Module
+﻿/* ===================================================================
+   MDBOUTIQUEE â€” Features Module
    Smart Search, Recently Viewed, WhatsApp, Stock Counter,
    Loyalty Points, Analytics, Newsletter, Notifications, Comparison
    =================================================================== */
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===================================================================
-     1. SMART SEARCH — Live autocomplete overlay
+     1. SMART SEARCH â€” Live autocomplete overlay
      =================================================================== */
   const SearchEngine = {
     init() {
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
   SearchEngine.init();
 
   /* ===================================================================
-     2. RECENTLY VIEWED — Track & display
+     2. RECENTLY VIEWED â€” Track & display
      =================================================================== */
   const RecentlyViewed = {
     KEY: 'mdb_recently_viewed',
@@ -151,13 +151,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.MDB.shareOrderWhatsApp = function(orderId) {
     const order = MDB.Orders.getById(orderId);
     if (!order) return;
-    const items = order.items.map(i => `• ${i.name} (${i.variant}) x${i.qty} — ${MDB.UI.formatPrice(i.price * i.qty)}`).join('\n');
-    const msg = `🛍️ New Order: ${order.id}\n\n${items}\n\n💰 Total: ${MDB.UI.formatPrice(order.total)}\n📍 ${order.customer.address}, ${order.customer.city}\n📞 ${order.customer.phone}`;
+    const items = order.items.map(i => `â€¢ ${i.name} (${i.variant}) x${i.qty} â€” ${MDB.UI.formatPrice(i.price * i.qty)}`).join('\n');
+    const msg = `ðŸ›ï¸ New Order: ${order.id}\n\n${items}\n\nðŸ’° Total: ${MDB.UI.formatPrice(order.total)}\nðŸ“ ${order.customer.address}, ${order.customer.city}\nðŸ“ž ${order.customer.phone}`;
     window.open(`https://wa.me/${whatsappNum}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   /* ===================================================================
-     4. STOCK COUNTER — Show on product cards & pages
+     4. STOCK COUNTER â€” Show on product cards & pages
      =================================================================== */
   const StockCounter = {
     async init() {
@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ===================================================================
-     6. ANALYTICS — Track page views, cart actions
+     6. ANALYTICS â€” Track page views, cart actions
      =================================================================== */
   const Analytics = {
     KEY: 'mdb_analytics',
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
   Analytics.trackView(window.location.pathname);
 
   /* ===================================================================
-     7. NEWSLETTER BACKEND — Save subscribers
+     7. NEWSLETTER BACKEND â€” Save subscribers
      =================================================================== */
   const Newsletter = {
     KEY: 'mdb_newsletter',
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Welcome notification
   if (!localStorage.getItem('mdb_welcomed')) {
-    Notifications.add('Welcome! 🎉', 'Thanks for visiting MDBoutiquee. Use code MDB10 for 10% off!', 'promo');
+    Notifications.add('Welcome! ðŸŽ‰', 'Thanks for visiting MDBoutiquee. Use code MDB10 for 10% off!', 'promo');
     localStorage.setItem('mdb_welcomed', '1');
   }
 
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.MDB.Coupons = Coupons;
 
   /* ===================================================================
-     11. DYNAMIC SETTINGS — Sync UI with Admin settings
+     11. DYNAMIC SETTINGS â€” Sync UI with Admin settings
      =================================================================== */
   const DynamicSettings = {
     init() {
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (annText && s.announcement) {
           // preserve the link if it exists
           const link = annText.querySelector('a');
-          const prefix = s.announcement + ' — ';
+          const prefix = s.announcement + ' â€” ';
           annText.innerHTML = prefix;
           if (link) annText.appendChild(link);
       }
@@ -496,109 +496,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   /* ===================================================================
-     12. QUICK VIEW — Product preview modal
+     12. QUICK VIEW â€” Product preview modal
      =================================================================== */
-  const QuickView = {
-    init() {
-      // Create modal if not exists
-      if (!document.querySelector('.qv-modal')) {
-        const modal = document.createElement('div');
-        modal.className = 'qv-modal';
-        modal.innerHTML = `
-          <div class="qv-content">
-            <button class="qv-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
-            <div class="qv-left"><img src="" alt="" id="qv-img"></div>
-            <div class="qv-right">
-              <span class="qv-brand" id="qv-brand"></span>
-              <h2 class="qv-title" id="qv-title"></h2>
-              <div class="qv-price" id="qv-price"></div>
-              <p class="qv-desc" id="qv-desc"></p>
-              <div class="qv-actions">
-                <button class="btn btn-primary btn-full" id="qv-atc-btn">Add to Cart</button>
-                
-                <div class="payment-section" style="margin-top:10px;">
-                  <button class="buy-now-btn qv-buy-now">Buy it now</button>
-                  <button class="apple-pay-btn qv-apple-pay">Pay</button>
-                </div>
-
-                <a href="" class="btn btn-outline btn-full" id="qv-view-details" style="margin-top:10px; text-align:center; display:block; border:1px solid var(--color-border); padding:12px; border-radius:8px; font-weight:600;">View Full Details</a>
-              </div>
-
-            </div>
-          </div>
-        `;
-        document.body.appendChild(modal);
-
-        modal.querySelector('.qv-close').addEventListener('click', () => modal.classList.remove('open'));
-        modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('open'); });
-      }
-
-      // Listen for quick view clicks (delegated)
-      document.addEventListener('click', async (e) => {
-        const btn = e.target.closest('[data-quick-view]');
-        if (btn) {
-          e.preventDefault();
-          const pid = btn.dataset.quickView;
-          const p = await MDB.Products.getById(pid);
-          if (p) this.show(p);
-        }
-      });
-    },
-
-    show(p) {
-      const modal = document.querySelector('.qv-modal');
-      const basePath = getBasePath();
-      
-      document.getElementById('qv-img').src = resolveImagePath(p.image);
-      document.getElementById('qv-brand').textContent = p.brand;
-      document.getElementById('qv-title').textContent = p.name;
-      document.getElementById('qv-price').textContent = MDB.UI.formatPrice(p.price);
-      document.getElementById('qv-desc').textContent = p.description.substring(0, 150) + '...';
-      document.getElementById('qv-view-details').href = basePath + 'product.html?id=' + p.id;
-      
-      const atcBtn = document.getElementById('qv-atc-btn');
-      atcBtn.onclick = () => {
-        MDB.Cart.add({
-          id: p.id,
-          name: p.name,
-          brand: p.brand,
-          price: p.price,
-          image: p.image,
-          variant: (p.variants && p.variants[0]) || 'Default',
-          qty: 1
-        });
-        modal.classList.remove('open');
-        MDB.UI.toast('Added to cart', 'success');
-      };
-
-      const buyNow = modal.querySelector('.qv-buy-now');
-      if (buyNow) buyNow.onclick = () => {
-        MDB.Cart.add({
-          id: p.id,
-          name: p.name,
-          brand: p.brand,
-          price: p.price,
-          image: p.image,
-          variant: (p.variants && p.variants[0]) || 'Default',
-          qty: 1
-        });
-        window.location.href = basePath + 'checkout.html';
-      };
-
-      const applePay = modal.querySelector('.qv-apple-pay');
-      if (applePay) applePay.onclick = () => {
-        if (window.ApplePaySession) {
-          MDB.UI.toast('Apple Pay is available on this device.', 'success');
-        } else {
-          MDB.UI.toast('Apple Pay is not supported on this device.', 'warning');
-        }
-      };
-
-
-      modal.classList.add('open');
-    }
-  };
-  QuickView.init();
+  
 
   // Handle dynamically rendered product cards from store.js
   document.addEventListener('click', async (e) => {
