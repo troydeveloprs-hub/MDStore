@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard — MDBoutiquee</title>
+  <title>Admin Dashboard â€” MDBoutiquee</title>
   <link rel="stylesheet" href="../css/sofie.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -1478,14 +1478,29 @@
       </tr>`).join('');
     }
 
-    async function adjustStock(pid, delta) {
+        async function adjustStock(pid, delta) {
       try {
         const p = await MDB.Products.getById(pid);
-        if (!p) return;
-        await MDB.Products.save({
+        if (!p) {
+          MDB.UI.toast('Product not found', 'error');
+          return;
+        }
+        
+        // Ensure we preserve all metadata and fields
+        const updatedProduct = {
           ...p,
-          stock: Math.max(0, (p.stock || 0) + delta)
-        });
+          stock: Math.max(0, (parseInt(p.stock, 10) || 0) + delta)
+        };
+
+        await MDB.Products.save(updatedProduct);
+        
+        await refreshAll();
+        MDB.UI.toast(Stock updated:  units, 'success');
+      } catch (error) {
+        console.error('Adjust Stock Error:', error);
+        showProductActionError(error, 'Failed to update stock.');
+      }
+    });
         renderInventory();
         renderProducts(getProductSearchTerm());
         MDB.UI.toast(`Stock updated for ${p.name}`, 'success');
