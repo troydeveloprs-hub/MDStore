@@ -450,10 +450,10 @@
     }
 
     function getSelectedVariantSummary(container = document) {
-      const labels = [...container.querySelectorAll('[data-variant-group]')]
+      const labels = [...container.querySelectorAll('.variant-group')]
         .map(group => {
-          const active = group.querySelector('.variant-btn.active');
-          const groupName = formatVariantGroupLabel(group.dataset.variantGroup || 'option');
+          const active = group.querySelector('.variant-option.active');
+          const groupName = formatVariantGroupLabel(group.dataset.group || 'option');
           return active ? `${groupName}: ${active.textContent.trim()}` : '';
         })
         .filter(Boolean);
