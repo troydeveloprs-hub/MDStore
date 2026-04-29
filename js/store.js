@@ -265,12 +265,39 @@ const MDB = (() => {
         this._client = window.supabase.createClient(url, anonKey);
         return this._client;
       })();
+      return this._clientPromise;
+    },
 
+    async _run(opName, asyncFn, fallback) {
       try {
-        return await this._clientPromise;
-      } finally {
-          return _loadProductsScript();
-        })();
+        return await asyncFn();
+      } catch (err) {
+        console.warn(`MDB Products ${opName} error:`, err);
+        return fallback;
+      }
+    },
+
+    async getAll(skipCache = false) {
+      if (!skipCache && this._cache) return this._cache;
+
+      return this._run('getAll', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('id, name, price, image, images, description, created_at, metadata')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        this._cache = (data || []).map(row => this._mapRow(row));
+        return this._cache;
+      }, []);
+    },
+
+    async seed(options = {}) {
+      return this._run('seed', async () => {
+        const client = await this._ensureClient();
+        const baseProducts = await _loadProductsScript();
 
         if (!Array.isArray(baseProducts) || !baseProducts.length) return [];
 
