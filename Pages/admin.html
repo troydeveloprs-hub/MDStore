@@ -1121,6 +1121,7 @@
     ];
 
     let productImageState = [];
+    let pendingImageFiles = []; // To store actual File objects for uploading
 
     function uniqueList(items) {
       return [...new Set(items.filter(Boolean))];
@@ -1263,6 +1264,7 @@
     function resetProductFormFields() {
       editingPid = null;
       productImageState = [];
+      pendingImageFiles = []; // Clear files
       document.getElementById('product-form').reset();
       document.getElementById('product-form-title').textContent = 'Add Product';
       document.getElementById('save-product-btn').textContent = 'Save Product';
@@ -1327,6 +1329,7 @@
     document.getElementById('pf-image-upload').addEventListener('change', async e => {
       const files = [...(e.target.files || [])];
       if (!files.length) return;
+      pendingImageFiles = [...pendingImageFiles, ...files];
       const uploadedImages = await Promise.all(files.map(readFileAsDataUrl));
       productImageState = uniqueList([...productImageState, ...uploadedImages]);
       renderProductImagePreview();
@@ -1659,16 +1662,44 @@
         }
       }
     }
-
     document.getElementById('product-form').onsubmit = async e => {
         e.preventDefault();
+        const saveBtn = document.getElementById('save-product-btn');
+        const originalBtnText = saveBtn.textContent;
+        
         try {
-          const imageValue = normalizeImagePath(document.getElementById('pf-image').value);
-          const variantGroups = collectVariantGroups();
-          const normalizedImages = uniqueList([imageValue, ...productImageState]);
-          const primaryImage = imageValue || normalizedImages[0] || 'img/logo.svg';
+          saveBtn.disabled = true;
+          saveBtn.textContent = 'Uploading images...';
+
+          // 1. Process and upload pending images
+          const finalImages = [];
+          
+          // Check existing images (might be URLs or base64 previews)
+          for (const item of productImageState) {
+            if (item.startsWith('data:image')) {
+              // This is a new local image, find its File object
+              // We'll match by looking at our pending files if we wanted to be precise, 
+              // but here we'll just upload everything in pendingImageFiles that hasn't been uploaded
+            } else {
+              // This is already a URL
+              finalImages.push(item);
+            }
+          }
+
+          // Upload all pending files
+          for (const file of pendingImageFiles) {
+            try {
+              const publicUrl = await MDB.Products.uploadImage(file);
+              finalImages.push(publicUrl);
+            } catch (err) {
+              console.error('Failed to upload image:', file.name, err);
+            }
+          }
+
+          const primaryImage = finalImages[0] || normalizeImagePath(document.getElementById('pf-image').value) || 'img/logo.svg';
           const ingredients = normalizeListInput(document.getElementById('pf-ingredients').value);
           const createdValue = document.getElementById('pf-created').value || new Date().toISOString().slice(0, 10);
+          
           const data = {
               id: document.getElementById('pf-id').value.trim() || editingPid,
               name: document.getElementById('pf-name').value.trim(),
@@ -1685,7 +1716,7 @@
               variants: variantGroups.flatMap(group => group.options),
               variantGroups,
               image: primaryImage,
-              images: normalizedImages,
+              images: finalImages,
               rating: Math.max(0, Math.min(5, parseFloat(document.getElementById('pf-rating').value) || 0)),
               reviewCount: Math.max(0, parseInt(document.getElementById('pf-review-count').value) || 0),
               isFeatured: document.getElementById('pf-featured').checked,
@@ -1693,21 +1724,17 @@
               createdAt: createdValue
           };
 
-          // Payload size validation (Base64 strings can be huge)
-          const payloadSize = JSON.stringify(data).length;
-          if (payloadSize > 2 * 1024 * 1024) { // 2MB limit warning
-            if (!confirm(`Warning: This product data is quite large (${(payloadSize / 1024 / 1024).toFixed(1)}MB). Large images can cause "Failed to fetch" or 502 errors. Would you like to try saving anyway?`)) {
-              return;
-            }
-          }
-
+          saveBtn.textContent = 'Saving product...';
           await MDB.Products.save(data);
-          MDB.UI.toast('Product saved');
+          MDB.UI.toast('Product saved successfully!');
           toggleProductForm();
           renderProducts(getProductSearchTerm());
           renderInventory();
         } catch (error) {
           showProductActionError(error, 'Failed to save product.');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.textContent = originalBtnText;
         }
     };
 

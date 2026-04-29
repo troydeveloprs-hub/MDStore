@@ -481,6 +481,29 @@ const MDB = (() => {
 
       container.innerHTML = items.map(renderer).join('');
       return items;
+    },
+
+    /**
+     * Uploads a file to Supabase Storage bucket 'products'
+     * @param {File} file The file object from input
+     * @param {string} path Optional custom path/filename
+     */
+    async uploadImage(file, path = null) {
+      return this._run('uploadImage', async () => {
+        const client = await this._ensureClient();
+        const fileName = path || `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        const bucket = 'products';
+
+        const { data, error } = await client.storage
+          .from(bucket)
+          .upload(fileName, file, { cacheControl: '3600', upsert: true });
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = client.storage.from(bucket).getPublicUrl(fileName);
+        return publicUrl;
+      });
     }
   };
 
