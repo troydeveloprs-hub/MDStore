@@ -756,6 +756,10 @@
         <div class="admin-panel" id="panel-products">
           <div class="admin-panel-title"><span>Product Catalog</span><button class="admin-btn"
               type="button" id="toggle-product-form-btn"><i class="fa-solid fa-plus"></i> Add Product</button></div>
+          <div style="display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+            <input type="text" class="admin-search" placeholder="Search current products by name, brand, ID, or category..." id="product-search" style="margin:0;max-width:420px">
+            <div id="products-summary" style="color:var(--admin-text-light);font-size:13px">Loading current products...</div>
+          </div>
           
           <div id="low-stock-alert" style="display:none;background:#fff5f5;border:1px solid #feb2b2;padding:12px;border-radius:8px;margin-bottom:16px;color:#c53030;font-size:14px">
             <i class="fa-solid fa-triangle-exclamation"></i> <strong>Low Stock Alert:</strong> Some products are running low (below 10 units).
@@ -1428,7 +1432,7 @@
     async function refreshAll() {
       renderStats();
       renderOrders();
-      await renderProducts();
+      await renderProducts(document.getElementById('product-search')?.value || '');
       renderCustomers();
       renderAnalytics();
       renderReviews();
@@ -1462,7 +1466,7 @@
         stock: Math.max(0, (p.stock || 0) + delta)
       });
       renderInventory();
-      renderProducts();
+      renderProducts(getProductSearchTerm());
       MDB.UI.toast(`Stock updated for ${p.name}`, 'success');
     }
 
@@ -1531,21 +1535,37 @@
     }
 
     document.getElementById('order-search').addEventListener('input', e => renderOrders(e.target.value));
+    document.getElementById('product-search').addEventListener('input', e => renderProducts(e.target.value));
 
     function updateStatus(id, s) { MDB.Orders.updateStatus(id, s); MDB.UI.toast('Updated'); renderOrders(); renderStats(); }
     function deleteOrder(id) { if(confirm('Delete?')){ let os = MDB.Orders.get().filter(o=>o.id!==id); localStorage.setItem('mdb_orders', JSON.stringify(os)); renderOrders(); renderStats(); } }
+    function getProductSearchTerm() { return document.getElementById('product-search')?.value || ''; }
 
-    async function renderProducts() {
+    async function renderProducts(searchTerm = '') {
       const products = await MDB.Products.getAll();
       const lowStock = products.filter(p => p.stock < 10);
+      let filtered = products;
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        filtered = products.filter(p =>
+          safeText(p.name).toLowerCase().includes(q) ||
+          safeText(p.brand).toLowerCase().includes(q) ||
+          safeText(p.id).toLowerCase().includes(q) ||
+          safeText(p.category).toLowerCase().includes(q) ||
+          safeText(p.subcategory).toLowerCase().includes(q)
+        );
+      }
       document.getElementById('low-stock-alert').style.display = lowStock.length ? 'block' : 'none';
+      document.getElementById('products-summary').textContent = searchTerm
+        ? `Showing ${filtered.length} of ${products.length} current products`
+        : `Showing all ${products.length} current products`;
 
       const tbody = document.querySelector('#products-table tbody');
-      if (!products.length) {
+      if (!filtered.length) {
         tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No products found</p></div></td></tr>';
         return;
       }
-      tbody.innerHTML = products.map(p => `<tr>
+      tbody.innerHTML = filtered.map(p => `<tr>
       <td><img src="${adminImageSrc(p.image)}" class="admin-product-img" onerror="this.src='../img/logo.svg'"></td>
       <td><strong>${p.name}</strong><br><small style="color:#888">${p.id}</small></td>
       <td>${p.brand}</td>
@@ -1553,6 +1573,7 @@
       <td style="color:${p.stock<10?'#ef4444':'inherit'};font-weight:${p.stock<10?'600':'normal'}">${p.stock}</td>
       <td>${p.category}</td>
       <td>
+        <a class="admin-btn" href="../product.html?id=${encodeURIComponent(p.id)}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i></a>
         <button class="admin-btn" type="button" data-edit-product="${encodeURIComponent(p.id)}"><i class="fa-solid fa-pen"></i></button>
         <button class="admin-btn admin-btn-danger" type="button" data-delete-product="${encodeURIComponent(p.id)}"><i class="fa-solid fa-trash"></i></button>
       </td>
@@ -1597,7 +1618,7 @@
     async function deleteProduct(id) {
       if (confirm('Delete product?')) {
         await MDB.Products.delete(id);
-        renderProducts();
+        renderProducts(getProductSearchTerm());
         renderInventory();
         MDB.UI.toast('Product deleted');
       }
@@ -1637,7 +1658,7 @@
         await MDB.Products.save(data);
         MDB.UI.toast('Product saved');
         toggleProductForm();
-        renderProducts();
+        renderProducts(getProductSearchTerm());
         renderInventory();
     };
 

@@ -473,6 +473,7 @@
       const detailsText = (p.details || p.description || '').trim();
       const ingredients = Array.isArray(p.ingredients) ? p.ingredients.filter(Boolean) : [];
       const productImages = Array.isArray(p.images) && p.images.length ? p.images : [p.image].filter(Boolean);
+      const primaryImage = productImages[0] || p.image || 'img/logo.svg';
       const variantGroups = Array.isArray(p.variantGroups) && p.variantGroups.length
         ? p.variantGroups
         : (Array.isArray(p.variants) && p.variants.length ? [{ name: 'option', options: p.variants }] : []);
@@ -488,7 +489,7 @@
         p.subcategory ? `<span class="product-badge">${p.subcategory}</span>` : '',
         typeof p.stock === 'number' ? `<span class="product-badge">${p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}</span>` : ''
       ].filter(Boolean).join('');
-      mainImage.src = p.image;
+      mainImage.src = primaryImage;
       mainImage.alt = p.name;
       document.getElementById('product-desc').textContent = p.description;
       document.getElementById('product-details').textContent = detailsText || 'More product details will be added soon.';
@@ -540,7 +541,7 @@
             name: p.name,
             brand: p.brand,
             price: p.price,
-            image: p.image,
+            image: primaryImage,
             variant,
             qty
           });
