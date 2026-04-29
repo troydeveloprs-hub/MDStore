@@ -450,10 +450,10 @@
     }
 
     function getSelectedVariantSummary(container = document) {
-      const labels = [...container.querySelectorAll('.variant-group')]
+      const labels = [...container.querySelectorAll('.option-group')]
         .map(group => {
-          const active = group.querySelector('.variant-option.active');
-          const groupName = formatVariantGroupLabel(group.dataset.group || 'option');
+          const active = group.querySelector('.option.active');
+          const groupName = formatVariantGroupLabel(group.dataset.option || 'option');
           return active ? `${groupName}: ${active.textContent.trim()}` : '';
         })
         .filter(Boolean);
@@ -532,16 +532,15 @@
       
       // Store selected variants globally
       window.selectedVariants = {};
-      
+
       if (variantGroups.length) {
         variantWrap.innerHTML = variantGroups.map(group => `
-          <div class="variant-group" data-group="${group.name.toLowerCase()}">
-            <div class="variant-label">${formatVariantGroupLabel(group.name)}</div>
-            <div class="variant-options">
+          <div class="option-group" data-option="${group.name.toLowerCase()}">
+            <p>${formatVariantGroupLabel(group.name)}:</p>
+            <div class="options">
               ${(group.options || []).map(option => `
-                <button 
-                  class="variant-option" 
-                  data-group="${group.name.toLowerCase()}" 
+                <button
+                  class="option"
                   data-value="${option}"
                   type="button"
                 >
@@ -551,17 +550,40 @@
             </div>
           </div>
         `).join('');
-        
+
         // Initialize variant selection
-        initVariantSelection(variantWrap);
-        
+        const selectedOptions = {};
+
+        document.querySelectorAll(".option-group").forEach(group => {
+          const optionName = group.dataset.option;
+
+          group.querySelectorAll(".option").forEach(btn => {
+            btn.addEventListener("click", () => {
+              // يشيل التحديد القديم في نفس الجروب بس
+              group.querySelectorAll(".option").forEach(b => b.classList.remove("active"));
+
+              // يحط الجديد
+              btn.classList.add("active");
+
+              // يخزن القيمة
+              selectedOptions[optionName] = btn.dataset.value;
+
+              window.selectedVariants = selectedOptions;
+              console.log(selectedOptions);
+            });
+          });
+        });
+
         // Auto-select first option in each group
-        variantWrap.querySelectorAll('.variant-group').forEach(group => {
-          const firstOption = group.querySelector('.variant-option');
+        document.querySelectorAll(".option-group").forEach(group => {
+          const firstOption = group.querySelector('.option');
           if (firstOption) {
-            selectVariantOption(firstOption);
+            firstOption.classList.add("active");
+            selectedOptions[group.dataset.option] = firstOption.dataset.value;
           }
         });
+
+        window.selectedVariants = selectedOptions;
       } else {
         variantWrap.innerHTML = '';
       }
