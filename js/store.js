@@ -91,6 +91,7 @@ const MDB = (() => {
       else {
         custom.push({
           variants: [],
+          variantGroups: [],
           images: product.image ? [product.image] : [],
           description: '',
           details: '',
@@ -662,6 +663,8 @@ const MDB = (() => {
       const reviews = parseInt(p.reviewCount, 10) || 0;
       const ratingValue = Math.max(0, Math.min(5, parseFloat(p.rating) || 0));
       const ratingStars = '★'.repeat(Math.round(ratingValue)) + '☆'.repeat(5 - Math.round(ratingValue));
+      const defaultVariant = (Array.isArray(p.variantGroups) && p.variantGroups[0] && Array.isArray(p.variantGroups[0].options) && p.variantGroups[0].options[0])
+        || ((p.variants && p.variants[0]) || 'Default');
       const savings = oldPrice && oldPrice > p.price
         ? Math.round(((oldPrice - p.price) / oldPrice) * 100)
         : 0;
@@ -678,7 +681,7 @@ const MDB = (() => {
       }
       const categoryLabel = p.subcategory || p.category || 'Beauty Pick';
       return `
-        <article class="product-card product-card-modern" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand || ''}" data-price="${p.price}" data-image="${basePath}${image}" data-variant="${(p.variants && p.variants[0]) || 'Default'}">
+        <article class="product-card product-card-modern" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand || ''}" data-price="${p.price}" data-image="${basePath}${image}" data-variant="${defaultVariant}">
           <div class="product-card-media">
             <div class="product-card-shell">
               <div class="product-card-badges">
