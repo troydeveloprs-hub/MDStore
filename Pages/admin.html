@@ -2571,8 +2571,9 @@
     }
 
     /* ─ REVIEWS ─ */
-    function renderReviews() {
-      const rs = MDB.Reviews.get();
+    async function renderReviews() {
+      const rs = await MDB.Reviews.get();
+      if (!Array.isArray(rs)) return;
       const tbody = document.querySelector('#reviews-table tbody');
       tbody.innerHTML = rs.map(r => `<tr>
       <td>${escapeHtml(r.productId)}</td>
@@ -2584,7 +2585,7 @@
     </tr>`).join('') || '<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-star"></i><p>No reviews yet</p></div></td></tr>';
     }
 
-    function deleteReview(id) { if (confirm('Delete review?')) { MDB.Reviews.delete(id); renderReviews(); } }
+    async function deleteReview(id) { if (confirm('Delete review?')) { await MDB.Reviews.delete(id); await renderReviews(); } }
 
     /* ─ COUPONS ─ */
     function toggleCouponForm() {
