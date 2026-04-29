@@ -3498,11 +3498,13 @@ h6 {
 .modal-overlay {
    position: fixed;
    inset: 0;
-   background: var(--color-overlay);
+   background: rgba(0, 0, 0, 0.4);
+   backdrop-filter: blur(8px);
+   -webkit-backdrop-filter: blur(8px);
    z-index: 2000;
    opacity: 0;
    visibility: hidden;
-   transition: all var(--transition-base)
+   transition: all var(--transition-base);
 }
 
 .modal-overlay.open {
@@ -3656,7 +3658,15 @@ h6 {
    font-size: 15px;
    font-weight: 600;
    text-transform: uppercase;
-   letter-spacing: 1px
+   letter-spacing: 1px;
+   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.quickview-atc:hover {
+   background: var(--color-text);
+   color: #fff;
+   transform: translateY(-2px);
+   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
 .qv-payment-buttons {

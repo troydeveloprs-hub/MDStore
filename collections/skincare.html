@@ -511,13 +511,24 @@
   <div class="quickview-modal">
     <button class="modal-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
     <div class="quickview-inner">
-      <div class="quickview-image"><img src="" alt=""></div>
+      <div class="quickview-image">
+        <div class="qv-loading">Loading...</div>
+        <img src="" alt="">
+      </div>
       <div class="quickview-details">
         <span class="quickview-brand"></span>
         <h3 class="quickview-name"></h3>
         <div class="quickview-price"></div>
-        <div class="quickview-actions"><button class="btn btn-primary quickview-atc"><i
-              class="fa-solid fa-bag-shopping"></i> Add to Cart</button></div>
+        <p class="quickview-desc"></p>
+        <div class="quickview-actions">
+          <div class="qv-atc-row">
+            <button class="btn btn-primary quickview-atc"><i class="fa-solid fa-bag-shopping"></i> Add to Cart</button>
+          </div>
+          <div class="qv-payment-buttons">
+            <button class="btn btn-black qv-buy-now">Buy it now</button>
+            <button class="btn qv-apple-pay"><i class="fa-brands fa-apple"></i> Pay</button>
+          </div>
+        </div>
         <a href="../product.html" class="quickview-link">View Full Details <i class="fa-solid fa-arrow-right"></i></a>
       </div>
     </div>

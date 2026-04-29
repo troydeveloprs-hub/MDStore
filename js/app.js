@@ -413,6 +413,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if (modalClose) on(modalClose, 'click', closeQuickView);
   if (modalOverlay) on(modalOverlay, 'click', closeQuickView);
 
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeQuickView();
+  });
+
   // Quick view actions (ATC, Buy Now)
   on(quickviewModal, 'click', (e) => {
     const atcBtn = e.target.closest('.quickview-atc');
