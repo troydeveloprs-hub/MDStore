@@ -529,53 +529,97 @@
       }
 
       const variantWrap = document.getElementById('variant-selectors-wrap');
+      
+      // Store selected variants globally
+      window.selectedVariants = {};
+      
       if (variantGroups.length) {
         variantWrap.innerHTML = variantGroups.map(group => `
-          <div class="variant-selector">
-            <label>${formatVariantGroupLabel(group.name)}:</label>
-            <div class="variant-btns" data-variant-group="${group.name}">
-              ${(group.options || []).map((option, index) => {
-                return `<button class="variant-btn${index === 0 ? ' active' : ''}" type="button">${option}</button>`;
-              }).join('')}
+          <div class="product-option-group" data-option-type="${group.name.toLowerCase()}">
+            <div class="option-label">
+              <span class="option-name">${formatVariantGroupLabel(group.name)}</span>
+              <span class="option-selected" data-option-type="${group.name.toLowerCase()}">Select ${group.name}</span>
+            </div>
+            <div class="option-buttons" data-option-type="${group.name.toLowerCase()}">
+              ${(group.options || []).map(option => `
+                <button 
+                  class="option-button" 
+                  type="button" 
+                  data-option-type="${group.name.toLowerCase()}" 
+                  data-option-value="${option}"
+                  aria-label="Select ${option}"
+                >
+                  ${option}
+                </button>
+              `).join('')}
             </div>
           </div>
         `).join('');
         
-        // Add click handlers for variant buttons - single selection per group
-        variantWrap.querySelectorAll('.variant-btn').forEach(btn => {
+        // Initialize variant selection system
+        initVariantSelector(variantWrap);
+      } else {
+        variantWrap.innerHTML = '';
+      }
+      
+      // Function to initialize variant selector
+      function initVariantSelector(container) {
+        const buttons = container.querySelectorAll('.option-button');
+        
+        buttons.forEach(btn => {
           btn.addEventListener('click', function(e) {
             e.preventDefault();
-            const groupWrap = this.closest('.variant-btns');
-            const groupName = (groupWrap.dataset.variantGroup || '').toLowerCase();
             
-            // Check if this is a color group
-            const isColorGroup = groupName.includes('color');
+            const optionType = this.dataset.optionType;
+            const optionValue = this.dataset.optionValue;
             
-            if (isColorGroup) {
-              // For color groups: remove active from ALL color buttons across ALL groups
-              variantWrap.querySelectorAll('.variant-btns').forEach(otherGroup => {
-                const otherGroupName = (otherGroup.dataset.variantGroup || '').toLowerCase();
-                if (otherGroupName.includes('color')) {
-                  otherGroup.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
-                }
-              });
-            } else {
-              // For non-color groups: remove active only from same group
-              groupWrap.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
-            }
+            // Remove active class from all buttons in the same group
+            container.querySelectorAll(`.option-button[data-option-type="${optionType}"]`)
+              .forEach(b => b.classList.remove('active'));
             
-            // Add active class to the clicked button
+            // Add active class to clicked button
             this.classList.add('active');
             
-            // Dispatch custom event for variant change
-            const variantName = this.textContent.trim();
-            document.dispatchEvent(new CustomEvent('variant:selected', {
-              detail: { group: groupWrap.dataset.variantGroup, value: variantName }
+            // Update selected variants object
+            window.selectedVariants[optionType] = optionValue;
+            
+            // Update selected label
+            const label = container.querySelector(`.option-selected[data-option-type="${optionType}"]`);
+            if (label) {
+              label.textContent = optionValue;
+              label.classList.add('has-selection');
+            }
+            
+            // Log selection for debugging
+            console.log('Variant selected:', { [optionType]: optionValue });
+            console.log('All selected variants:', window.selectedVariants);
+            
+            // Dispatch custom event
+            document.dispatchEvent(new CustomEvent('variant:changed', {
+              detail: { 
+                type: optionType, 
+                value: optionValue, 
+                allVariants: { ...window.selectedVariants } 
+              }
             }));
           });
         });
-      } else {
-        variantWrap.innerHTML = '';
+      }
+      
+      // Function to check if all required options are selected
+      function areAllVariantsSelected() {
+        const requiredOptions = variantGroups.map(g => g.name.toLowerCase());
+        const selectedTypes = Object.keys(window.selectedVariants);
+        return requiredOptions.every(opt => selectedTypes.includes(opt));
+      }
+      
+      // Function to get selected variant summary
+      function getSelectedVariantSummary() {
+        const selected = window.selectedVariants;
+        if (!Object.keys(selected).length) return '';
+        return Object.entries(selected)
+          .map(([type, value]) => `${formatVariantGroupLabel(type)}: ${value}`)
+          .join(', ');
       }
 
       // WhatsApp Logic

@@ -648,6 +648,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const variant = getSelectedVariantSummary(info);
     const qty = parseInt($('.qty-input', info)?.value || 1);
 
+    // Check if all required variants are selected
+    if (window.selectedVariants && Object.keys(window.selectedVariants).length > 0) {
+      const variantWrap = $('#variant-selectors-wrap');
+      const requiredOptions = variantWrap ? variantWrap.querySelectorAll('.product-option-group').length : 0;
+      const selectedOptions = Object.keys(window.selectedVariants).length;
+      
+      if (requiredOptions > 0 && selectedOptions < requiredOptions) {
+        const missingOptions = [];
+        variantWrap.querySelectorAll('.product-option-group').forEach(group => {
+          const type = group.dataset.optionType;
+          if (!window.selectedVariants[type]) {
+            missingOptions.push(group.querySelector('.option-name')?.textContent || type);
+          }
+        });
+        
+        MDB.UI.toast(`Please select: ${missingOptions.join(', ')}`, 'warning');
+        return;
+      }
+    }
+
     productAtc.classList.add('loading');
     productAtc.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
     setTimeout(() => {
