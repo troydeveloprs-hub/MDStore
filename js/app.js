@@ -1,5 +1,5 @@
-/* === js/app.js === */
-/* MDBOUTIQUEE — Main JavaScript — Production Grade */
+﻿/* === js/app.js === */
+/* MDBOUTIQUEE â€” Main JavaScript â€” Production Grade */
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const emit = (el, evt, detail) => el && el.dispatchEvent(new CustomEvent(evt, { detail }));
 
   /* ============================================
-     HERO SLIDER — Auto Slide + Scroll Triggered + Click to Shop
+     HERO SLIDER â€” Auto Slide + Scroll Triggered + Click to Shop
      ============================================ */
   const heroSlider = () => {
     const slides = $$('.slide');
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
   heroSlider();
 
   /* ============================================
-     CART — LocalStorage Persistence
+     CART â€” LocalStorage Persistence
      ============================================ */
   const CART_KEY = 'mdb_cart';
   const LEGACY_CART_KEY = 'mdboutiquee_cart';
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (searchClose) on(searchClose, 'click', () => { searchBar && searchBar.classList.remove('open'); });
 
   /* ============================================
-     PRODUCT CARD — Wishlist, Quick View, ATC
+     PRODUCT CARD â€” Wishlist, Quick View, ATC
      ============================================ */
   function setWishlistButtonState(btn, active) {
     if (!btn) return;
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
       Cart.add(product);
       btn.classList.remove('loading');
       btn.classList.add('added');
-      btn.innerHTML = '✓ Added';
+      btn.innerHTML = 'âœ“ Added';
       openCartDrawer();
       setTimeout(() => {
         btn.classList.remove('added');
@@ -381,14 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.style.overflow = '';
   }
 
-  $$('.product-card-quickview').forEach(btn => {
-    on(btn, 'click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      openQuickViewFromTrigger(btn);
-    });
-  });
-
   document.addEventListener('click', async (e) => {
     const quickViewBtn = e.target.closest('[data-quick-view], .product-card-quickview');
     if (!quickViewBtn) return;
@@ -487,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="mini-cart-bottom">
             <span class="mini-cart-price">${(item.price * item.qty).toLocaleString('en-US', {minimumFractionDigits: 0})} LE</span>
             <div class="quantity-selector quantity-selector-sm">
-              <button class="qty-btn mini-qty-minus" aria-label="Decrease">−</button>
+              <button class="qty-btn mini-qty-minus" aria-label="Decrease">âˆ’</button>
               <input type="number" class="qty-input mini-qty-input" value="${item.qty}" min="1" readonly>
               <button class="qty-btn mini-qty-plus" aria-label="Increase">+</button>
             </div>
@@ -510,7 +502,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="shipping-progress-text" style="font-size:12px; display:block; margin-bottom:6px; font-weight:600;">
           ${remaining > 0 
             ? `You're ${remaining.toLocaleString()} LE away from <strong>FREE SHIPPING</strong>` 
-            : `🎉 You've unlocked <strong>FREE SHIPPING!</strong>`}
+            : `ðŸŽ‰ You've unlocked <strong>FREE SHIPPING!</strong>`}
         </span>
         <div class="shipping-progress-bar" style="height:6px; background:#e0e0e0; border-radius:10px; overflow:hidden;">
           <div class="shipping-progress-fill" style="width:${progressPercent}%; height:100%; background:var(--color-accent); transition:width 0.4s ease;"></div>
@@ -547,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ============================================
-     PRODUCT PAGE — Gallery, Variants, Quantity
+     PRODUCT PAGE â€” Gallery, Variants, Quantity
      ============================================ */
   // Gallery thumbs
   const mainImage = $('.product-main-image img');
@@ -737,7 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ============================================
-     COLLECTION — Filter Sidebar (Mobile)
+     COLLECTION â€” Filter Sidebar (Mobile)
      ============================================ */
   const mobileFilterBtn = $('.mobile-filter-btn');
   const collectionSidebar = $('.collection-sidebar');
@@ -811,7 +803,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="cart-item-price">${item.price.toLocaleString('en-US', {minimumFractionDigits: 0})} LE</div>
           <div class="cart-item-qty">
             <div class="quantity-selector quantity-selector-sm">
-              <button class="qty-btn cart-qty-minus" aria-label="Decrease">−</button>
+              <button class="qty-btn cart-qty-minus" aria-label="Decrease">âˆ’</button>
               <input type="number" class="qty-input cart-qty-input" value="${item.qty}" min="1" readonly>
               <button class="qty-btn cart-qty-plus" aria-label="Increase">+</button>
             </div>
@@ -830,7 +822,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const shippingEl = $('[data-shipping]', summaryEl);
         const totalEl = $('[data-total]', summaryEl);
         if (subtotalEl) subtotalEl.textContent = subtotal.toLocaleString('en-US', {minimumFractionDigits: 0}) + ' LE';
-        if (shippingEl) shippingEl.textContent = shipping === 0 ? 'مجاني' : shipping + ' LE';
+        if (shippingEl) shippingEl.textContent = shipping === 0 ? 'Ù…Ø¬Ø§Ù†ÙŠ' : shipping + ' LE';
         if (totalEl) totalEl.textContent = total.toLocaleString('en-US', {minimumFractionDigits: 0}) + ' LE';
       }
 
@@ -863,7 +855,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (promoBtn && promoInput) on(promoBtn, 'click', () => {
       const code = promoInput.value.trim().toUpperCase();
       if (code === 'MDB10') {
-        promoBtn.textContent = '✓ Applied';
+        promoBtn.textContent = 'âœ“ Applied';
         promoBtn.style.background = 'var(--color-badge-new)';
       } else {
         promoBtn.textContent = 'Invalid';
@@ -945,7 +937,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ============================================
-     ESCAPE KEY — Close all overlays
+     ESCAPE KEY â€” Close all overlays
      ============================================ */
   on(document, 'keydown', (e) => {
     if (e.key === 'Escape') {
