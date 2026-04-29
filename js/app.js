@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================
      USER SESSION & NAVIGATION
      ============================================ */
-    const updateUserNav = () => {
+      const updateUserNav = () => {
     if (!window.MDB || !MDB.Auth) return;
     const user = MDB.Auth.getUser();
     const accountLinks = $('a[href*="login.html"], a[aria-label="Account"], .mobile-bottom-nav a:last-child');
@@ -78,8 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     accountLinks.forEach(link => {
       if (user) {
-        link.href = user.role === "admin" ? basePath + "Pages/admin.html" : basePath + "Pages/account.html";
-        // Update text if it exists (for bottom nav)
+        // Always go to account.html first, even for admin
+        link.href = basePath + "Pages/account.html";
         if (link.textContent.includes("Account") || link.textContent.includes("Login")) {
            link.innerHTML = `<i class="fa-regular fa-user"></i> ${user.firstName || "Account"}`;
         }

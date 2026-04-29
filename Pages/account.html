@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Account — MDBoutiquee</title>
+  <title>My Account â€” MDBoutiquee</title>
   <meta name="description" content="Manage your MDBoutiquee account, orders, and wishlist.">
   <link rel="stylesheet" href="../css/sofie.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -71,13 +71,13 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mdboutiquee.com/">
-    <meta property="og:title" content="My Account — MDBoutiquee">
+    <meta property="og:title" content="My Account â€” MDBoutiquee">
     <meta property="og:description" content="Manage your MDBoutiquee account, orders, and wishlist.">
     <meta property="og:image" content="https://mdboutiquee.com/img/og-image.jpg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="My Account — MDBoutiquee">
+    <meta property="twitter:title" content="My Account â€” MDBoutiquee">
     <meta property="twitter:description" content="Manage your MDBoutiquee account, orders, and wishlist.">
     <meta property="twitter:image" content="https://mdboutiquee.com/img/og-image.jpg">
     
@@ -86,7 +86,7 @@
   <!-- ANNOUNCEMENT BAR -->
   <div class="announcement-bar" role="banner">
     <div class="announcement-content">
-      <span class="announcement-text">Free shipping on orders over 3500 LE — <a href="../collections/makeup.html">Shop
+      <span class="announcement-text">Free shipping on orders over 3500 LE â€” <a href="../collections/makeup.html">Shop
           Now</a></span>
     </div><button class="announcement-close" aria-label="Close announcement"><i class="fa-solid fa-xmark"></i></button></div>
 
@@ -556,9 +556,23 @@
   document.addEventListener('DOMContentLoaded', () => {
     if (!MDB.Auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
     const user = MDB.Auth.getUser();
-    if (user && user.role === 'admin') { window.location.href = 'admin.html'; return; }
+    
 
     // Greeting
+    
+    // Add Admin button if user is admin
+    if (user && user.role === "admin") {
+      const sidebar = document.querySelector(".account-sidebar");
+      const adminBtn = document.createElement("a");
+      adminBtn.href = "admin.html";
+      adminBtn.className = "account-sidebar-btn";
+      adminBtn.style.background = "var(--color-accent, #c9a962)";
+      adminBtn.style.color = "#fff";
+      adminBtn.style.marginTop = "20px";
+      adminBtn.innerHTML = `<i class="fa-solid fa-gauge-high"></i> Admin Dashboard`;
+      sidebar.appendChild(adminBtn);
+    }
+
     const initials = ((user.firstName||'')[0]||'') + ((user.lastName||'')[0]||'');
     document.getElementById('user-greeting').innerHTML = `<div class="user-avatar">${initials.toUpperCase()}</div><div class="user-greeting-text"><h3>Welcome, ${user.firstName||user.email}</h3><p>Member since ${new Date(user.createdAt).toLocaleDateString('en-US',{month:'long',year:'numeric'})}</p></div>`;
 
@@ -607,7 +621,7 @@
       const orders = MDB.Orders.getForCurrentUser();
       const el = document.getElementById('orders-list');
       if (!orders.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-box"></i><p>No orders yet</p><a href="../collections/makeup.html" class="btn btn-primary">Start Shopping</a></div>'; return; }
-      el.innerHTML = orders.map(o => `<div class="order-card"><div class="order-header"><div><span class="order-id">${o.id}</span><span class="order-date"> — ${new Date(o.createdAt).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'})}</span></div><span class="order-status ${o.status}">${o.status}</span></div><div class="order-items">${o.items.map(i=>`<img src="${resolveAccountImage(i.image)}" alt="${i.name}" class="order-item-thumb">`).join('')}</div><div class="order-total">Total: ${MDB.UI.formatPrice(o.total)}</div></div>`).join('');
+      el.innerHTML = orders.map(o => `<div class="order-card"><div class="order-header"><div><span class="order-id">${o.id}</span><span class="order-date"> â€” ${new Date(o.createdAt).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'})}</span></div><span class="order-status ${o.status}">${o.status}</span></div><div class="order-items">${o.items.map(i=>`<img src="${resolveAccountImage(i.image)}" alt="${i.name}" class="order-item-thumb">`).join('')}</div><div class="order-total">Total: ${MDB.UI.formatPrice(o.total)}</div></div>`).join('');
     }
 
     // Wishlist
