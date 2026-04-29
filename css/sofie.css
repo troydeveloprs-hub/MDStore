@@ -2713,12 +2713,12 @@ h6 {
 }
 
 .variant-label {
-   font-size: 14px;
+   font-size: 13px;
    font-weight: 600;
    text-transform: uppercase;
    letter-spacing: 0.5px;
    color: var(--color-text-primary);
-   margin-bottom: 12px;
+   margin-bottom: 10px;
 }
 
 .variant-options {
@@ -2729,16 +2729,16 @@ h6 {
 }
 
 .variant-option {
-   padding: 10px 20px;
+   padding: 8px 16px;
    border: 2px solid var(--color-border);
    border-radius: 25px;
-   font-size: 14px;
+   font-size: 13px;
    font-weight: 500;
    cursor: pointer;
    transition: all var(--transition-base);
    background: var(--color-bg);
    color: var(--color-text-secondary);
-   min-width: 60px;
+   min-width: 50px;
    text-align: center;
    white-space: nowrap;
 }
