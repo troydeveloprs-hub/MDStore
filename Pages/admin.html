@@ -2195,6 +2195,30 @@
         const saveBtn = document.getElementById('save-product-btn');
         try {
           saveBtn.disabled = true;
+          
+          // Upload pending image files to Supabase Storage
+          const uploadedImageUrls = [];
+          if (pendingImageFiles.length > 0) {
+            for (const file of pendingImageFiles) {
+              try {
+                const uploadedUrl = await MDB.Products.uploadImage(file);
+                uploadedImageUrls.push(uploadedUrl);
+              } catch (uploadErr) {
+                console.error('Failed to upload image:', uploadErr);
+                // Continue with other images even if one fails
+              }
+            }
+            // Replace data URLs with uploaded URLs
+            productImageState = productImageState.map(img => {
+              if (img.startsWith('data:')) {
+                const uploaded = uploadedImageUrls.shift();
+                return uploaded || img;
+              }
+              return img;
+            });
+            pendingImageFiles = [];
+          }
+          
           const data = {
             id: document.getElementById('pf-id').value.trim() || editingPid,
             createdAt: document.getElementById('pf-created').value ? new Date(document.getElementById('pf-created').value).toISOString() : new Date().toISOString(),
