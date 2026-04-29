@@ -1601,48 +1601,68 @@ const MDB = (() => {
       }
       const categoryLabel = p.subcategory || p.category || "Beauty Pick";
       return `
-        <article class="product-card product-card-modern" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand || ""}" data-price="${p.price}" data-image="${normalizedImage}" data-variant="${defaultVariant}">
-          <div class="product-card-media">
-            <div class="product-card-shell">
-              <div class="product-card-badges">
-                ${badgeText ? `<span class="product-badge">${badgeText}</span>` : ""}
-                ${savings ? `<span class="product-badge product-badge-discount">Save ${savings}%</span>` : ""}
-              </div>
-              <div class="product-card-actions">
-                <button class="action-btn ${isWishlisted ? "active" : ""}" data-wishlist="${p.id}" title="Add to Wishlist" aria-label="Add ${p.name} to wishlist"><i class="${isWishlisted ? "fa-solid" : "fa-regular"} fa-heart"></i></button>
-                <button class="action-btn" data-quick-view="${p.id}" title="Quick View" aria-label="Quick view ${p.name}"><i class="fa-regular fa-eye"></i></button>
-              </div>
+        <article class="product-card-new" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand || ""}" data-price="${p.price}" data-image="${normalizedImage}" data-variant="${defaultVariant}">
+          <div class="product-card-new__image-section">
+            <img src="${normalizedImage}" alt="${p.name}" class="product-card-new__image" onerror="this.src='${basePath}img/logo.svg'">
+            
+            <div class="product-card-new__actions">
+              <button class="product-card-new__action-btn" data-quick-view="${p.id}" title="Quick View" aria-label="Quick view ${p.name}"><i class="fa-regular fa-eye"></i></button>
+              <button class="product-card-new__action-btn" data-id="${p.id}" ${stock === 0 ? "disabled" : ""} title="Add to Cart" aria-label="Add ${p.name} to cart"><i class="fa-solid fa-cart-shopping"></i></button>
             </div>
-            <a href="${basePath}product.html?id=${p.id}" class="product-card-image-link">
-              <img src="${normalizedImage}" alt="${p.name}" class="product-card-img main-img" onerror="this.src='${basePath}img/logo.svg'">
-              <img src="${normalizedHoverImage}" alt="${p.name}" class="product-card-img hover-img" onerror="this.style.display='none'">
-            </a>
           </div>
-          <div class="product-card-info">
-            <div class="product-card-meta">
-              <span class="product-card-brand">${p.brand || "MDB"}</span>
-              <span class="product-card-chip">${categoryLabel}</span>
-            </div>
-            <h3 class="product-card-title"><a href="${basePath}product.html?id=${p.id}">${p.name}</a></h3>
-            <div class="product-card-rating" aria-label="Rated ${ratingValue.toFixed(1)} out of 5">
-              <span class="product-card-stars">${ratingStars}</span>
-              <span class="product-card-rating-text">${ratingValue ? ratingValue.toFixed(1) : "New"}${reviews ? ` (${reviews})` : ""}</span>
-            </div>
-            <div class="product-card-price">
-              <span class="price-current">${this.formatPrice(p.price)}</span>
-              ${oldPrice ? `<span class="price-old">${this.formatPrice(oldPrice)}</span>` : ""}
-            </div>
-            <div class="product-card-footer">
-              <span class="product-card-stock ${stockClass}">${stockLabel}</span>
-              <a href="${basePath}product.html?id=${p.id}" class="product-card-link">Details</a>
-            </div>
-            <button class="btn btn-atc product-card-atc btn-full" data-id="${p.id}" ${stock === 0 ? "disabled" : ""}>
-              <i class="fa-solid fa-bag-shopping"></i>
-              ${stock === 0 ? "Out of Stock" : "Add to Cart"}
-            </button>
+          
+          <div class="product-card-new__details">
+            <span class="product-card-new__brand">${(p.brand || "MDB").toUpperCase()}</span>
+            <h3 class="product-card-new__title"><a href="${basePath}product.html?id=${p.id}">${p.name}</a></h3>
+            <div class="product-card-new__price">${this.formatPrice(p.price)}</div>
+            
+            ${p.images && p.images.length > 1 ? `
+              <div class="product-card-new__variants">
+                ${p.images.slice(0, 3).map((img, idx) => `
+                  <img src="${normalizeImagePath(img)}" alt="Variant ${idx + 1}" class="product-card-new__variant">
+                `).join('')}
+                ${p.images.length > 3 ? `<div class="product-card-new__variant-more">+${p.images.length - 3}</div>` : ''}
+              </div>
+            ` : ''}
           </div>
         </article>
       `;
+    },
+
+    /** Initialize product card thumbnail click handlers */
+    initProductCardThumbnails() {
+      document.addEventListener('click', (e) => {
+        const thumbnail = e.target.closest('.product-card-new__variant');
+        if (!thumbnail) return;
+        
+        const card = thumbnail.closest('.product-card-new');
+        if (!card) return;
+        
+        const mainImage = card.querySelector('.product-card-new__image');
+        if (!mainImage) return;
+        
+        const newSrc = thumbnail.src;
+        if (!newSrc) return;
+        
+        // Fade out current image
+        mainImage.classList.add('fade-out');
+        
+        setTimeout(() => {
+          mainImage.src = newSrc;
+          mainImage.classList.remove('fade-out');
+          mainImage.classList.add('fade-in');
+          
+          setTimeout(() => {
+            mainImage.classList.remove('fade-in');
+          }, 300);
+        }, 300);
+        
+        // Update active state
+        card.querySelectorAll('.product-card-new__variant').forEach(v => {
+          v.classList.remove('active');
+        });
+        thumbnail.classList.add('active');
+      });
     },
 
     /** Show toast notification */
