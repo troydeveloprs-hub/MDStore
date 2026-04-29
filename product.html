@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Product Details â€” MDBoutiquee</title>
+  <title>Product Details — MDBoutiquee</title>
   <meta name="description" content="Shop premium beauty products at MDBoutiquee. Free shipping on orders over 3500 LE.">
   <link rel="stylesheet" href="css/sofie.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -13,13 +13,13 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mdboutiquee.com/">
-    <meta property="og:title" content="Product Details â€” MDBoutiquee">
+    <meta property="og:title" content="Product Details — MDBoutiquee">
     <meta property="og:description" content="Shop premium beauty products at MDBoutiquee. Free shipping on orders over 3500 LE.">
     <meta property="og:image" content="https://mdboutiquee.com/img/og-image.jpg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="Product Details â€” MDBoutiquee">
+    <meta property="twitter:title" content="Product Details — MDBoutiquee">
     <meta property="twitter:description" content="Shop premium beauty products at MDBoutiquee. Free shipping on orders over 3500 LE.">
     <meta property="twitter:image" content="https://mdboutiquee.com/img/og-image.jpg">
 
@@ -277,7 +277,7 @@
     <div class="product-detail-info">
       <span class="product-detail-brand">Brand Name</span>
       <h1 class="product-detail-title">Product Name</h1>
-      <div class="product-detail-rating"><span class="stars">â˜…â˜…â˜…â˜…â˜…</span><span class="count">(0 reviews)</span></div>
+      <div class="product-detail-rating"><span class="stars">★★★★★</span><span class="count">(0 reviews)</span></div>
       <div class="product-detail-price"><span class="price-current">0 LE</span></div>
       <div id="product-meta-chips" style="display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px"></div>
       <div id="variant-selectors-wrap"></div>
@@ -285,7 +285,7 @@
       <div class="variant-selector">
         <label>Quantity:</label>
         <div class="quantity-selector">
-          <button class="qty-btn" id="qty-minus">âˆ’</button>
+          <button class="qty-btn" id="qty-minus">−</button>
           <input type="number" class="qty-input" value="1" min="1" id="qty-input">
           <button class="qty-btn" id="qty-plus">+</button>
         </div>
@@ -315,10 +315,10 @@
 
         <div class="delivery-info">
           <div class="info-item">
-            <span class="icon">ðŸšš</span>
+            <span class="icon">🚚</span>
             <div>
               <p class="title">Fast delivery</p>
-              <p class="desc">Delivered within 2â€“4 working days</p>
+              <p class="desc">Delivered within 2–4 working days</p>
             </div>
           </div>
 
@@ -468,7 +468,7 @@
       const galleryThumbs = document.querySelector('.gallery-thumbs');
       const mainImage = document.querySelector('.product-main-image img');
       const ratingValue = Math.max(0, Math.min(5, parseFloat(p.rating) || 0));
-      const ratingStars = 'â˜…'.repeat(Math.round(ratingValue)) + 'â˜†'.repeat(5 - Math.round(ratingValue));
+      const ratingStars = '★'.repeat(Math.round(ratingValue)) + '☆'.repeat(5 - Math.round(ratingValue));
       const reviewCount = parseInt(p.reviewCount, 10) || 0;
       const detailsText = (p.details || p.description || '').trim();
       const ingredients = Array.isArray(p.ingredients) ? p.ingredients.filter(Boolean) : [];
@@ -478,7 +478,7 @@
         ? p.variantGroups
         : (Array.isArray(p.variants) && p.variants.length ? [{ name: 'option', options: p.variants }] : []);
 
-      document.title = p.name + ' â€” MDBoutiquee';
+      document.title = p.name + ' — MDBoutiquee';
       document.querySelector('.product-detail-brand').textContent = p.brand;
       document.querySelector('.product-detail-title').textContent = p.name;
       document.querySelector('.product-detail-rating .stars').textContent = ratingStars;

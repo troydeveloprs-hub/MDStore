@@ -1,5 +1,5 @@
 /* === js/app.js === */
-/* MDBOUTIQUEE â€” Main JavaScript â€” Production Grade */
+/* MDBOUTIQUEE — Main JavaScript — Production Grade */
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
 
@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const emit = (el, evt, detail) => el && el.dispatchEvent(new CustomEvent(evt, { detail }));
 
   /* ============================================
-     HERO SLIDER â€” Auto Slide + Scroll Triggered + Click to Shop
+     HERO SLIDER — Auto Slide + Scroll Triggered + Click to Shop
      ============================================ */
   const heroSlider = () => {
     const slides = $$('.slide');
@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener("mdb:auth:changed", updateUserNav);
 
   /* ============================================
-     CART â€” Bridge to MDB.Cart
+     CART — Bridge to MDB.Cart
      ============================================ */
   const Cart = {
     get() { return window.MDB?.Cart?.get() || []; },
@@ -203,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (searchClose) on(searchClose, 'click', () => { searchBar && searchBar.classList.remove('open'); });
 
   /* ============================================
-     PRODUCT CARD â€” Wishlist, Quick View, ATC
+     PRODUCT CARD — Wishlist, Quick View, ATC
      ============================================ */
   function setWishlistButtonState(btn, active) {
     if (!btn) return;
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
       Cart.add(product);
       btn.classList.remove('loading');
       btn.classList.add('added');
-      btn.innerHTML = 'âœ“ Added';
+      btn.innerHTML = '✓ Added';
       openCartDrawer();
       setTimeout(() => {
         btn.classList.remove('added');
@@ -578,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ============================================
-     PRODUCT PAGE â€” Gallery, Variants, Quantity
+     PRODUCT PAGE — Gallery, Variants, Quantity
      ============================================ */
   // Gallery thumbs
   const mainImage = $('.product-main-image img');
@@ -768,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ============================================
-     COLLECTION â€” Filter Sidebar (Mobile)
+     COLLECTION — Filter Sidebar (Mobile)
      ============================================ */
   const mobileFilterBtn = $('.mobile-filter-btn');
   const collectionSidebar = $('.collection-sidebar');
@@ -895,7 +895,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (promoBtn && promoInput) on(promoBtn, 'click', () => {
       const code = promoInput.value.trim().toUpperCase();
       if (code === 'MDB10') {
-        promoBtn.textContent = 'âœ“ Applied';
+        promoBtn.textContent = '✓ Applied';
         promoBtn.style.background = 'var(--color-badge-new)';
       } else {
         promoBtn.textContent = 'Invalid';
@@ -977,7 +977,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ============================================
-     ESCAPE KEY â€” Close all overlays
+     ESCAPE KEY — Close all overlays
      ============================================ */
   on(document, 'keydown', (e) => {
     if (e.key === 'Escape') {

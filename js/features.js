@@ -1,5 +1,5 @@
-﻿/* ===================================================================
-   MDBOUTIQUEE â€” Features Module
+/* ===================================================================
+   MDBOUTIQUEE — Features Module
    Smart Search, Recently Viewed, WhatsApp, Stock Counter,
    Loyalty Points, Analytics, Newsletter, Notifications, Comparison
    =================================================================== */
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ===================================================================
-     1. SMART SEARCH â€” Live autocomplete overlay
+     1. SMART SEARCH — Live autocomplete overlay
      =================================================================== */
   const SearchEngine = {
     init() {
@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   /* ===================================================================
-     6. ANALYTICS â€” Track page views, cart actions
+     6. ANALYTICS — Track page views, cart actions
      =================================================================== */
   const Analytics = {
     KEY: 'mdb_analytics',
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
   Analytics.trackView(window.location.pathname);
 
   /* ===================================================================
-     7. NEWSLETTER BACKEND â€” Save subscribers
+     7. NEWSLETTER BACKEND — Save subscribers
      =================================================================== */
   const Newsletter = {
     KEY: 'mdb_newsletter',
@@ -465,7 +465,7 @@ document.addEventListener('DOMContentLoaded', () => {
   window.MDB.Coupons = Coupons;
 
   /* ===================================================================
-     11. DYNAMIC SETTINGS â€” Sync UI with Admin settings
+     11. DYNAMIC SETTINGS — Sync UI with Admin settings
      =================================================================== */
   const DynamicSettings = {
     init() {
@@ -477,7 +477,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (annText && s.announcement) {
           // preserve the link if it exists
           const link = annText.querySelector('a');
-          const prefix = s.announcement + ' â€” ';
+          const prefix = s.announcement + ' — ';
           annText.innerHTML = prefix;
           if (link) annText.appendChild(link);
       }
@@ -496,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
   /* ===================================================================
-     12. QUICK VIEW â€” Product preview modal
+     12. QUICK VIEW — Product preview modal
      =================================================================== */
   
 
