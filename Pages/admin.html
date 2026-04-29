@@ -333,7 +333,7 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      max-width: 600px;
+      max-width: 100%;
     }
 
     .admin-form input,
@@ -380,6 +380,202 @@
     .form-group {
       display: flex;
       flex-direction: column;
+    }
+
+    .product-form-shell {
+      border: 1px solid var(--admin-border);
+      border-radius: 18px;
+      padding: 20px;
+      background: linear-gradient(180deg, #ffffff 0%, #fcfcfd 100%);
+    }
+
+    .product-form-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--admin-border);
+    }
+
+    .product-form-head h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--admin-primary);
+    }
+
+    .product-form-head p {
+      margin: 4px 0 0;
+      color: var(--admin-text-light);
+      font-size: 13px;
+    }
+
+    .product-form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .product-form-card {
+      border: 1px solid var(--admin-border);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    .product-form-card.span-2 {
+      grid-column: span 2;
+    }
+
+    .product-form-card h4 {
+      margin: 0 0 4px;
+      font-size: 0.98rem;
+      color: var(--admin-primary);
+    }
+
+    .product-form-card p {
+      margin: 0 0 14px;
+      font-size: 13px;
+      color: var(--admin-text-light);
+    }
+
+    .input-hint {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--admin-text-light);
+    }
+
+    .product-form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pill-toggle-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border: 1px solid var(--admin-border);
+      border-radius: 999px;
+      background: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--admin-text);
+    }
+
+    .product-media-tools {
+      display: grid;
+      gap: 14px;
+    }
+
+    .upload-box {
+      border: 1.5px dashed var(--admin-border);
+      border-radius: 14px;
+      padding: 16px;
+      background: #fafafa;
+    }
+
+    .upload-box input[type="file"] {
+      padding: 10px;
+      background: #fff;
+    }
+
+    .product-upload-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .product-upload-item {
+      position: relative;
+      border: 1px solid var(--admin-border);
+      border-radius: 14px;
+      overflow: hidden;
+      background: #fff;
+      min-height: 120px;
+    }
+
+    .product-upload-item img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .product-upload-meta {
+      padding: 8px 10px;
+      font-size: 11px;
+      color: var(--admin-text-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .product-upload-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(201, 169, 98, 0.14);
+      color: #8a6726;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+    }
+
+    .icon-action-btn {
+      border: 0;
+      background: transparent;
+      color: var(--admin-danger);
+      cursor: pointer;
+      padding: 2px;
+      font-size: 14px;
+    }
+
+    .variant-builder {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .variant-row {
+      display: grid;
+      grid-template-columns: 180px 1fr auto;
+      gap: 10px;
+      align-items: end;
+      padding: 12px;
+      border: 1px solid var(--admin-border);
+      border-radius: 14px;
+      background: #fafafa;
+    }
+
+    .variant-row .admin-btn {
+      align-self: center;
+      margin-top: 18px;
+    }
+
+    .variant-summary {
+      border-radius: 12px;
+      background: #f9fafb;
+      border: 1px solid var(--admin-border);
+      padding: 12px;
+      color: var(--admin-text-light);
+      font-size: 13px;
+      min-height: 46px;
     }
 
     /* Alerts */
@@ -474,6 +670,24 @@
       .admin-form .form-row {
         flex-direction: column;
       }
+
+      .product-form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .product-form-card.span-2 {
+        grid-column: span 1;
+      }
+
+      .variant-row {
+        grid-template-columns: 1fr;
+      }
+
+      .product-form-actions,
+      .product-form-head {
+        flex-direction: column;
+        align-items: stretch;
+      }
     }
   </style>
 </head>
@@ -548,56 +762,106 @@
           </div>
 
           <div id="product-form-wrap" style="display:none;margin-bottom:24px">
-            <h3 style="font-size:1rem;margin-bottom:12px">Add / Edit Product</h3>
-            <form class="admin-form" id="product-form">
-              <div class="form-row">
-                <div><label>Product ID</label><input id="pf-id" placeholder="Auto if empty"></div>
-                <div><label>Created Date</label><input type="date" id="pf-created"></div>
+            <div class="product-form-shell">
+              <div class="product-form-head">
+                <div>
+                  <h3 id="product-form-title">Add Product</h3>
+                  <p>Professional product setup with category mapping, media uploads, and variant groups.</p>
+                </div>
+                <div class="product-upload-tag"><i class="fa-solid fa-sparkles"></i> Product Builder</div>
               </div>
-              <div class="form-row">
-                <div><label>Name</label><input id="pf-name" required></div>
-                <div><label>Brand</label><input id="pf-brand" required></div>
-              </div>
-              <div class="form-row">
-                <div><label>Price (LE)</label><input type="number" id="pf-price" required></div>
-                <div><label>Original Price</label><input type="number" id="pf-oprice"></div>
-              </div>
-              <div class="form-row">
-                <div><label>Category</label><select id="pf-cat">
-                    <option>makeup</option>
-                    <option>skincare</option>
-                    <option>hair</option>
-                    <option>fragrance</option>
-                  </select></div>
-                <div><label>Subcategory</label><input id="pf-subcat" placeholder="lips / serums / face"></div>
-              </div>
-              <div class="form-row">
-                <div><label>Stock</label><input type="number" id="pf-stock" value="50"></div>
-                <div><label>Badge</label><select id="pf-badge">
-                    <option value="">None</option>
-                    <option value="new">New</option>
-                    <option value="sale">Sale</option>
-                    <option value="hot">Hot</option>
-                  </select></div>
-              </div>
-              <div class="form-row">
-                <div><label>Rating</label><input type="number" id="pf-rating" min="0" max="5" step="0.1" value="0"></div>
-                <div><label>Review Count</label><input type="number" id="pf-review-count" min="0" value="0"></div>
-              </div>
-              <div><label>Description</label><textarea id="pf-desc"></textarea></div>
-              <div><label>Details</label><textarea id="pf-details" placeholder="Extra product details shown on product page"></textarea></div>
-              <div><label>Ingredients</label><textarea id="pf-ingredients" placeholder="One ingredient per line or separated by commas"></textarea></div>
-              <div><label>Variants</label><textarea id="pf-variants" placeholder="One variant per line or separated by commas"></textarea></div>
-              <div><label>Image Path</label><input id="pf-image" placeholder="img/product.jpg"></div>
-              <div><label>Gallery Images</label><textarea id="pf-images" placeholder="One image path per line or separated by commas"></textarea></div>
-              <div class="form-row">
-                <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="pf-featured"> Featured</label>
-                <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="pf-new"> New Arrival</label>
-              </div>
-              <div style="display:flex;gap:8px"><button type="submit" class="btn btn-primary btn-sm">Save
-                  Product</button><button type="button" class="admin-btn" id="cancel-product-form-btn">Cancel</button>
-              </div>
-            </form>
+              <form class="admin-form" id="product-form">
+                <div class="product-form-grid">
+                  <section class="product-form-card">
+                    <h4>Basic Information</h4>
+                    <p>Main identity and pricing for the product card and details page.</p>
+                    <div class="form-row">
+                      <div class="form-group"><label>Product ID</label><input id="pf-id" placeholder="Auto if empty"></div>
+                      <div class="form-group"><label>Created Date</label><input type="date" id="pf-created"></div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group"><label>Name</label><input id="pf-name" required></div>
+                      <div class="form-group"><label>Brand</label><input id="pf-brand" required></div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group"><label>Price (LE)</label><input type="number" id="pf-price" required></div>
+                      <div class="form-group"><label>Original Price</label><input type="number" id="pf-oprice"></div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group"><label>Stock</label><input type="number" id="pf-stock" value="50"></div>
+                      <div class="form-group"><label>Badge</label><select id="pf-badge">
+                          <option value="">None</option>
+                          <option value="new">New</option>
+                          <option value="sale">Sale</option>
+                          <option value="hot">Hot</option>
+                        </select></div>
+                    </div>
+                  </section>
+
+                  <section class="product-form-card">
+                    <h4>Category Setup</h4>
+                    <p>Choose from ready-made categories and subcategories instead of typing manually.</p>
+                    <div class="form-row">
+                      <div class="form-group"><label>Category</label><select id="pf-cat"></select></div>
+                      <div class="form-group"><label>Subcategory</label><select id="pf-subcat"></select></div>
+                    </div>
+                    <div class="form-row">
+                      <div class="form-group"><label>Rating</label><input type="number" id="pf-rating" min="0" max="5" step="0.1" value="0"></div>
+                      <div class="form-group"><label>Review Count</label><input type="number" id="pf-review-count" min="0" value="0"></div>
+                    </div>
+                    <div class="pill-toggle-row">
+                      <label class="pill-toggle"><input type="checkbox" id="pf-featured"> Featured Product</label>
+                      <label class="pill-toggle"><input type="checkbox" id="pf-new"> New Arrival</label>
+                    </div>
+                  </section>
+
+                  <section class="product-form-card span-2">
+                    <h4>Media Gallery</h4>
+                    <p>Upload one or more images, or use an external path or URL for the cover image.</p>
+                    <div class="product-media-tools">
+                      <div class="form-row">
+                        <div class="form-group">
+                          <label>Cover Image Path / URL</label>
+                          <input id="pf-image" placeholder="img/product.jpg or https://...">
+                          <div class="input-hint">If empty, the first uploaded image becomes the cover automatically.</div>
+                        </div>
+                        <div class="form-group">
+                          <label>Upload Product Images</label>
+                          <div class="upload-box">
+                            <input type="file" id="pf-image-upload" accept="image/*" multiple>
+                            <div class="input-hint">You can upload multiple images at once. They are previewed before save.</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label>Gallery Preview</label>
+                        <div id="pf-image-preview" class="product-upload-preview"></div>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="product-form-card">
+                    <h4>Variant Groups</h4>
+                    <p>Add organized options like color, size, shade, or volume.</p>
+                    <div id="variant-groups-wrap" class="variant-builder"></div>
+                    <button type="button" class="admin-btn" id="add-variant-group-btn"><i class="fa-solid fa-plus"></i> Add Variant Group</button>
+                    <div id="variant-summary" class="variant-summary">No variant groups added yet.</div>
+                  </section>
+
+                  <section class="product-form-card">
+                    <h4>Product Content</h4>
+                    <p>These fields appear in the product details page and support richer presentation.</p>
+                    <div class="form-group"><label>Description</label><textarea id="pf-desc"></textarea></div>
+                    <div class="form-group"><label>Details</label><textarea id="pf-details" placeholder="Extra product details shown on product page"></textarea></div>
+                    <div class="form-group"><label>Ingredients</label><textarea id="pf-ingredients" placeholder="One ingredient per line or separated by commas"></textarea></div>
+                  </section>
+                </div>
+                <div class="product-form-actions">
+                  <button type="button" class="admin-btn" id="cancel-product-form-btn">Cancel</button>
+                  <button type="submit" class="btn btn-primary btn-sm" id="save-product-btn">Save Product</button>
+                </div>
+              </form>
+            </div>
           </div>
           <div class="admin-table-wrap">
             <table class="admin-table" id="products-table">
@@ -763,6 +1027,247 @@
         .filter(Boolean);
     }
 
+    const PRODUCT_TAXONOMY = {
+      makeup: [
+        ['foundation', 'Foundation'],
+        ['bb-cc-cream', 'BB & CC Cream'],
+        ['concealer', 'Concealer'],
+        ['face-primer', 'Face Primer'],
+        ['setting-spray', 'Setting Spray & Powder'],
+        ['highlighter', 'Highlighter'],
+        ['contour', 'Contour'],
+        ['eye-palettes', 'Eye Palettes'],
+        ['mascara', 'Mascara'],
+        ['eyeliner', 'Eyeliner'],
+        ['eyebrow', 'Eyebrow'],
+        ['lipstick', 'Lipstick'],
+        ['lip-gloss', 'Lip Gloss'],
+        ['brushes-applicators', 'Brushes & Applicators'],
+        ['makeup-accessories', 'Makeup Accessories'],
+        ['nail', 'Nail']
+      ],
+      skincare: [
+        ['night-creams', 'Night Creams'],
+        ['face-oils', 'Face Oils'],
+        ['mists-essences', 'Mists & Essences'],
+        ['sunscreen', 'Sunscreen'],
+        ['face-sunscreen', 'Face Sunscreen'],
+        ['body-sunscreen', 'Body Sunscreen'],
+        ['face-wash', 'Face Wash & Cleansers'],
+        ['exfoliators', 'Exfoliators'],
+        ['makeup-removers', 'Makeup Removers'],
+        ['toners', 'Toners'],
+        ['face-serums', 'Face Serums'],
+        ['blemish-treatments', 'Blemish & Acne Treatments'],
+        ['peels', 'Facial Peels'],
+        ['masks', 'Masks'],
+        ['face-masks', 'Face Masks'],
+        ['sheet-masks', 'Sheet Masks'],
+        ['eye-care', 'Eye Care'],
+        ['eye-creams', 'Eye Creams & Treatments'],
+        ['lip-balms', 'Lip Balms & Treatments'],
+        ['anti-aging', 'Anti-Aging']
+      ],
+      hair: [
+        ['shampoo', 'Shampoo'],
+        ['conditioner', 'Conditioner'],
+        ['hair-mask', 'Hair Mask'],
+        ['hair-oil', 'Hair Oil'],
+        ['styling', 'Styling'],
+        ['hair-treatment', 'Hair Treatment']
+      ],
+      fragrance: [
+        ['perfume', 'Perfume'],
+        ['body-mist', 'Body Mist'],
+        ['gift-set', 'Gift Set']
+      ],
+      tools: [
+        ['brushes', 'Brushes'],
+        ['sponges', 'Sponges'],
+        ['beauty-tools', 'Beauty Tools'],
+        ['high-tech-tools', 'High Tech Tools']
+      ],
+      'bath-body': [
+        ['body-lotion', 'Body Lotion'],
+        ['body-wash', 'Body Wash'],
+        ['scrub', 'Body Scrub'],
+        ['deodorant', 'Deodorant']
+      ]
+    };
+
+    const CATEGORY_LABELS = {
+      makeup: 'Makeup',
+      skincare: 'Skincare',
+      hair: 'Hair',
+      fragrance: 'Fragrance',
+      tools: 'Tools & Brushes',
+      'bath-body': 'Bath & Body'
+    };
+
+    const VARIANT_TYPES = [
+      ['color', 'Color'],
+      ['size', 'Size'],
+      ['shade', 'Shade'],
+      ['volume', 'Volume'],
+      ['scent', 'Scent'],
+      ['style', 'Style'],
+      ['material', 'Material'],
+      ['finish', 'Finish']
+    ];
+
+    let productImageState = [];
+
+    function uniqueList(items) {
+      return [...new Set(items.filter(Boolean))];
+    }
+
+    function normalizeImagePath(value) {
+      const cleaned = safeText(value).trim();
+      if (!cleaned) return '';
+      if (/^(data:image|https?:\/\/|blob:)/i.test(cleaned)) return cleaned;
+      return cleaned.replace(/^\.\//, '').replace(/^(\.\.\/)+/, '');
+    }
+
+    function escapeHtml(value) {
+      return safeText(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function fillCategoryOptions(selectedCategory = 'makeup') {
+      const select = document.getElementById('pf-cat');
+      select.innerHTML = Object.entries(CATEGORY_LABELS)
+        .map(([value, label]) => `<option value="${value}" ${value === selectedCategory ? 'selected' : ''}>${label}</option>`)
+        .join('');
+    }
+
+    function populateSubcategoryOptions(category, selectedSubcategory = '') {
+      const subSelect = document.getElementById('pf-subcat');
+      const subcategories = PRODUCT_TAXONOMY[category] || [];
+      let options = subcategories.map(([value, label]) => (
+        `<option value="${value}" ${value === selectedSubcategory ? 'selected' : ''}>${label}</option>`
+      ));
+
+      if (selectedSubcategory && !subcategories.some(([value]) => value === selectedSubcategory)) {
+        options = [`<option value="${selectedSubcategory}" selected>${selectedSubcategory}</option>`].concat(options);
+      }
+
+      subSelect.innerHTML = options.join('');
+    }
+
+    function getVariantTypeLabel(type) {
+      const match = VARIANT_TYPES.find(([value]) => value === type);
+      return match ? match[1] : type;
+    }
+
+    function createVariantRow(group = {}) {
+      const row = document.createElement('div');
+      row.className = 'variant-row';
+      const selectedType = safeText(group.name, 'color');
+      const optionsValue = Array.isArray(group.options) ? group.options.join(', ') : '';
+      row.innerHTML = `
+        <div class="form-group">
+          <label>Variant Type</label>
+          <select class="variant-name-select">
+            ${VARIANT_TYPES.map(([value, label]) => `<option value="${value}" ${value === selectedType ? 'selected' : ''}>${label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Options</label>
+          <input class="variant-options-input" placeholder="Red, Pink, Nude" value="${escapeHtml(optionsValue)}">
+        </div>
+        <button type="button" class="admin-btn admin-btn-danger remove-variant-row"><i class="fa-solid fa-trash"></i></button>
+      `;
+      return row;
+    }
+
+    function renderVariantGroups(groups = []) {
+      const wrap = document.getElementById('variant-groups-wrap');
+      wrap.innerHTML = '';
+      groups.forEach(group => wrap.appendChild(createVariantRow(group)));
+      if (!groups.length) wrap.appendChild(createVariantRow({ name: 'color', options: [] }));
+      updateVariantSummary();
+    }
+
+    function collectVariantGroups() {
+      return [...document.querySelectorAll('#variant-groups-wrap .variant-row')]
+        .map(row => {
+          const name = row.querySelector('.variant-name-select')?.value || '';
+          const options = normalizeListInput(row.querySelector('.variant-options-input')?.value || '');
+          return { name, options };
+        })
+        .filter(group => group.name && group.options.length);
+    }
+
+    function updateVariantSummary() {
+      const summary = document.getElementById('variant-summary');
+      const groups = collectVariantGroups();
+      summary.textContent = groups.length
+        ? groups.map(group => `${getVariantTypeLabel(group.name)}: ${group.options.join(', ')}`).join(' | ')
+        : 'No variant groups added yet.';
+    }
+
+    function getAllProductImages() {
+      const cover = normalizeImagePath(document.getElementById('pf-image').value);
+      return uniqueList([cover, ...productImageState]);
+    }
+
+    function syncPrimaryImageField() {
+      const coverInput = document.getElementById('pf-image');
+      const currentValue = normalizeImagePath(coverInput.value);
+      if (!currentValue && productImageState.length) {
+        coverInput.value = productImageState[0];
+      }
+    }
+
+    function renderProductImagePreview() {
+      syncPrimaryImageField();
+      const preview = document.getElementById('pf-image-preview');
+      const cover = normalizeImagePath(document.getElementById('pf-image').value);
+      const images = getAllProductImages();
+      preview.innerHTML = images.length
+        ? images.map((src, index) => `
+          <div class="product-upload-item">
+            <img src="${src}" alt="Product image ${index + 1}">
+            <div class="product-upload-meta">
+              <span class="product-upload-tag">${src === cover ? 'Cover' : `Image ${index + 1}`}</span>
+              <button type="button" class="icon-action-btn" data-remove-image="${encodeURIComponent(src)}"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+          </div>
+        `).join('')
+        : '<div class="variant-summary">No images selected yet.</div>';
+    }
+
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function resetProductFormFields() {
+      editingPid = null;
+      productImageState = [];
+      document.getElementById('product-form').reset();
+      document.getElementById('product-form-title').textContent = 'Add Product';
+      document.getElementById('save-product-btn').textContent = 'Save Product';
+      document.getElementById('pf-id').value = '';
+      document.getElementById('pf-created').value = new Date().toISOString().slice(0, 10);
+      document.getElementById('pf-stock').value = 50;
+      document.getElementById('pf-badge').value = '';
+      document.getElementById('pf-rating').value = 0;
+      document.getElementById('pf-review-count').value = 0;
+      fillCategoryOptions('makeup');
+      populateSubcategoryOptions('makeup');
+      renderVariantGroups([]);
+      renderProductImagePreview();
+    }
+
     function checkAdminPass() {
       const pass = document.getElementById('admin-pass').value;
       if (pass === ADMIN_PASS) {
@@ -781,6 +1286,46 @@
     document.getElementById('toggle-product-form-btn').addEventListener('click', toggleProductForm);
     document.getElementById('cancel-product-form-btn').addEventListener('click', toggleProductForm);
     document.getElementById('toggle-coupon-form-btn').addEventListener('click', toggleCouponForm);
+    document.getElementById('pf-cat').addEventListener('change', e => populateSubcategoryOptions(e.target.value));
+    document.getElementById('pf-image').addEventListener('input', renderProductImagePreview);
+    document.getElementById('variant-groups-wrap').addEventListener('input', updateVariantSummary);
+    document.getElementById('variant-groups-wrap').addEventListener('change', updateVariantSummary);
+    document.getElementById('variant-groups-wrap').addEventListener('click', e => {
+      const removeBtn = e.target.closest('.remove-variant-row');
+      if (!removeBtn) return;
+      removeBtn.closest('.variant-row')?.remove();
+      if (!document.querySelector('#variant-groups-wrap .variant-row')) {
+        renderVariantGroups([]);
+      } else {
+        updateVariantSummary();
+      }
+    });
+    document.getElementById('add-variant-group-btn').addEventListener('click', () => {
+      document.getElementById('variant-groups-wrap').appendChild(createVariantRow({ name: 'color', options: [] }));
+      updateVariantSummary();
+    });
+    document.getElementById('pf-image-preview').addEventListener('click', e => {
+      const btn = e.target.closest('[data-remove-image]');
+      if (!btn) return;
+      const src = decodeURIComponent(btn.dataset.removeImage || '');
+      productImageState = productImageState.filter(image => image !== src);
+      if (normalizeImagePath(document.getElementById('pf-image').value) === src) {
+        document.getElementById('pf-image').value = '';
+      }
+      renderProductImagePreview();
+    });
+    document.getElementById('pf-image-upload').addEventListener('change', async e => {
+      const files = [...(e.target.files || [])];
+      if (!files.length) return;
+      const uploadedImages = await Promise.all(files.map(readFileAsDataUrl));
+      productImageState = uniqueList([...productImageState, ...uploadedImages]);
+      renderProductImagePreview();
+      e.target.value = '';
+    });
+    fillCategoryOptions('makeup');
+    populateSubcategoryOptions('makeup');
+    renderVariantGroups([]);
+    renderProductImagePreview();
 
     function checkAdminSession() {
       const user = MDB.Auth.getUser();
@@ -1014,22 +1559,29 @@
         const p = await MDB.Products.getById(id);
         if(!p) return;
         editingPid = id;
+        document.getElementById('product-form-title').textContent = 'Edit Product';
+        document.getElementById('save-product-btn').textContent = 'Update Product';
         document.getElementById('pf-id').value = p.id || '';
         document.getElementById('pf-created').value = safeText(p.createdAt).slice(0, 10);
         document.getElementById('pf-name').value = p.name;
         document.getElementById('pf-brand').value = p.brand;
         document.getElementById('pf-price').value = p.price;
         document.getElementById('pf-oprice').value = p.originalPrice || '';
-        document.getElementById('pf-cat').value = p.category;
-        document.getElementById('pf-subcat').value = p.subcategory || '';
+        fillCategoryOptions(p.category || 'makeup');
+        populateSubcategoryOptions(p.category || 'makeup', p.subcategory || '');
         document.getElementById('pf-stock').value = p.stock;
         document.getElementById('pf-badge').value = p.badge || '';
         document.getElementById('pf-desc').value = p.description || '';
         document.getElementById('pf-details').value = p.details || '';
         document.getElementById('pf-ingredients').value = Array.isArray(p.ingredients) ? p.ingredients.join('\n') : '';
-        document.getElementById('pf-variants').value = Array.isArray(p.variants) ? p.variants.join('\n') : '';
-        document.getElementById('pf-image').value = p.image;
-        document.getElementById('pf-images').value = Array.isArray(p.images) ? p.images.join('\n') : '';
+        document.getElementById('pf-image').value = p.image || '';
+        productImageState = Array.isArray(p.images) ? p.images.slice() : [];
+        renderProductImagePreview();
+        renderVariantGroups(
+          Array.isArray(p.variantGroups) && p.variantGroups.length
+            ? p.variantGroups
+            : (Array.isArray(p.variants) && p.variants.length ? [{ name: 'color', options: p.variants }] : [])
+        );
         document.getElementById('pf-rating').value = p.rating || 0;
         document.getElementById('pf-review-count').value = p.reviewCount || 0;
         document.getElementById('pf-featured').checked = !!p.isFeatured;
@@ -1048,11 +1600,10 @@
 
     document.getElementById('product-form').onsubmit = async e => {
         e.preventDefault();
-        const imageValue = document.getElementById('pf-image').value.trim().replace(/^\.\//, '').replace(/^(\.\.\/)+/, '');
-        const galleryImages = normalizeListInput(document.getElementById('pf-images').value)
-          .map(path => path.replace(/^\.\//, '').replace(/^(\.\.\/)+/, ''));
-        const normalizedImages = galleryImages.length ? galleryImages : (imageValue ? [imageValue] : []);
-        const variants = normalizeListInput(document.getElementById('pf-variants').value);
+        const imageValue = normalizeImagePath(document.getElementById('pf-image').value);
+        const variantGroups = collectVariantGroups();
+        const normalizedImages = uniqueList([imageValue, ...productImageState]);
+        const primaryImage = imageValue || normalizedImages[0] || 'img/logo.svg';
         const ingredients = normalizeListInput(document.getElementById('pf-ingredients').value);
         const createdValue = document.getElementById('pf-created').value || new Date().toISOString().slice(0, 10);
         const data = {
@@ -1068,8 +1619,9 @@
             description: document.getElementById('pf-desc').value.trim(),
             details: document.getElementById('pf-details').value.trim(),
             ingredients,
-            variants,
-            image: imageValue || 'img/logo.svg',
+            variants: variantGroups.flatMap(group => group.options),
+            variantGroups,
+            image: primaryImage,
             images: normalizedImages,
             rating: Math.max(0, Math.min(5, parseFloat(document.getElementById('pf-rating').value) || 0)),
             reviewCount: Math.max(0, parseInt(document.getElementById('pf-review-count').value) || 0),
@@ -1085,20 +1637,15 @@
     };
 
     function toggleProductForm() { 
-        editingPid = null;
-        document.getElementById('product-form').reset();
-        document.getElementById('pf-id').value = '';
-        document.getElementById('pf-created').value = new Date().toISOString().slice(0, 10);
-        document.getElementById('pf-stock').value = 50;
-        document.getElementById('pf-badge').value = '';
-        document.getElementById('pf-rating').value = 0;
-        document.getElementById('pf-review-count').value = 0;
-        document.getElementById('pf-details').value = '';
-        document.getElementById('pf-ingredients').value = '';
-        document.getElementById('pf-variants').value = '';
-        document.getElementById('pf-images').value = '';
         const w = document.getElementById('product-form-wrap');
-        w.style.display = w.style.display === 'none' ? 'block' : 'none';
+        const isHidden = w.style.display === 'none' || !w.style.display;
+        if (isHidden) {
+          resetProductFormFields();
+          w.style.display = 'block';
+        } else {
+          resetProductFormFields();
+          w.style.display = 'none';
+        }
     }
 
     function renderReviews() {
