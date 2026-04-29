@@ -541,27 +541,24 @@
           </div>
         `).join('');
         
-        // Add click handlers for variant buttons
+        // Add click handlers for variant buttons - single selection per group (radio button behavior)
         variantWrap.querySelectorAll('.variant-btn').forEach(btn => {
-          btn.addEventListener('click', function() {
+          btn.addEventListener('click', function(e) {
+            e.preventDefault();
             const groupWrap = this.closest('.variant-btns');
-            const groupName = groupWrap.dataset.variantGroup?.toLowerCase() || '';
-            const isColorGroup = groupName.includes('color');
-
-            if (isColorGroup) {
-              // If it's a color group, clear all buttons in ALL color groups
-              variantWrap.querySelectorAll('.variant-btns').forEach(otherGroup => {
-                const otherName = otherGroup.dataset.variantGroup?.toLowerCase() || '';
-                if (otherName.includes('color')) {
-                  otherGroup.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
-                }
-              });
-            } else {
-              // Otherwise just clear buttons in the same group
-              groupWrap.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
-            }
             
+            // Remove active class from all buttons in the same group only
+            groupWrap.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+            
+            // Add active class to the clicked button
             this.classList.add('active');
+            
+            // Dispatch custom event for variant change
+            const variantName = this.textContent.trim();
+            const groupName = groupWrap.dataset.variantGroup;
+            document.dispatchEvent(new CustomEvent('variant:selected', {
+              detail: { group: groupName, value: variantName }
+            }));
           });
         });
       } else {
