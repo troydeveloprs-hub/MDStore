@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', async () => {
+﻿document.addEventListener('DOMContentLoaded', async () => {
   'use strict';
 
   if (!window.MDB || !window.MDB.Products || !window.MDB.UI) return;
@@ -55,9 +55,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   };
 
   const categoryAliases = {
-    face: ['face', 'foundation', 'primer', 'concealer', 'contour', 'highlighter', 'bb cc cream'],
-    eyes: ['eyes', 'eye', 'eyeliner', 'eyebrow', 'mascara', 'eye palettes'],
-    lips: ['lips', 'lipstick', 'lip gloss', 'lip balms']
+    makeup: ["makeup", "mekup", "مكياج"],
+    face: ["face", "foundation", "primer", "concealer", "contour", "highlighter", "bb cc cream"],
+    eyes: ["eyes", "eye", "eyeliner", "eyebrow", "mascara", "eye palettes"],
+    lips: ["lips", "lipstick", "lip gloss", "lip balms"]
   };
 
   const priceLabelMap = [

@@ -724,14 +724,32 @@
       const skincareGrid = document.getElementById('home-skincare-grid');
       try {
         const products = await MDB.Products.getAll();
-        console.log('--- DB Products ---', products);
+        console.log("--- DB PRODUCTS LOADED ---", products);
+        
         if (newGrid) {
-          const makeup = products.filter(p => ['makeup','Ù…ÙƒÙŠØ§Ø¬'].includes((p.category||'').toLowerCase().trim())).slice(0, 4);
-          newGrid.innerHTML = makeup.length ? makeup.map(p => MDB.UI.productCardHTML(p)).join('') : '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#888;">No Makeup products found.</div>';
+          let makeup = products.filter(p => {
+            const cat = (p.category || "").toLowerCase().trim();
+            return cat.includes("makeup") || cat.includes("mekup") || cat.includes("مكياج");
+          }).slice(0, 4);
+
+          if (makeup.length === 0 && products.length > 0) {
+            makeup = products.slice(0, 4);
+          }
+
+          newGrid.innerHTML = makeup.length ? makeup.map(p => MDB.UI.productCardHTML(p)).join("") 
+            : "<div style='grid-column:1/-1;text-align:center;padding:40px;color:#888;'>No products found in database.</div>";
         }
+
         if (skincareGrid) {
-          const skincare = products.filter(p => ['skincare','Ø¹Ù†Ø§ÙŠØ© Ø¨Ø§Ù„Ø¨Ø´Ø±Ø©'].includes((p.category||'').toLowerCase().trim())).slice(0, 4);
-          skincareGrid.innerHTML = skincare.length ? skincare.map(p => MDB.UI.productCardHTML(p)).join('') : '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#888;">No Skincare products found.</div>';
+          const skincare = products.filter(p => {
+            const cat = (p.category || "").toLowerCase().trim();
+            return cat.includes("skincare") || cat.includes("عناية") || cat.includes("skin");
+          }).slice(0, 4);
+          if (skincare.length) skincareGrid.innerHTML = skincare.map(p => MDB.UI.productCardHTML(p)).join("");
+          else {
+            const sec = skincareGrid.closest(".products-section");
+            if (sec) sec.style.display = "none";
+          }
         }
       } catch (err) { console.error(err); }
     });
