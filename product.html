@@ -535,19 +535,15 @@
       
       if (variantGroups.length) {
         variantWrap.innerHTML = variantGroups.map(group => `
-          <div class="product-option-group" data-option-type="${group.name.toLowerCase()}">
-            <div class="option-label">
-              <span class="option-name">${formatVariantGroupLabel(group.name)}</span>
-              <span class="option-selected" data-option-type="${group.name.toLowerCase()}">Select ${group.name}</span>
-            </div>
-            <div class="option-buttons" data-option-type="${group.name.toLowerCase()}">
+          <div class="variant-group" data-group="${group.name.toLowerCase()}">
+            <div class="variant-label">${formatVariantGroupLabel(group.name)}</div>
+            <div class="variant-options">
               ${(group.options || []).map(option => `
                 <button 
-                  class="option-button" 
-                  type="button" 
-                  data-option-type="${group.name.toLowerCase()}" 
-                  data-option-value="${option}"
-                  aria-label="Select ${option}"
+                  class="variant-option" 
+                  data-group="${group.name.toLowerCase()}" 
+                  data-value="${option}"
+                  type="button"
                 >
                   ${option}
                 </button>
@@ -556,86 +552,46 @@
           </div>
         `).join('');
         
-        // Initialize variant selection system
-        initVariantSelector(variantWrap);
+        // Initialize variant selection
+        initVariantSelection(variantWrap);
         
         // Auto-select first option in each group
-        variantWrap.querySelectorAll('.product-option-group').forEach(group => {
-          const firstButton = group.querySelector('.option-button');
-          if (firstButton) {
-            const optionType = firstButton.dataset.optionType;
-            const optionValue = firstButton.dataset.optionValue;
-            
-            // Add active class
-            firstButton.classList.add('active');
-            
-            // Update selected variants
-            window.selectedVariants[optionType] = optionValue;
-            
-            // Update selected label
-            const label = group.querySelector('.option-selected[data-option-type="' + optionType + '"]');
-            if (label) {
-              label.textContent = optionValue;
-              label.classList.add('has-selection');
-            }
+        variantWrap.querySelectorAll('.variant-group').forEach(group => {
+          const firstOption = group.querySelector('.variant-option');
+          if (firstOption) {
+            selectVariantOption(firstOption);
           }
         });
       } else {
         variantWrap.innerHTML = '';
       }
       
-      // Function to initialize variant selector
-      function initVariantSelector(container) {
-        const buttons = container.querySelectorAll('.option-button');
-        
-        buttons.forEach(btn => {
-          btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const optionType = this.dataset.optionType;
-            const optionValue = this.dataset.optionValue;
-            
-            // Remove active class from all buttons in the same group
-            container.querySelectorAll(`.option-button[data-option-type="${optionType}"]`)
-              .forEach(b => b.classList.remove('active'));
-            
-            // Add active class to clicked button
-            this.classList.add('active');
-            
-            // Update selected variants object
-            window.selectedVariants[optionType] = optionValue;
-            
-            // Update selected label
-            const label = container.querySelector(`.option-selected[data-option-type="${optionType}"]`);
-            if (label) {
-              label.textContent = optionValue;
-              label.classList.add('has-selection');
-            }
-            
-            // Log selection for debugging
-            console.log('Variant selected:', { [optionType]: optionValue });
-            console.log('All selected variants:', window.selectedVariants);
-            
-            // Dispatch custom event
-            document.dispatchEvent(new CustomEvent('variant:changed', {
-              detail: { 
-                type: optionType, 
-                value: optionValue, 
-                allVariants: { ...window.selectedVariants } 
-              }
-            }));
+      function initVariantSelection(container) {
+        container.querySelectorAll('.variant-option').forEach(btn => {
+          btn.addEventListener('click', function() {
+            selectVariantOption(this);
           });
         });
       }
       
-      // Function to check if all required options are selected
-      function areAllVariantsSelected() {
-        const requiredOptions = variantGroups.map(g => g.name.toLowerCase());
-        const selectedTypes = Object.keys(window.selectedVariants);
-        return requiredOptions.every(opt => selectedTypes.includes(opt));
+      function selectVariantOption(button) {
+        const group = button.dataset.group;
+        const value = button.dataset.value;
+        
+        // Remove active class from all options in the same group
+        document.querySelectorAll(`.variant-option[data-group="${group}"]`)
+          .forEach(b => b.classList.remove('active'));
+        
+        // Add active class to clicked option
+        button.classList.add('active');
+        
+        // Update selected variants
+        window.selectedVariants[group] = value;
+        
+        console.log('Selected:', { [group]: value });
+        console.log('All selected:', window.selectedVariants);
       }
       
-      // Function to get selected variant summary
       function getSelectedVariantSummary() {
         const selected = window.selectedVariants;
         if (!Object.keys(selected).length) return '';
