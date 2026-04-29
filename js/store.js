@@ -35,6 +35,19 @@ const MDB = (() => {
     return new Date().toISOString();
   }
 
+  function _normalizeProductImages(product) {
+    const images = [...new Set([
+      ...(Array.isArray(product.images) ? product.images : []),
+      product.image
+    ].filter(Boolean))];
+
+    return {
+      ...product,
+      image: product.image || images[0] || '',
+      images
+    };
+  }
+
   /* ===================================================================
      PRODUCTS  — Fetch from local JSON
      =================================================================== */
@@ -59,7 +72,7 @@ const MDB = (() => {
 
       const baseProducts = await this._loadBaseProducts();
       const overrides = _get(KEYS.PRODUCT_OVERRIDES) || {};
-      let all = baseProducts.map(product => (
+      let all = baseProducts.map(product => _normalizeProductImages(
         overrides[product.id] ? { ...product, ...overrides[product.id] } : product
       ));
 
@@ -73,8 +86,8 @@ const MDB = (() => {
       // Handle updated products
       custom.filter(p => !p.isDeleted).forEach(cp => {
         const idx = all.findIndex(p => p.id === cp.id);
-        if (idx > -1) all[idx] = { ...all[idx], ...cp };
-        else all.push(cp);
+        if (idx > -1) all[idx] = _normalizeProductImages({ ...all[idx], ...cp });
+        else all.push(_normalizeProductImages(cp));
       });
 
       this._cache = all;
@@ -87,12 +100,12 @@ const MDB = (() => {
 
       if (!product.id) product.id = 'P' + Date.now();
 
-      if (idx > -1) custom[idx] = { ...custom[idx], ...product };
+      if (idx > -1) custom[idx] = _normalizeProductImages({ ...custom[idx], ...product });
       else {
-        custom.push({
+        custom.push(_normalizeProductImages({
           variants: [],
           variantGroups: [],
-          images: product.image ? [product.image] : [],
+          images: [],
           description: '',
           details: '',
           ingredients: [],
@@ -103,12 +116,12 @@ const MDB = (() => {
           isNewArrival: false,
           createdAt: _dateNow().slice(0, 10),
           ...product
-        });
+        }));
       }
 
       _set(KEYS.CUSTOM_PRODUCTS, custom);
       this._cache = null; // Invalidate cache
-      return product;
+      return _normalizeProductImages(product);
     },
 
     async delete(id) {

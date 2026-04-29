@@ -7,6 +7,19 @@ document.addEventListener('DOMContentLoaded', () => {
   'use strict';
   if (!window.MDB) return;
 
+  function getBasePath() {
+    const path = window.location.pathname;
+    if (path.includes('/collections/') || path.includes('/Pages/')) return '../';
+    return '';
+  }
+
+  function resolveImagePath(image) {
+    if (!image) return '';
+    if (/^(https?:)?\/\//.test(image) || image.startsWith('data:') || image.startsWith('/')) return image;
+    if (image.startsWith('../') || image.startsWith('./')) return image;
+    return getBasePath() + image;
+  }
+
   /* ===================================================================
      1. SMART SEARCH — Live autocomplete overlay
      =================================================================== */
@@ -50,12 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const basePath = this.getBasePath();
+      const basePath = getBasePath();
       dropdown.innerHTML = `
         <div class="search-results-header"><span>${results.length} result${results.length > 1 ? 's' : ''}</span></div>
         ${results.slice(0, 6).map(p => `
           <a href="${basePath}product.html?id=${p.id}" class="search-result-item">
-            <img src="${basePath}${p.image}" alt="${p.name}" class="search-result-img">
+            <img src="${resolveImagePath(p.image)}" alt="${p.name}" class="search-result-img">
             <div class="search-result-info">
               <span class="search-result-brand">${p.brand}</span>
               <span class="search-result-name">${p.name}</span>
@@ -68,11 +81,6 @@ document.addEventListener('DOMContentLoaded', () => {
       dropdown.classList.add('open');
     },
 
-    getBasePath() {
-      const path = window.location.pathname;
-      if (path.includes('/collections/') || path.includes('/Pages/')) return '../';
-      return '';
-    }
   };
   SearchEngine.init();
 
@@ -103,7 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="recently-viewed-scroll">
           ${items.map(i => `
             <a href="${basePath}product.html?id=${i.id}" class="rv-item">
-              <img src="${basePath}${i.image}" alt="${i.name}">
+              <img src="${resolveImagePath(i.image)}" alt="${i.name}">
               <span class="rv-brand">${i.brand}</span>
               <span class="rv-name">${i.name}</span>
               <span class="rv-price">${MDB.UI.formatPrice(i.price)}</span>
@@ -385,11 +393,11 @@ document.addEventListener('DOMContentLoaded', () => {
         bar.id = 'compare-bar';
         document.body.appendChild(bar);
       }
-      const bp = window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '';
+      const bp = getBasePath();
       bar.innerHTML = `
         <div class="compare-bar-inner">
           <div class="compare-bar-items">${items.map(i => `
-            <div class="compare-bar-item"><img src="${bp}${i.image}" alt="${i.name}"><button onclick="MDB.Compare.remove('${i.id}')" class="compare-bar-remove">&times;</button></div>
+            <div class="compare-bar-item"><img src="${resolveImagePath(i.image)}" alt="${i.name}"><button onclick="MDB.Compare.remove('${i.id}')" class="compare-bar-remove">&times;</button></div>
           `).join('')}</div>
           <div class="compare-bar-actions">
             <span class="compare-bar-count">${items.length} item${items.length > 1 ? 's' : ''}</span>
@@ -539,9 +547,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     show(p) {
       const modal = document.querySelector('.qv-modal');
-      const basePath = window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '';
+      const basePath = getBasePath();
       
-      document.getElementById('qv-img').src = basePath + p.image;
+      document.getElementById('qv-img').src = resolveImagePath(p.image);
       document.getElementById('qv-brand').textContent = p.brand;
       document.getElementById('qv-title').textContent = p.name;
       document.getElementById('qv-price').textContent = MDB.UI.formatPrice(p.price);
