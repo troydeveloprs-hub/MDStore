@@ -530,37 +530,37 @@
 
       const variantWrap = document.getElementById('variant-selectors-wrap');
       if (variantGroups.length) {
-        variantWrap.innerHTML = variantGroups.map(group => {
-          const isColor = group.name?.toLowerCase().includes('color');
-          return `
-            <div class="variant-selector">
-              <label>${formatVariantGroupLabel(group.name)}:</label>
-              <div class="variant-btns" data-variant-group="${group.name}">
-                ${(group.options || []).map((option, index) => {
-                  let style = '';
-                  let extraClass = '';
-                  if (isColor) {
-                    extraClass = ' swatch';
-                    // Simple color detection (check if it's a hex or basic name)
-                    const colorVal = option.trim().toLowerCase();
-                    const isHex = /^#([0-9a-f]{3}){1,2}$/i.test(colorVal);
-                    const namedColors = ['red', 'blue', 'green', 'black', 'white', 'pink', 'purple', 'yellow', 'orange', 'brown', 'grey', 'gray', 'nude', 'beige'];
-                    if (isHex || namedColors.includes(colorVal)) {
-                      style = `style="background-color: ${colorVal}"`;
-                    }
-                  }
-                  return `<button class="variant-btn${index === 0 ? ' active' : ''}${extraClass}" type="button" ${style} title="${option}">${option}</button>`;
-                }).join('')}
-              </div>
+        variantWrap.innerHTML = variantGroups.map(group => `
+          <div class="variant-selector">
+            <label>${formatVariantGroupLabel(group.name)}:</label>
+            <div class="variant-btns" data-variant-group="${group.name}">
+              ${(group.options || []).map((option, index) => {
+                return `<button class="variant-btn${index === 0 ? ' active' : ''}" type="button">${option}</button>`;
+              }).join('')}
             </div>
-          `;
-        }).join('');
+          </div>
+        `).join('');
         
         // Add click handlers for variant buttons
         variantWrap.querySelectorAll('.variant-btn').forEach(btn => {
           btn.addEventListener('click', function() {
-            const group = this.closest('.variant-btns');
-            group.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+            const groupWrap = this.closest('.variant-btns');
+            const groupName = groupWrap.dataset.variantGroup?.toLowerCase() || '';
+            const isColorGroup = groupName.includes('color');
+
+            if (isColorGroup) {
+              // If it's a color group, clear all buttons in ALL color groups
+              variantWrap.querySelectorAll('.variant-btns').forEach(otherGroup => {
+                const otherName = otherGroup.dataset.variantGroup?.toLowerCase() || '';
+                if (otherName.includes('color')) {
+                  otherGroup.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+                }
+              });
+            } else {
+              // Otherwise just clear buttons in the same group
+              groupWrap.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+            }
+            
             this.classList.add('active');
           });
         });

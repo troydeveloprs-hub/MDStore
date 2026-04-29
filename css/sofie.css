@@ -2637,19 +2637,20 @@ h6 {
 }
 
 .variant-selector {
-   margin-bottom: var(--space-lg);
-   flex: 0 1 auto;
-   min-width: 140px;
+   margin-bottom: var(--space-md);
+   display: flex;
+   align-items: center;
+   gap: 20px;
 }
 
 .variant-selector label {
-   display: block;
    font-size: 13px;
    font-weight: 700;
-   margin-bottom: 10px;
    text-transform: uppercase;
    letter-spacing: 1px;
    color: var(--color-text-primary);
+   min-width: 80px;
+   margin-bottom: 0;
 }
 
 .variant-btns {
@@ -2660,7 +2661,7 @@ h6 {
 }
 
 .variant-btn {
-   padding: 8px 20px;
+   padding: 10px 24px;
    border: 1.5px solid var(--color-border);
    border-radius: var(--border-radius-sm);
    font-size: 14px;
@@ -2669,13 +2670,15 @@ h6 {
    transition: all var(--transition-base);
    background: var(--color-bg);
    color: var(--color-text-secondary);
-   min-width: 60px;
+   min-width: 80px;
    text-align: center;
+   white-space: nowrap;
 }
 
 .variant-btn:hover {
    border-color: var(--color-text-primary);
    color: var(--color-text-primary);
+   background: var(--color-bg-light);
 }
 
 .variant-btn.active {
@@ -2685,29 +2688,11 @@ h6 {
    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-/* Color Swatch Specifics */
-.variant-btn.swatch {
-   width: 36px;
-   height: 36px;
-   min-width: 36px;
-   border-radius: 50%;
-   padding: 0;
-   border: 2px solid var(--color-border);
-   position: relative;
-   overflow: hidden;
-   text-indent: -9999px;
-}
-
-.variant-btn.swatch.active {
-   border-color: var(--color-text-primary);
-   box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-text-primary);
-}
-
 #variant-selectors-wrap {
    display: flex;
-   flex-wrap: wrap;
-   gap: 24px;
-   margin-bottom: 20px;
+   flex-direction: column;
+   gap: 16px;
+   margin: 20px 0;
 }
 
 .quantity-selector {
