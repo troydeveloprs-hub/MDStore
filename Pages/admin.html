@@ -1128,6 +1128,11 @@
       return cleaned.replace(/^\.\//, '').replace(/^(\.\.\/)+/, '');
     }
 
+    function adminImageSrc(value) {
+      const image = normalizeImagePath(value) || 'img/logo.svg';
+      return /^(data:image|https?:\/\/|blob:)/i.test(image) ? image : `../${image}`;
+    }
+
     function escapeHtml(value) {
       return safeText(value)
         .replace(/&/g, '&amp;')
@@ -1231,7 +1236,7 @@
       preview.innerHTML = images.length
         ? images.map((src, index) => `
           <div class="product-upload-item">
-            <img src="${src}" alt="Product image ${index + 1}">
+            <img src="${adminImageSrc(src)}" alt="Product image ${index + 1}">
             <div class="product-upload-meta">
               <span class="product-upload-tag">${src === cover ? 'Cover' : `Image ${index + 1}`}</span>
               <button type="button" class="icon-action-btn" data-remove-image="${encodeURIComponent(src)}"><i class="fa-solid fa-xmark"></i></button>
@@ -1541,7 +1546,7 @@
         return;
       }
       tbody.innerHTML = products.map(p => `<tr>
-      <td><img src="../${p.image}" class="admin-product-img" onerror="this.src='../img/logo.svg'"></td>
+      <td><img src="${adminImageSrc(p.image)}" class="admin-product-img" onerror="this.src='../img/logo.svg'"></td>
       <td><strong>${p.name}</strong><br><small style="color:#888">${p.id}</small></td>
       <td>${p.brand}</td>
       <td>${MDB.UI.formatPrice(p.price)}</td>
