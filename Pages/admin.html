@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -704,8 +704,19 @@
 <body>
   <main class="admin-page">
     <div class="container">
+      <!-- LOGIN GATE -->
+      <div id="admin-login" style="display:none">
+        <div class="admin-login">
+          <img src="../img/logo.svg" alt="MDB" style="width:120px;margin-bottom:24px">
+          <h2>Admin Access</h2>
+          <p>Please enter the administrative password to manage the store catalog and orders.</p>
+          <input type="password" id="admin-pass" placeholder="Password">
+          <button type="button" id="admin-access-btn">Access Dashboard</button>
+        </div>
+      </div>
+
       <!-- DASHBOARD -->
-      <div id="admin-dashboard">
+      <div id="admin-dashboard" style="display:none">
         <div class="admin-header">
           <h1><i class="fa-solid fa-chart-line"></i> Admin Dashboard</h1>
           <div style="display:flex;gap:8px;align-items:center">
@@ -1011,11 +1022,7 @@
   <script src="../js/store.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      if (!MDB.Auth.isLoggedIn() || MDB.Auth.getUser()?.role !== "admin") {
-        window.location.replace("login.html");
-        return;
-      }
-      showDashboard();
+      checkAdminSession();
     });
 
     const ADMIN_PASS = 'admin123';
@@ -1469,28 +1476,27 @@
       await renderInventory();
     }
 
-        async function renderInventory() {
+    async function renderInventory() {
       const products = await MDB.Products.getAll();
       const tbody = document.querySelector('#inventory-table tbody');
       tbody.innerHTML = products.map(p => {
         const stock = parseInt(p.stock, 10) || 0;
-        const stockClass = stock < 5 ? 'low' : 'in-stock';
-        return <tr>
-          <td><strong>\</strong><br><small style='color:#888'>\</small></td>
-          <td>\</td>
-          <td><span class='stock-badge \' style='padding:6px 12px; border-radius:6px; font-weight:700;'>\ units</span></td>
+        const lowStock = stock < 10;
+        return `<tr>
+          <td><strong>${escapeHtml(p.name)}</strong><br><small style="color:#888">${escapeHtml(p.brand)}</small></td>
+          <td>${escapeHtml(p.id)}</td>
+          <td><span class="stock-badge ${lowStock ? 'low' : ''}" style="padding:4px 8px; border-radius:4px; font-weight:600; ${lowStock ? 'background:#fef2f2;color:#dc2626' : 'background:#f0fdf4;color:#16a34a'}">${stock} units</span></td>
           <td>
-            <div style='display:flex;gap:4px'>
-              <button class='admin-btn' type='button' data-adjust-stock='\' data-delta='-1'>-1</button>
-              <button class='admin-btn' type='button' data-adjust-stock='\' data-delta='1'>+1</button>
-              <button class='admin-btn' type='button' data-adjust-stock='\' data-delta='10'>+10</button>
-              <button class='admin-btn' type='button' data-adjust-stock='\' data-delta='50'>+50</button>
+            <div style="display:flex;gap:4px">
+              <button class="admin-btn" type="button" data-adjust-stock="${encodeURIComponent(p.id)}" data-delta="-1">-1</button>
+              <button class="admin-btn" type="button" data-adjust-stock="${encodeURIComponent(p.id)}" data-delta="1">+1</button>
+              <button class="admin-btn" type="button" data-adjust-stock="${encodeURIComponent(p.id)}" data-delta="10">+10</button>
             </div>
           </td>
-          <td>\</td>
-        </tr>;
+          <td>${stock > 0 ? '<span style="color:#10b981"><i class="fa-solid fa-check"></i> In Stock</span>' : '<span style="color:#ef4444"><i class="fa-solid fa-xmark"></i> Out of Stock</span>'}</td>
+        </tr>`;
       }).join('');
-    }</strong><br><small style="color:#888">${p.brand}</small></td>
+    }
         <td>${p.id}</td>
         <td><span class="stock-badge ${p.stock < 10 ? 'low' : ''}" style="padding:4px 8px; border-radius:4px; font-weight:600; ${p.stock < 10 ? 'background:#fef2f2;color:#dc2626' : 'background:#f0fdf4;color:#16a34a'}">${p.stock} units</span></td>
         <td>
@@ -1504,7 +1510,7 @@
       </tr>`).join('');
     }
 
-        async function adjustStock(pid, delta) {
+    async function adjustStock(pid, delta) {
       try {
         const p = await MDB.Products.getById(pid);
         if (!p) {
@@ -1512,7 +1518,6 @@
           return;
         }
         
-        // Ensure we preserve all metadata and fields
         const updatedProduct = {
           ...p,
           stock: Math.max(0, (parseInt(p.stock, 10) || 0) + delta)
@@ -1520,17 +1525,11 @@
 
         await MDB.Products.save(updatedProduct);
         
-        await refreshAll();
-        MDB.UI.toast(Stock updated:  units, 'success');
-      } catch (error) {
-        console.error('Adjust Stock Error:', error);
-        showProductActionError(error, 'Failed to update stock.');
-      }
-    });
-        renderInventory();
-        renderProducts(getProductSearchTerm());
+        await renderInventory();
+        await renderProducts(document.getElementById('product-search')?.value || '');
         MDB.UI.toast(`Stock updated for ${p.name}`, 'success');
       } catch (error) {
+        console.error('Adjust Stock Error:', error);
         showProductActionError(error, 'Failed to update stock.');
       }
     }
