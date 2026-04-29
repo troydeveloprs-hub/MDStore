@@ -1008,4 +1008,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (searchBar) searchBar.classList.remove('open');
     }
   });
+
+  /* ============================================
+     PRODUCT CARD THUMBNAILS
+     ============================================ */
+  if (typeof MDB !== 'undefined' && MDB.UI && MDB.UI.initProductCardThumbnails) {
+    MDB.UI.initProductCardThumbnails();
+  }
 });
