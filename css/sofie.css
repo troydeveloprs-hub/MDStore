@@ -1121,6 +1121,40 @@ h6 {
    text-decoration: underline
 }
 
+/* BRANDS SECTION */
+.brands-section {
+   padding: 48px 0
+}
+
+.brands-grid {
+   display: grid;
+   grid-template-columns: repeat(4, 1fr);
+   gap: 16px
+}
+
+.brand-card {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   padding: 20px 16px;
+   background: var(--color-bg-light);
+   border: 1px solid var(--color-border);
+   border-radius: 8px;
+   font-size: 14px;
+   font-weight: 600;
+   text-transform: uppercase;
+   letter-spacing: 1px;
+   color: var(--color-text-primary);
+   text-decoration: none;
+   transition: all var(--transition-base)
+}
+
+.brand-card:hover {
+   background: var(--color-bg);
+   border-color: var(--color-accent);
+   color: var(--color-accent)
+}
+
 /* BRANDS STRIP */
 .brands-strip {
    padding: 32px 0;
@@ -4608,6 +4642,11 @@ object-fit: cover;
    .brand-name {
       font-size: 12px;
       letter-spacing: 1.5px
+   }
+
+   /* Brands section */
+   .brands-section {
+      display: none
    }
 
    /* Section header */
