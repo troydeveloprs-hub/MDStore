@@ -186,12 +186,14 @@ const MDB = (() => {
       const metadata = _safeObject(row?.metadata);
       return _normalizeProductImages({
         ...this._defaults(),
-        ...metadata,
-        id: row?.id || '',
-        name: row?.name || metadata.name || '',
-        price: Number(row?.price || metadata.price || 0),
-        image: row?.image || metadata.image || '',
-        description: row?.description || metadata.description || '',
+        id: row.id,
+        name: row.name || '',
+        brand: metadata.brand || '',
+        price: Number(row.price || 0),
+        originalPrice: Number(metadata.originalPrice || 0) || null,
+        image: row.image || '',
+        images: Array.isArray(row.images) ? row.images : (Array.isArray(metadata.images) ? metadata.images : []),
+        description: row.description || '',
         createdAt: row?.created_at || metadata.createdAt || _dateNow()
       });
     },
@@ -213,8 +215,9 @@ const MDB = (() => {
       delete metadata.name;
       delete metadata.price;
       delete metadata.image;
+      delete metadata.images;
       delete metadata.description;
-      delete metadata.created_at; // Ensure no snake_case version exists in metadata
+      delete metadata.created_at;
 
       // Store the legacy ID if it's not a UUID
       if (product?.id && !_isUuid(product.id)) {
@@ -225,6 +228,7 @@ const MDB = (() => {
         name: base.name,
         price: Number(base.price || 0),
         image: base.image || '',
+        images: base.images || [],
         description: base.description || null,
         created_at: this._normalizeCreatedAt(base.createdAt),
         metadata
@@ -288,7 +292,7 @@ const MDB = (() => {
         const client = await this._ensureClient();
         const { data, error } = await client
           .from(this._table)
-          .select('id, name, price, image, description, created_at, metadata')
+          .select('id, name, price, image, images, description, created_at, metadata')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -352,7 +356,7 @@ const MDB = (() => {
         const client = await this._ensureClient();
         const { data, error } = await client
           .from(this._table)
-          .select('id, name, price, image, description, created_at, metadata')
+          .select('id, name, price, image, images, description, created_at, metadata')
           .eq('id', id)
           .maybeSingle();
 
@@ -372,7 +376,7 @@ const MDB = (() => {
           : client.from(this._table).insert(row);
 
         const { data, error } = await query
-          .select('id, name, price, image, description, created_at, metadata')
+          .select('id, name, price, image, images, description, created_at, metadata')
           .single();
 
         if (error) {

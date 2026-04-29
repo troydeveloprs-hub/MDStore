@@ -839,7 +839,14 @@
                         </div>
                       </div>
                       <div>
-                        <label>Gallery Preview</label>
+                        <label>Gallery Preview & Organization</label>
+                        <div class="form-group" style="margin-top: 10px;">
+                          <label>Add Image by URL to Gallery</label>
+                          <div style="display:flex; gap: 8px;">
+                            <input type="text" id="pf-gallery-url-input" placeholder="https://example.com/image.jpg" style="flex: 1;">
+                            <button type="button" class="admin-btn" id="add-gallery-url-btn"><i class="fa-solid fa-plus"></i> Add</button>
+                          </div>
+                        </div>
                         <div id="pf-image-preview" class="product-upload-preview"></div>
                       </div>
                     </div>
@@ -1300,6 +1307,14 @@
     document.getElementById('toggle-coupon-form-btn').addEventListener('click', toggleCouponForm);
     document.getElementById('pf-cat').addEventListener('change', e => populateSubcategoryOptions(e.target.value));
     document.getElementById('pf-image').addEventListener('input', renderProductImagePreview);
+    document.getElementById('add-gallery-url-btn')?.addEventListener('click', () => {
+      const urlInput = document.getElementById('pf-gallery-url-input');
+      const url = urlInput.value.trim();
+      if (!url) return;
+      productImageState.push(url);
+      urlInput.value = '';
+      renderProductImagePreview();
+    });
     document.getElementById('variant-groups-wrap').addEventListener('input', updateVariantSummary);
     document.getElementById('variant-groups-wrap').addEventListener('change', updateVariantSummary);
     document.getElementById('variant-groups-wrap').addEventListener('click', e => {

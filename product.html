@@ -567,6 +567,18 @@
           MDB.UI.toast('Choose your preferred payment method at checkout.', 'info');
         };
       }
+
+      // Handle Gallery Clicks
+      if (galleryThumbs) {
+        galleryThumbs.onclick = (e) => {
+          const btn = e.target.closest('.gallery-thumb');
+          if (btn) {
+            document.querySelectorAll('.gallery-thumb').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            mainImage.src = btn.querySelector('img').src;
+          }
+        };
+      }
     });
 
 
