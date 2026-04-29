@@ -1,11 +1,11 @@
-/* ===================================================================
-   MDBOUTIQUEE — Store Engine
+﻿/* ===================================================================
+   MDBOUTIQUEE â€” Store Engine
    Products are loaded from Supabase; other storefront modules remain local.
    =================================================================== */
 const MDB = (() => {
   'use strict';
 
-  /* ─── Storage Keys ─── */
+  /* â”€â”€â”€ Storage Keys â”€â”€â”€ */
   const KEYS = {
     CART:      'mdb_cart',
     WISHLIST:  'mdb_wishlist',
@@ -19,7 +19,7 @@ const MDB = (() => {
     SETTINGS: 'mdb_settings',
   };
 
-  /* ─── Helpers ─── */
+  /* â”€â”€â”€ Helpers â”€â”€â”€ */
   function _get(key) {
     try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
   }
@@ -128,7 +128,7 @@ const MDB = (() => {
   }
 
   /* ===================================================================
-     PRODUCTS  — Supabase-backed product catalog
+     PRODUCTS  â€” Supabase-backed product catalog
      =================================================================== */
   const Products = {
     _cache: null,
@@ -182,51 +182,58 @@ const MDB = (() => {
       return Number.isNaN(date.getTime()) ? _dateNow() : date.toISOString();
     },
 
-    _mapRow(row) {
-      const metadata = _safeObject(row?.metadata);
-      return _normalizeProductImages({
-        ...this._defaults(),
-        id: row.id,
-        name: row.name || '',
-        brand: metadata.brand || '',
-        price: Number(row.price || 0),
-        originalPrice: Number(metadata.originalPrice || 0) || null,
-        image: row.image || '',
-        images: Array.isArray(row.images) ? row.images : (Array.isArray(metadata.images) ? metadata.images : []),
-        description: row.description || '',
-        createdAt: row?.created_at || metadata.createdAt || _dateNow()
-      });
+        _mapRow(row) {
+      if (!row) return null;
+      let metadata = row.metadata;
+      if (typeof metadata === "string") {
+        try { metadata = JSON.parse(metadata); } catch(e) { metadata = {}; }
+      }
+      metadata = metadata || {};
+      const defaults = this._defaults();
+      const merged = {
+        ...defaults,
+        ...metadata,
+        id: row.id || metadata.legacyId || "",
+        name: row.name || metadata.name || "",
+        price: Number(row.price != null ? row.price : metadata.price || 0),
+        image: row.image || metadata.image || "",
+        images: Array.isArray(row.images) && row.images.length ? row.images : (Array.isArray(metadata.images) ? metadata.images : []),
+        description: row.description || metadata.description || "",
+        createdAt: row.created_at || metadata.createdAt || defaults.createdAt
+      };
+      merged.stock = Number(merged.stock != null ? merged.stock : (metadata.stock != null ? metadata.stock : 0));
+      merged.rating = Number(merged.rating || 0);
+      merged.reviewCount = Number(merged.reviewCount || 0);
+      merged.price = Number(merged.price || 0);
+      merged.originalPrice = merged.originalPrice ? Number(merged.originalPrice) : null;
+      return _normalizeProductImages(merged);
     },
 
-    _toRow(product) {
+        _toRow(product) {
       const base = _normalizeProductImages({
         ...this._defaults(),
         ...product,
         price: Number(product?.price || 0),
-        stock: Number(product?.stock || 0),
+        stock: Number(product?.stock != null ? product.stock : 0),
         rating: Number(product?.rating || 0),
         reviewCount: Number(product?.reviewCount || 0),
         createdAt: product?.createdAt || _dateNow()
       });
 
-      // Create metadata by removing fields that have their own top-level columns
       const metadata = { ...base };
       delete metadata.id;
       delete metadata.name;
       delete metadata.price;
+      delete metadata.stock;
       delete metadata.image;
       delete metadata.images;
       delete metadata.description;
       delete metadata.created_at;
 
-      // Store the legacy ID if it's not a UUID
-      if (product?.id && !_isUuid(product.id)) {
-        metadata.legacyId = String(product.id).trim();
-      }
-
       const row = {
         name: base.name,
         price: Number(base.price || 0),
+        stock: Number(base.stock || 0),
         image: base.image || '',
         images: base.images || [],
         description: base.description || null,
@@ -292,7 +299,7 @@ const MDB = (() => {
         const client = await this._ensureClient();
         const { data, error } = await client
           .from(this._table)
-          .select('id, name, price, image, images, description, created_at, metadata')
+          .select('id, name, price, stock, image, images, description, created_at, metadata')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -356,7 +363,7 @@ const MDB = (() => {
         const client = await this._ensureClient();
         const { data, error } = await client
           .from(this._table)
-          .select('id, name, price, image, images, description, created_at, metadata')
+          .select('id, name, price, stock, image, images, description, created_at, metadata')
           .eq('id', id)
           .maybeSingle();
 
@@ -376,7 +383,7 @@ const MDB = (() => {
           : client.from(this._table).insert(row);
 
         const { data, error } = await query
-          .select('id, name, price, image, images, description, created_at, metadata')
+          .select('id, name, price, stock, image, images, description, created_at, metadata')
           .single();
 
         if (error) {
@@ -735,7 +742,7 @@ const MDB = (() => {
   };
 
   /* ===================================================================
-     AUTH  — Local user management
+     AUTH  â€” Local user management
      =================================================================== */
   const Auth = {
     _getUsers() { return _get('mdb_users') || []; },
@@ -986,7 +993,7 @@ const MDB = (() => {
       const badgeText = badge ? badge.charAt(0).toUpperCase() + badge.slice(1) : '';
       const reviews = parseInt(p.reviewCount, 10) || 0;
       const ratingValue = Math.max(0, Math.min(5, parseFloat(p.rating) || 0));
-      const ratingStars = '★'.repeat(Math.round(ratingValue)) + '☆'.repeat(5 - Math.round(ratingValue));
+      const ratingStars = 'â˜…'.repeat(Math.round(ratingValue)) + 'â˜†'.repeat(5 - Math.round(ratingValue));
       const defaultVariant = (Array.isArray(p.variantGroups) && p.variantGroups[0] && Array.isArray(p.variantGroups[0].options) && p.variantGroups[0].options[0])
         || ((p.variants && p.variants[0]) || 'Default');
       const savings = oldPrice && oldPrice > p.price
@@ -1100,17 +1107,17 @@ const MDB = (() => {
     }
   };
 
-  /* ─── Auto-update badges on cart change ─── */
+  /* â”€â”€â”€ Auto-update badges on cart change â”€â”€â”€ */
   document.addEventListener('mdb:cart:updated', () => UI.updateCartBadges());
   document.addEventListener('mdb:auth:changed', () => UI.updateAuthUI());
 
-  /* ─── Init on load ─── */
+  /* â”€â”€â”€ Init on load â”€â”€â”€ */
   document.addEventListener('DOMContentLoaded', () => {
     UI.updateCartBadges();
     UI.updateAuthUI();
   });
 
-  /* ─── Public API ─── */
+  /* â”€â”€â”€ Public API â”€â”€â”€ */
   return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, Settings, Coupons, UI, KEYS };
 })();
 
