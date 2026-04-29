@@ -329,26 +329,43 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalOverlay = $('.modal-overlay');
   const modalClose = $('.modal-close');
 
-  function openQuickView(data) {
+  async function openQuickView(data) {
     if (!quickviewModal) return;
-    // Populate modal
-    const img = $('.quickview-image img', quickviewModal);
+    
+    const imgWrap = $('.quickview-image', quickviewModal);
+    const img = $('img', imgWrap);
+    const loading = $('.qv-loading', imgWrap);
     const brand = $('.quickview-brand', quickviewModal);
     const name = $('.quickview-name', quickviewModal);
     const price = $('.quickview-price', quickviewModal);
+    const desc = $('.quickview-desc', quickviewModal);
     const link = $('.quickview-link', quickviewModal);
     const basePath = window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '';
-    if (img) img.src = data.image || '';
-    if (img) img.alt = data.name || '';
+
+    // Reset state
+    if (img) img.style.opacity = '0';
+    if (loading) loading.style.display = 'block';
+    
+    // Populate text
     if (brand) brand.textContent = data.brand || '';
     if (name) name.textContent = data.name || '';
     if (price) price.textContent = data.price || '';
+    if (desc) desc.textContent = data.description || 'Premium quality product curated for the modern lifestyle. Experience elegance and performance in one package.';
     if (link) link.href = data.id ? `${basePath}product.html?id=${data.id}` : `${basePath}product.html`;
+    
     if (data.id) quickviewModal.dataset.productId = data.id;
     quickviewModal.dataset.variant = data.variant || 'Default';
-    quickviewModal.dataset.productName = data.name || '';
-    quickviewModal.dataset.productBrand = data.brand || '';
-    quickviewModal.dataset.productImage = data.image || '';
+
+    // Handle Image
+    if (img) {
+      img.src = data.image || '';
+      img.onload = () => {
+        img.style.opacity = '1';
+        if (loading) loading.style.display = 'none';
+      };
+    }
+
+    // Show modal
     quickviewModal.classList.add('open');
     if (modalOverlay) modalOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -366,24 +383,62 @@ document.addEventListener('DOMContentLoaded', () => {
 
     e.preventDefault();
     e.stopPropagation();
-    await openQuickViewFromTrigger(quickViewBtn);
+    
+    const pid = quickViewBtn.dataset.quickView;
+    if (pid && window.MDB?.Products) {
+      const product = await window.MDB.Products.getById(pid);
+      if (product) {
+        openQuickView({
+          id: product.id,
+          image: resolveImagePath(product.image || ''),
+          brand: product.brand || '',
+          name: product.name || '',
+          description: product.description || '',
+          price: window.MDB?.UI ? window.MDB.UI.formatPrice(product.price || 0) : `${product.price || 0}`,
+          variant: (product.variants && product.variants[0]) || 'Default'
+        });
+        return;
+      }
+    }
+
+    const card = quickViewBtn.closest('.product-card');
+    if (!card) return;
+    const product = getCardProductData(card);
+    openQuickView({
+      ...product,
+      price: window.MDB?.UI ? window.MDB.UI.formatPrice(product.price || 0) : `${product.price || 0}`
+    });
   });
 
   if (modalClose) on(modalClose, 'click', closeQuickView);
   if (modalOverlay) on(modalOverlay, 'click', closeQuickView);
 
-  // Quick view ATC
-  const qvAtc = $('.quickview-atc', quickviewModal);
-  if (qvAtc) on(qvAtc, 'click', () => {
-    const id = quickviewModal?.dataset.productId || $('.quickview-name', quickviewModal)?.textContent;
-    const brand = $('.quickview-brand', quickviewModal)?.textContent;
+  // Quick view actions (ATC, Buy Now)
+  on(quickviewModal, 'click', (e) => {
+    const atcBtn = e.target.closest('.quickview-atc');
+    const buyNowBtn = e.target.closest('.qv-buy-now');
+    
+    if (!atcBtn && !buyNowBtn) return;
+
+    const id = quickviewModal?.dataset.productId;
     const name = $('.quickview-name', quickviewModal)?.textContent;
-    const price = parseFloat($('.quickview-price', quickviewModal)?.textContent?.replace(/[^0-9.]/g, '') || 0);
+    const brand = $('.quickview-brand', quickviewModal)?.textContent;
+    const priceText = $('.quickview-price', quickviewModal)?.textContent || '0';
+    const price = parseFloat(priceText.replace(/[^0-9.]/g, '') || 0);
     const image = $('.quickview-image img', quickviewModal)?.src || '';
     const variant = quickviewModal?.dataset.variant || 'Default';
-    Cart.add({ id, name, brand, price, image, variant, qty: 1 });
-    closeQuickView();
-    openCartDrawer();
+
+    const payload = { id, name, brand, price, image, variant, qty: 1 };
+    
+    if (atcBtn) {
+      Cart.add(payload);
+      closeQuickView();
+      openCartDrawer();
+    } else if (buyNowBtn) {
+      Cart.add(payload);
+      const basePath = window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '';
+      window.location.href = basePath + 'checkout.html';
+    }
   });
 
   // Add to Cart (product cards)
