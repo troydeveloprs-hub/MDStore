@@ -1566,6 +1566,17 @@ const MDB = (() => {
       const image = p.image || "img/logo.svg";
       const hoverImage = (Array.isArray(p.images) && p.images.length > 1) ? p.images[1] : (p.images && p.images[0] !== p.image ? p.images[0] : image);
       
+      // Ensure image paths start with ../ for collections and pages
+      const normalizeImagePath = (imgPath) => {
+        if (!imgPath) return basePath + "img/logo.svg";
+        if (imgPath.startsWith("http") || imgPath.startsWith("data:")) return imgPath;
+        if (imgPath.startsWith("../")) return imgPath;
+        return basePath + imgPath;
+      };
+      
+      const normalizedImage = normalizeImagePath(image);
+      const normalizedHoverImage = normalizeImagePath(hoverImage);
+      
       const oldPrice = p.originalPrice || p.oldPrice;
       const badge = typeof p.badge === "string" ? p.badge.trim() : "";
       const badgeText = badge ? badge.charAt(0).toUpperCase() + badge.slice(1) : "";
