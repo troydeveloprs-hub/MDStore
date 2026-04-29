@@ -1693,6 +1693,7 @@
               finalImages.push(publicUrl);
             } catch (err) {
               console.error('Failed to upload image:', file.name, err);
+              throw new Error(`Failed to upload image "${file.name}": ${err.message || 'Check storage permissions'}`);
             }
           }
 
