@@ -2054,6 +2054,7 @@
       bindAdminTabs();
       bindAdminActions();
       bindFormEvents();
+      resetProductFormFields(); // Initialize taxonomy selects
       await refreshAll();
     }
 
@@ -2199,7 +2200,7 @@
             createdAt: document.getElementById('pf-created').value ? new Date(document.getElementById('pf-created').value).toISOString() : new Date().toISOString(),
             name: document.getElementById('pf-name').value.trim(),
             brand: document.getElementById('pf-brand').value.trim(),
-            price: parseFloat(document.getElementById('pf-price').value),
+            price: parseFloat(document.getElementById('pf-price').value) || 0,
             originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
             stock: parseInt(document.getElementById('pf-stock').value) || 0,
             badge: document.getElementById('pf-badge').value,
@@ -2216,11 +2217,20 @@
             images: productImageState,
             variantGroups: collectVariantGroups()
           };
+          
+          if (!data.name || !data.brand) {
+            throw new Error('Name and Brand are required');
+          }
+
+          console.log('--- SAVING PRODUCT ---', data);
           await MDB.Products.save(data);
-          MDB.UI.toast('Product saved!');
+          MDB.UI.toast('Product saved successfully!', 'success');
           toggleProductForm(false);
           await refreshAll();
-        } catch (err) { showErr(err); }
+        } catch (err) { 
+          console.error('--- SAVE ERROR ---', err);
+          showErr(err, 'Failed to save product. Please check console for details.'); 
+        }
         finally { saveBtn.disabled = false; }
       };
     }
@@ -2388,11 +2398,19 @@
       const wrap = document.getElementById('product-form-wrap');
       const isShown = wrap.style.display !== 'none';
       const newState = show !== null ? show : !isShown;
-      if (!newState) { resetProductFormFields(); }
+      
+      if (newState && !editingPid) {
+        resetProductFormFields();
+      }
+      
       wrap.style.display = newState ? 'block' : 'none';
       document.getElementById('toggle-product-form-btn').innerHTML = newState
         ? '<i class="fa-solid fa-xmark"></i> Close'
         : '<i class="fa-solid fa-plus"></i> Add Product';
+      
+      if (newState) {
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     function resetProductFormFields() {
