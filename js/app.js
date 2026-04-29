@@ -68,6 +68,31 @@ document.addEventListener('DOMContentLoaded', () => {
   heroSlider();
 
   /* ============================================
+     USER SESSION & NAVIGATION
+     ============================================ */
+  const updateUserNav = () => {
+    if (!window.MDB || !MDB.Auth) return;
+    const user = MDB.Auth.getUser();
+    const accountLinks = $('a[href*="login.html"], a[aria-label="Account"]');
+    const basePath = window.location.pathname.includes("/collections/") || window.location.pathname.includes("/Pages/") ? "../" : "";
+    
+    accountLinks.forEach(link => {
+      if (user) {
+        if (user.role === "admin") {
+          link.href = basePath + "Pages/admin.html";
+        } else {
+          link.href = basePath + "Pages/account.html";
+        }
+      } else {
+        link.href = basePath + "Pages/login.html";
+      }
+    });
+  };
+  updateUserNav();
+  document.addEventListener("mdb:auth:changed", updateUserNav);
+
+
+  /* ============================================
      CART â€” LocalStorage Persistence
      ============================================ */
   const CART_KEY = 'mdb_cart';

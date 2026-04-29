@@ -1,15 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login / Register — MDBoutiquee</title>
+  <title>Login / Register â€” MDBoutiquee</title>
   <meta name="description" content="Sign in to your MDBoutiquee account or create a new one.">
   <link rel="stylesheet" href="../css/sofie.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    /* ── Auth Page Styles ── */
+    /* â”€â”€ Auth Page Styles â”€â”€ */
     .auth-page {
       min-height: 70vh;
       padding: 80px 0 60px;
@@ -345,13 +345,13 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mdboutiquee.com/">
-    <meta property="og:title" content="Login / Register — MDBoutiquee">
+    <meta property="og:title" content="Login / Register â€” MDBoutiquee">
     <meta property="og:description" content="Sign in to your MDBoutiquee account or create a new one.">
     <meta property="og:image" content="https://mdboutiquee.com/img/og-image.jpg">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="Login / Register — MDBoutiquee">
+    <meta property="twitter:title" content="Login / Register â€” MDBoutiquee">
     <meta property="twitter:description" content="Sign in to your MDBoutiquee account or create a new one.">
     <meta property="twitter:image" content="https://mdboutiquee.com/img/og-image.jpg">
     
@@ -362,7 +362,7 @@
   <!-- ANNOUNCEMENT BAR -->
   <div class="announcement-bar" role="banner">
     <div class="announcement-content">
-      <span class="announcement-text">Free shipping on orders over 3500 LE — <a href="../collections/makeup.html">Shop
+      <span class="announcement-text">Free shipping on orders over 3500 LE â€” <a href="../collections/makeup.html">Shop
           Now</a></span>
     </div>
     <button class="announcement-close" aria-label="Close announcement"><i class="fa-solid fa-xmark"></i></button>
@@ -880,6 +880,18 @@
   <script src="../js/features.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+
+      // Auto-redirect if already logged in
+      const currentUser = MDB.Auth.getUser();
+      if (currentUser) {
+        if (currentUser.role === "admin") {
+          window.location.replace("admin.html");
+        } else {
+          window.location.replace("account.html");
+        }
+        return;
+      }
+
       // If already logged in, redirect to correct page
       const user = MDB.Auth.getUser();
       if (user) {
