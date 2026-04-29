@@ -1002,9 +1002,9 @@ h6 {
 
 .page-hero {
    text-align: center;
-   padding: 60px 0 48px;
+   padding: 30px 0 20px;
    border-bottom: 1px solid var(--color-border);
-   margin-bottom: 60px
+   margin-bottom: 30px
 }
 
 .page-hero-title {
@@ -4311,8 +4311,8 @@ object-fit: cover;
 
    /* Page hero */
    .page-hero {
-      padding: 20px 0 16px;
-      margin-bottom: 16px
+      padding: 10px 0 8px;
+      margin-bottom: 8px
    }
 
    .page-hero-title {
