@@ -2080,7 +2080,7 @@
           document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
           const panel = document.getElementById('panel-' + tab.dataset.tab);
           if (panel) panel.classList.add('active');
-          if (tab.dataset.tab === 'products') await renderProducts(getProductSearchTerm());
+          if (tab.dataset.tab === 'products') renderProducts(getProductSearchTerm());
           if (tab.dataset.tab === 'settings') loadSettings();
           // Hide export btn on non-order tabs
           const exportBtn = document.getElementById('export-orders-btn');

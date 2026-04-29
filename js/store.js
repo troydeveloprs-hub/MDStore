@@ -526,6 +526,11 @@ const MDB = (() => {
         return _get(KEYS.CART) || []; // Fallback to localStorage for guest users
       }
 
+      // Fallback to localStorage for admin users (user.id is 'admin', not a UUID)
+      if (user.role === 'admin' || user.id === 'admin') {
+        return _get(KEYS.CART) || [];
+      }
+
       return this._run('get', async () => {
         const client = await this._ensureClient();
         const { data, error } = await client
@@ -717,6 +722,11 @@ const MDB = (() => {
       const user = Auth.getUser();
       if (!user) {
         return _get(KEYS.WISHLIST) || []; // Fallback to localStorage for guest users
+      }
+
+      // Fallback to localStorage for admin users (user.id is 'admin', not a UUID)
+      if (user.role === 'admin' || user.id === 'admin') {
+        return _get(KEYS.WISHLIST) || [];
       }
 
       return this._run('get', async () => {
@@ -1444,6 +1454,11 @@ const MDB = (() => {
       const user = Auth.getUser();
       if (!user) {
         return _get(KEYS.ADDRESSES) || []; // Fallback to localStorage for guest users
+      }
+
+      // Fallback to localStorage for admin users (user.id is 'admin', not a UUID)
+      if (user.role === 'admin' || user.id === 'admin') {
+        return _get(KEYS.ADDRESSES) || [];
       }
 
       return this._run('get', async () => {
