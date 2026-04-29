@@ -1766,7 +1766,7 @@
               originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
               category: document.getElementById('pf-cat').value,
               subcategory: document.getElementById('pf-subcat').value.trim().toLowerCase(),
-              stock: parseInt(document.getElementById('pf-stock').value),
+              stock: parseInt(document.getElementById('pf-stock').value) || 0,
               badge: document.getElementById('pf-badge').value || null,
               description: document.getElementById('pf-desc').value.trim(),
               details: document.getElementById('pf-details').value.trim(),
