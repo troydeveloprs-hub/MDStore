@@ -882,40 +882,21 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!window.MDB || !MDB.Products || !MDB.UI) return;
-
       const newGrid = document.getElementById('home-new-grid');
       const skincareGrid = document.getElementById('home-skincare-grid');
-      const products = await MDB.Products.getAll();
-
-      if (newGrid) {
-        const newInMakeup = products
-          .filter(p => (p.category || '').toLowerCase() === 'makeup')
-          .sort((a, b) => {
-            if (!!b.isNewArrival !== !!a.isNewArrival) return Number(!!b.isNewArrival) - Number(!!a.isNewArrival);
-            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-          })
-          .slice(0, 4);
-
-        if (newInMakeup.length) {
-          newGrid.innerHTML = newInMakeup.map(p => MDB.UI.productCardHTML(p)).join('');
+      try {
+        const products = await MDB.Products.getAll();
+        console.log('--- DB Products ---', products);
+        if (newGrid) {
+          const makeup = products.filter(p => ['makeup','مكياج'].includes((p.category||'').toLowerCase().trim())).slice(0, 4);
+          newGrid.innerHTML = makeup.length ? makeup.map(p => MDB.UI.productCardHTML(p)).join('') : '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#888;">No Makeup products found.</div>';
         }
-      }
-
-      if (skincareGrid) {
-        const skincare = products
-          .filter(p => (p.category || '').toLowerCase() === 'skincare')
-          .sort((a, b) => {
-            if (!!b.isFeatured !== !!a.isFeatured) return Number(!!b.isFeatured) - Number(!!a.isFeatured);
-            return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
-          })
-          .slice(0, 4);
-
-        if (skincare.length) {
-          skincareGrid.innerHTML = skincare.map(p => MDB.UI.productCardHTML(p)).join('');
+        if (skincareGrid) {
+          const skincare = products.filter(p => ['skincare','عناية بالبشرة'].includes((p.category||'').toLowerCase().trim())).slice(0, 4);
+          skincareGrid.innerHTML = skincare.length ? skincare.map(p => MDB.UI.productCardHTML(p)).join('') : '<div style="grid-column:1/-1;text-align:center;padding:20px;color:#888;">No Skincare products found.</div>';
         }
-      }
+      } catch (err) { console.error(err); }
     });
   </script>
 </body>
-
 </html>

@@ -1,6 +1,6 @@
 /* === css/style.css === */
 /* SOFIE STORE — Master Stylesheet — Production Grade */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;3500;600;700&family=Inter:wght@300;400;3500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
    --color-bg: #ffffff;
@@ -82,7 +82,7 @@ body {
    background: var(--color-bg);
    -webkit-font-smoothing: antialiased;
    overflow-x: hidden;
-   font-weight: 700;
+   font-weight: 400;
 }
 
 img {
@@ -97,8 +97,8 @@ a {
    transition: color var(--transition-fast)
 }
 
-h1, h2, h3, h4, h5, h6, p, a, span, button, input, textarea, label {
-   font-weight: 700 !important;
+h1, h2, h3, h4, h5, h6 {
+   font-weight: 600;
 }
 
 ul,
