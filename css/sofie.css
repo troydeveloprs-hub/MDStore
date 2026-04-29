@@ -5504,3 +5504,38 @@ h6 {
     padding: 14px;
   }
 }
+
+/* Product Card Hover Image Effect */
+.product-card-image-link {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.product-card-img {
+  transition: opacity 0.5s ease, transform 0.8s ease;
+  width: 100%;
+  display: block;
+}
+
+.hover-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  z-index: 1;
+}
+
+.product-card:hover .main-img {
+  opacity: 0;
+}
+
+.product-card:hover .hover-img {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.product-card:hover .product-card-media img {
+    /* transform: scale(1.08); */
+}
+

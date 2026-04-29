@@ -981,72 +981,75 @@ const MDB = (() => {
     },
 
     /** Generate product card HTML */
-    productCardHTML(p, basePathOverride = null) {
-      const basePath = typeof basePathOverride === 'string'
+        productCardHTML(p, basePathOverride = null) {
+      const basePath = typeof basePathOverride === "string"
         ? basePathOverride
-        : (window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '');
-      const image = p.image || 'img/logo.svg';
+        : (window.location.pathname.includes("/collections/") || window.location.pathname.includes("/Pages/") ? "../" : "");
+      const image = p.image || "img/logo.svg";
+      const hoverImage = (Array.isArray(p.images) && p.images.length > 1) ? p.images[1] : (p.images && p.images[0] !== p.image ? p.images[0] : image);
+      
       const oldPrice = p.originalPrice || p.oldPrice;
-      const badge = typeof p.badge === 'string' ? p.badge.trim() : '';
-      const badgeText = badge ? badge.charAt(0).toUpperCase() + badge.slice(1) : '';
+      const badge = typeof p.badge === "string" ? p.badge.trim() : "";
+      const badgeText = badge ? badge.charAt(0).toUpperCase() + badge.slice(1) : "";
       const reviews = parseInt(p.reviewCount, 10) || 0;
       const ratingValue = Math.max(0, Math.min(5, parseFloat(p.rating) || 0));
-      const ratingStars = 'â˜…'.repeat(Math.round(ratingValue)) + 'â˜†'.repeat(5 - Math.round(ratingValue));
+      const ratingStars = "★".repeat(Math.round(ratingValue)) + "☆".repeat(5 - Math.round(ratingValue));
       const defaultVariant = (Array.isArray(p.variantGroups) && p.variantGroups[0] && Array.isArray(p.variantGroups[0].options) && p.variantGroups[0].options[0])
-        || ((p.variants && p.variants[0]) || 'Default');
+        || ((p.variants && p.variants[0]) || "Default");
       const savings = oldPrice && oldPrice > p.price
         ? Math.round(((oldPrice - p.price) / oldPrice) * 100)
         : 0;
       const stock = Number.isFinite(parseInt(p.stock, 10)) ? parseInt(p.stock, 10) : null;
       const isWishlisted = Wishlist.has(p.id);
-      let stockLabel = 'Available Now';
-      let stockClass = 'in-stock';
+      let stockLabel = "Available Now";
+      let stockClass = "in-stock";
       if (stock === 0) {
-        stockLabel = 'Out of Stock';
-        stockClass = 'out-of-stock';
+        stockLabel = "Out of Stock";
+        stockClass = "out-of-stock";
       } else if (stock !== null && stock <= 5) {
         stockLabel = `Only ${stock} left`;
-        stockClass = 'low-stock';
+        stockClass = "low-stock";
       }
-      const categoryLabel = p.subcategory || p.category || 'Beauty Pick';
+      const categoryLabel = p.subcategory || p.category || "Beauty Pick";
       return `
-        <article class="product-card product-card-modern" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand || ''}" data-price="${p.price}" data-image="${basePath}${image}" data-variant="${defaultVariant}">
+        <article class="product-card product-card-modern" data-id="${p.id}" data-name="${p.name}" data-brand="${p.brand || ""}" data-price="${p.price}" data-image="${basePath}${image}" data-variant="${defaultVariant}">
           <div class="product-card-media">
             <div class="product-card-shell">
               <div class="product-card-badges">
-                ${badgeText ? `<span class="product-badge">${badgeText}</span>` : ''}
-                ${savings ? `<span class="product-badge product-badge-discount">Save ${savings}%</span>` : ''}
+                ${badgeText ? `<span class="product-badge">${badgeText}</span>` : ""}
+                ${savings ? `<span class="product-badge product-badge-discount">Save ${savings}%</span>` : ""}
               </div>
               <div class="product-card-actions">
-                <button class="action-btn ${isWishlisted ? 'active' : ''}" data-wishlist="${p.id}" title="Add to Wishlist" aria-label="Add ${p.name} to wishlist"><i class="${isWishlisted ? 'fa-solid' : 'fa-regular'} fa-heart"></i></button>
+                <button class="action-btn ${isWishlisted ? "active" : ""}" data-wishlist="${p.id}" title="Add to Wishlist" aria-label="Add ${p.name} to wishlist"><i class="${isWishlisted ? "fa-solid" : "fa-regular"} fa-heart"></i></button>
                 <button class="action-btn" data-quick-view="${p.id}" title="Quick View" aria-label="Quick view ${p.name}"><i class="fa-regular fa-eye"></i></button>
               </div>
             </div>
             <a href="${basePath}product.html?id=${p.id}" class="product-card-image-link">
-              <img src="${basePath}${image}" alt="${p.name}" class="product-card-img" loading="lazy" onerror="this.src='${basePath}img/logo.svg'">
+              <img src="${basePath}${image}" alt="${p.name}" class="product-card-img main-img" loading="lazy" onerror="this.src='${basePath}img/logo.svg'">
+              <img src="${basePath}${hoverImage}" alt="${p.name}" class="product-card-img hover-img" loading="lazy" onerror="this.style.display='none'">
             </a>
           </div>
           <div class="product-card-info">
             <div class="product-card-meta">
-              <span class="product-card-brand">${p.brand || 'MDB'}</span>
+              <span class="product-card-brand">${p.brand || "MDB"}</span>
               <span class="product-card-chip">${categoryLabel}</span>
             </div>
             <h3 class="product-card-title"><a href="${basePath}product.html?id=${p.id}">${p.name}</a></h3>
             <div class="product-card-rating" aria-label="Rated ${ratingValue.toFixed(1)} out of 5">
               <span class="product-card-stars">${ratingStars}</span>
-              <span class="product-card-rating-text">${ratingValue ? ratingValue.toFixed(1) : 'New'}${reviews ? ` (${reviews})` : ''}</span>
+              <span class="product-card-rating-text">${ratingValue ? ratingValue.toFixed(1) : "New"}${reviews ? ` (${reviews})` : ""}</span>
             </div>
             <div class="product-card-price">
               <span class="price-current">${this.formatPrice(p.price)}</span>
-              ${oldPrice ? `<span class="price-old">${this.formatPrice(oldPrice)}</span>` : ''}
+              ${oldPrice ? `<span class="price-old">${this.formatPrice(oldPrice)}</span>` : ""}
             </div>
             <div class="product-card-footer">
               <span class="product-card-stock ${stockClass}">${stockLabel}</span>
               <a href="${basePath}product.html?id=${p.id}" class="product-card-link">Details</a>
             </div>
-            <button class="btn btn-atc product-card-atc btn-full" data-id="${p.id}" ${stock === 0 ? 'disabled' : ''}>
+            <button class="btn btn-atc product-card-atc btn-full" data-id="${p.id}" ${stock === 0 ? "disabled" : ""}>
               <i class="fa-solid fa-bag-shopping"></i>
-              ${stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+              ${stock === 0 ? "Out of Stock" : "Add to Cart"}
             </button>
           </div>
         </article>
