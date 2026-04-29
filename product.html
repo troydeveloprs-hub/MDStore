@@ -530,14 +530,31 @@
 
       const variantWrap = document.getElementById('variant-selectors-wrap');
       if (variantGroups.length) {
-        variantWrap.innerHTML = variantGroups.map(group => `
-          <div class="variant-selector">
-            <label>${formatVariantGroupLabel(group.name)}:</label>
-            <div class="variant-btns" data-variant-group="${group.name}">
-              ${(group.options || []).map((option, index) => `<button class="variant-btn${index === 0 ? ' active' : ''}" type="button">${option}</button>`).join('')}
+        variantWrap.innerHTML = variantGroups.map(group => {
+          const isColor = group.name?.toLowerCase().includes('color');
+          return `
+            <div class="variant-selector">
+              <label>${formatVariantGroupLabel(group.name)}:</label>
+              <div class="variant-btns" data-variant-group="${group.name}">
+                ${(group.options || []).map((option, index) => {
+                  let style = '';
+                  let extraClass = '';
+                  if (isColor) {
+                    extraClass = ' swatch';
+                    // Simple color detection (check if it's a hex or basic name)
+                    const colorVal = option.trim().toLowerCase();
+                    const isHex = /^#([0-9a-f]{3}){1,2}$/i.test(colorVal);
+                    const namedColors = ['red', 'blue', 'green', 'black', 'white', 'pink', 'purple', 'yellow', 'orange', 'brown', 'grey', 'gray', 'nude', 'beige'];
+                    if (isHex || namedColors.includes(colorVal)) {
+                      style = `style="background-color: ${colorVal}"`;
+                    }
+                  }
+                  return `<button class="variant-btn${index === 0 ? ' active' : ''}${extraClass}" type="button" ${style} title="${option}">${option}</button>`;
+                }).join('')}
+              </div>
             </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
         
         // Add click handlers for variant buttons
         variantWrap.querySelectorAll('.variant-btn').forEach(btn => {

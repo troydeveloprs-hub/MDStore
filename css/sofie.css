@@ -2638,8 +2638,8 @@ h6 {
 
 .variant-selector {
    margin-bottom: var(--space-lg);
-   flex: 1;
-   min-width: 200px;
+   flex: 0 1 auto;
+   min-width: 140px;
 }
 
 .variant-selector label {
