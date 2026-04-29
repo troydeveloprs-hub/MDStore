@@ -558,6 +558,28 @@
         
         // Initialize variant selection system
         initVariantSelector(variantWrap);
+        
+        // Auto-select first option in each group
+        variantWrap.querySelectorAll('.product-option-group').forEach(group => {
+          const firstButton = group.querySelector('.option-button');
+          if (firstButton) {
+            const optionType = firstButton.dataset.optionType;
+            const optionValue = firstButton.dataset.optionValue;
+            
+            // Add active class
+            firstButton.classList.add('active');
+            
+            // Update selected variants
+            window.selectedVariants[optionType] = optionValue;
+            
+            // Update selected label
+            const label = group.querySelector('.option-selected[data-option-type="' + optionType + '"]');
+            if (label) {
+              label.textContent = optionValue;
+              label.classList.add('has-selection');
+            }
+          }
+        });
       } else {
         variantWrap.innerHTML = '';
       }
