@@ -1,4 +1,4 @@
-﻿/* ===================================================================
+/* ===================================================================
    MDBOUTIQUEE â€” Store Engine
    Products are loaded from Supabase; other storefront modules remain local.
    =================================================================== */
@@ -128,7 +128,7 @@ const MDB = (() => {
   }
 
   /* ===================================================================
-     PRODUCTS  â€” Supabase-backed product catalog
+     PRODUCTS  — Supabase-backed product catalog
      =================================================================== */
   const Products = {
     _cache: null,
@@ -1108,17 +1108,17 @@ const MDB = (() => {
     }
   };
 
-  /* â”€â”€â”€ Auto-update badges on cart change â”€â”€â”€ */
+  /* ─── Auto-update badges on cart change ─── */
   document.addEventListener('mdb:cart:updated', () => UI.updateCartBadges());
   document.addEventListener('mdb:auth:changed', () => UI.updateAuthUI());
 
-  /* â”€â”€â”€ Init on load â”€â”€â”€ */
+  /* ─── Init on load ─── */
   document.addEventListener('DOMContentLoaded', () => {
     UI.updateCartBadges();
     UI.updateAuthUI();
   });
 
-  /* â”€â”€â”€ Public API â”€â”€â”€ */
+  /* ─── Public API ─── */
   return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, Settings, Coupons, UI, KEYS };
 })();
 
