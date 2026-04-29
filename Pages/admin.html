@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard â€” MDBoutiquee</title>
+  <title>Admin Dashboard Ã¢â‚¬â€ MDBoutiquee</title>
   <link rel="stylesheet" href="../css/sofie.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
@@ -1010,6 +1010,14 @@
 
   <script src="../js/store.js"></script>
   <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      if (!MDB.Auth.isLoggedIn() || MDB.Auth.getUser()?.role !== "admin") {
+        window.location.replace("login.html");
+        return;
+      }
+      showDashboard();
+    });
+
     const ADMIN_PASS = 'admin123';
 
     function safeText(value, fallback = '') {
@@ -1031,6 +1039,7 @@
       const date = value ? new Date(value) : null;
       return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString() : '-';
     }
+
 
     function normalizeListInput(value) {
       return safeText(value)
@@ -1442,7 +1451,7 @@
     }
 
     async function showDashboard() {
-      document.getElementById('admin-login').style.display = 'none';
+      
       document.getElementById('admin-dashboard').style.display = 'block';
       bindAdminTabs();
       bindAdminActions();
