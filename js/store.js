@@ -182,7 +182,7 @@ const MDB = (() => {
       return Number.isNaN(date.getTime()) ? _dateNow() : date.toISOString();
     },
 
-        _mapRow(row) {
+            _mapRow(row) {
       if (!row) return null;
       let metadata = row.metadata;
       if (typeof metadata === "string") {
@@ -195,16 +195,17 @@ const MDB = (() => {
         ...metadata,
         id: row.id || metadata.legacyId || "",
         name: row.name || metadata.name || "",
-        price: Number(row.price != null ? row.price : metadata.price || 0),
+        price: Number(row.price != null ? row.price : (metadata.price || 0)),
+        stock: Number(row.stock != null ? row.stock : (metadata.stock != null ? metadata.stock : 0)),
         image: row.image || metadata.image || "",
         images: Array.isArray(row.images) && row.images.length ? row.images : (Array.isArray(metadata.images) ? metadata.images : []),
         description: row.description || metadata.description || "",
         createdAt: row.created_at || metadata.createdAt || defaults.createdAt
       };
-      merged.stock = Number(merged.stock != null ? merged.stock : (metadata.stock != null ? metadata.stock : 0));
+      merged.stock = Number(merged.stock);
       merged.rating = Number(merged.rating || 0);
       merged.reviewCount = Number(merged.reviewCount || 0);
-      merged.price = Number(merged.price || 0);
+      merged.price = Number(merged.price);
       merged.originalPrice = merged.originalPrice ? Number(merged.originalPrice) : null;
       return _normalizeProductImages(merged);
     },
