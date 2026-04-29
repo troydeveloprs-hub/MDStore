@@ -70,18 +70,18 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================
      USER SESSION & NAVIGATION
      ============================================ */
-  const updateUserNav = () => {
+    const updateUserNav = () => {
     if (!window.MDB || !MDB.Auth) return;
     const user = MDB.Auth.getUser();
-    const accountLinks = $('a[href*="login.html"], a[aria-label="Account"]');
+    const accountLinks = $('a[href*="login.html"], a[aria-label="Account"], .mobile-bottom-nav a:last-child');
     const basePath = window.location.pathname.includes("/collections/") || window.location.pathname.includes("/Pages/") ? "../" : "";
     
     accountLinks.forEach(link => {
       if (user) {
-        if (user.role === "admin") {
-          link.href = basePath + "Pages/admin.html";
-        } else {
-          link.href = basePath + "Pages/account.html";
+        link.href = user.role === "admin" ? basePath + "Pages/admin.html" : basePath + "Pages/account.html";
+        // Update text if it exists (for bottom nav)
+        if (link.textContent.includes("Account") || link.textContent.includes("Login")) {
+           link.innerHTML = `<i class="fa-regular fa-user"></i> ${user.firstName || "Account"}`;
         }
       } else {
         link.href = basePath + "Pages/login.html";
