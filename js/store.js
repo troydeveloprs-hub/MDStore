@@ -1177,88 +1177,328 @@ const MDB = (() => {
   };
 
   /* ===================================================================
-     REVIEWS
+     REVIEWS — Supabase-backed
      =================================================================== */
   const Reviews = {
-    get() { return _get(KEYS.REVIEWS) || []; },
-    _save(reviews) { _set(KEYS.REVIEWS, reviews); },
+    _cache: null,
+    _table: 'reviews',
+    _client: null,
 
-    getForProduct(productId) {
-      return this.get().filter(r => r.productId === productId);
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
+      }
+      return await Products._ensureClient();
     },
 
-    add(data) {
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.warn(`MDB Reviews ${opName} error:`, err);
+        return fallback;
+      }
+    },
+
+    async get() {
+      return this._run('get', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        this._cache = (data || []).map(row => ({
+          id: row.id,
+          productId: row.product_id,
+          rating: row.rating,
+          review_text: row.review_text,
+          authorName: row.author_name || 'Anonymous',
+          authorEmail: row.author_email || '',
+          isVerified: !!row.user_id,
+          createdAt: row.created_at
+        }));
+        return this._cache;
+      }, _get(KEYS.REVIEWS) || []);
+    },
+
+    async _save(reviews) {
+      // Reviews are saved individually in Supabase
+      this._cache = reviews;
+    },
+
+    async getForProduct(productId) {
+      const reviews = await this.get();
+      return reviews.filter(r => r.productId === productId);
+    },
+
+    async add(data) {
       const user = Auth.getUser();
-      const reviews = this.get();
       const review = {
-        id: _uid(),
-        productId: data.productId,
+        user_id: user?.id || null,
+        product_id: data.productId,
         rating: Math.min(5, Math.max(1, parseInt(data.rating) || 5)),
-        text: data.text || '',
-        authorName: user ? (user.firstName + ' ' + user.lastName).trim() : (data.authorName || 'Anonymous'),
-        authorEmail: user ? user.email : (data.authorEmail || ''),
-        isVerified: !!user,
-        createdAt: _dateNow()
+        review_text: data.text || '',
+        author_name: user ? ((user.firstName + ' ' + user.lastName).trim()) : (data.authorName || 'Anonymous'),
+        author_email: user ? user.email : (data.authorEmail || '')
       };
-      reviews.unshift(review);
-      this._save(reviews);
-      return review;
+
+      return this._run('add', async () => {
+        const client = await this._ensureClient();
+        const { data: newReview, error } = await client.from(this._table).insert(review).select().single();
+        if (error) throw error;
+        this._cache = null;
+        return newReview;
+      }, null);
     },
 
-    getAverageRating(productId) {
-      const pr = this.getForProduct(productId);
+    async getAverageRating(productId) {
+      const pr = await this.getForProduct(productId);
       if (pr.length === 0) return 0;
       return Math.round((pr.reduce((s, r) => s + r.rating, 0) / pr.length) * 10) / 10;
     },
 
-    remove(reviewId) {
-      const reviews = this.get().filter(r => r.id !== reviewId);
-      this._save(reviews);
-      return reviews;
+    async remove(reviewId) {
+      return this._run('remove', async () => {
+        const client = await this._ensureClient();
+        const { error } = await client.from(this._table).delete().eq('id', reviewId);
+        if (error) throw error;
+        this._cache = null;
+        return true;
+      }, false);
     },
 
-    delete(reviewId) { return this.remove(reviewId); }
+    async delete(reviewId) { return await this.remove(reviewId); }
   };
 
   /* ===================================================================
-     SETTINGS & COUPONS (ADMIN)
-     =================================================================== */
+    SETTINGS & COUPONS (ADMIN) — Supabase-backed
+    =================================================================== */
   const Settings = {
-      get() {
-          return _get(KEYS.SETTINGS) || {
+    _cache: null,
+    _table: 'settings',
+    _client: null,
+
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
+      }
+      return await Products._ensureClient();
+    },
+
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.warn(`MDB Settings ${opName} error:`, err);
+        return fallback;
+      }
+    },
+
+    async get() {
+      return this._run('get', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).select('*').eq('key', 'general').single();
+        if (error) {
+          if (error.code === 'PGRST116') {
+            // No settings found, return defaults
+            return {
               announcement: 'Free shipping on orders over 3500 LE',
               shippingThreshold: 3500,
               contactEmail: 'hello@mdboutiquee2.com',
               currency: 'LE'
-          };
-      },
-      save(settings) {
-          _set(KEYS.SETTINGS, { ...this.get(), ...settings });
-      }
+            };
+          }
+          throw error;
+        }
+        return data.value || {
+          announcement: 'Free shipping on orders over 3500 LE',
+          shippingThreshold: 3500,
+          contactEmail: 'hello@mdboutiquee2.com',
+          currency: 'LE'
+        };
+      }, _get(KEYS.SETTINGS) || {
+        announcement: 'Free shipping on orders over 3500 LE',
+        shippingThreshold: 3500,
+        contactEmail: 'hello@mdboutiquee2.com',
+        currency: 'LE'
+      });
+    },
+
+    async save(settings) {
+      return this._run('save', async () => {
+        const client = await this._ensureClient();
+        const current = await this.get();
+        const merged = { ...current, ...settings };
+        const { error } = await client
+          .from(this._table)
+          .upsert({ key: 'general', value: merged }, { onConflict: 'key' });
+        if (error) throw error;
+        this._cache = merged;
+      }, null);
+    }
   };
 
   const Coupons = {
-      get() { return _get(KEYS.CUSTOM_COUPONS) || []; },
-      add(coupon) {
-          const all = this.get();
-          all.push(coupon);
-          _set(KEYS.CUSTOM_COUPONS, all);
-      },
-      delete(code) {
-          const all = this.get().filter(c => c.code !== code);
-          _set(KEYS.CUSTOM_COUPONS, all);
+    _cache: null,
+    _table: 'coupons',
+    _client: null,
+
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
       }
+      return await Products._ensureClient();
+    },
+
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.warn(`MDB Coupons ${opName} error:`, err);
+        return fallback;
+      }
+    },
+
+    async get() {
+      return this._run('get', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('*')
+          .eq('is_active', true);
+        if (error) throw error;
+        this._cache = (data || []).map(row => ({
+          code: row.code,
+          type: row.type,
+          value: Number(row.value) || 0,
+          minOrder: Number(row.min_order) || 0,
+          maxUses: row.max_uses,
+          usedCount: row.used_count || 0,
+          expiresAt: row.expires_at
+        }));
+        return this._cache;
+      }, _get(KEYS.CUSTOM_COUPONS) || []);
+    },
+
+    async add(coupon) {
+      return this._run('add', async () => {
+        const client = await this._ensureClient();
+        const row = {
+          code: coupon.code.toUpperCase(),
+          type: coupon.type,
+          value: Number(coupon.value) || 0,
+          min_order: Number(coupon.minOrder) || 0,
+          max_uses: coupon.maxUses || null,
+          expires_at: coupon.expiresAt || null,
+          is_active: true
+        };
+        const { data, error } = await client.from(this._table).insert(row).select().single();
+        if (error) throw error;
+        this._cache = null;
+        return data;
+      }, null);
+    },
+
+    async delete(code) {
+      return this._run('delete', async () => {
+        const client = await this._ensureClient();
+        const { error } = await client.from(this._table).update({ is_active: false }).eq('code', code.toUpperCase());
+        if (error) throw error;
+        this._cache = null;
+        return true;
+      }, false);
+    }
   };
 
   /* ===================================================================
-     ADDRESSES
-     =================================================================== */
+    ADDRESSES — Supabase-backed
+    =================================================================== */
   const Addresses = {
-    get() { return _get(KEYS.ADDRESSES) || []; },
-    _save(addrs) { _set(KEYS.ADDRESSES, addrs); },
+    _cache: null,
+    _table: 'addresses',
+    _client: null,
 
-    add(addr) {
-      const addrs = this.get();
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
+      }
+      return await Products._ensureClient();
+    },
+
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.warn(`MDB Addresses ${opName} error:`, err);
+        return fallback;
+      }
+    },
+
+    async get() {
+      const user = Auth.getUser();
+      if (!user) {
+        return _get(KEYS.ADDRESSES) || []; // Fallback to localStorage for guest users
+      }
+
+      return this._run('get', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        this._cache = (data || []).map(row => ({
+          id: row.id,
+          label: row.label || 'Home',
+          name: row.full_name,
+          phone: row.phone,
+          address: row.address,
+          city: row.city,
+          isDefault: row.is_default
+        }));
+        return this._cache;
+      }, _get(KEYS.ADDRESSES) || []);
+    },
+
+    async _save(addrs) {
+      const user = Auth.getUser();
+      if (!user) {
+        _set(KEYS.ADDRESSES, addrs);
+        return;
+      }
+
+      this._run('save', async () => {
+        const client = await this._ensureClient();
+        
+        // Delete existing addresses for user
+        await client.from(this._table).delete().eq('user_id', user.id);
+
+        // Insert new addresses
+        if (addrs.length > 0) {
+          const rows = addrs.map(addr => ({
+            user_id: user.id,
+            full_name: addr.name || '',
+            phone: addr.phone || '',
+            address: addr.address || '',
+            city: addr.city || '',
+            is_default: addr.isDefault || false
+          }));
+          await client.from(this._table).insert(rows);
+        }
+
+        this._cache = addrs;
+      });
+    },
+
+    async add(addr) {
+      const addrs = await this.get();
       const entry = {
         id: _uid(),
         label: addr.label || 'Home',
@@ -1270,29 +1510,32 @@ const MDB = (() => {
         createdAt: _dateNow()
       };
       addrs.push(entry);
-      this._save(addrs);
+      await this._save(addrs);
       return entry;
     },
 
-    remove(id) {
-      const addrs = this.get().filter(a => a.id !== id);
-      this._save(addrs);
+    async remove(id) {
+      const addrs = (await this.get()).filter(a => a.id !== id);
+      await this._save(addrs);
+      return addrs;
     },
 
-    setDefault(id) {
-      const addrs = this.get();
+    async setDefault(id) {
+      const addrs = await this.get();
       addrs.forEach(a => a.isDefault = (a.id === id));
-      this._save(addrs);
+      await this._save(addrs);
+      return addrs;
     },
 
-    getDefault() {
-      return this.get().find(a => a.isDefault) || this.get()[0] || null;
+    async getDefault() {
+      const addrs = await this.get();
+      return addrs.find(a => a.isDefault) || null;
     }
   };
 
   /* ===================================================================
-     UI HELPERS
-     =================================================================== */
+    UI HELPERS
+  */
   const UI = {
     /** Format price with LE */
     formatPrice(n) {
