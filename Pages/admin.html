@@ -1288,6 +1288,7 @@
       editingPid = null;
       productImageState = [];
       pendingImageFiles = []; // Clear files
+      pendingImageFiles = []; // Clear files
       document.getElementById('product-form').reset();
       document.getElementById('product-form-title').textContent = 'Add Product';
       document.getElementById('save-product-btn').textContent = 'Save Product';
@@ -1306,17 +1307,18 @@
     function checkAdminPass() {
       const pass = document.getElementById('admin-pass').value;
       if (pass === ADMIN_PASS) {
-        // Sync with MDB Auth
         MDB.Auth.login('admin@mdboutiquee.com', 'admin123');
         showDashboard();
       } else { alert('Wrong password'); }
     }
+
     document.getElementById('admin-pass').addEventListener('keydown', e => { if (e.key === 'Enter') checkAdminPass(); });
     document.getElementById('admin-access-btn').addEventListener('click', checkAdminPass);
     document.getElementById('admin-logout-btn').addEventListener('click', () => {
       MDB.Auth.logout();
       window.location.href = 'login.html';
     });
+
     document.getElementById('export-orders-btn').addEventListener('click', exportOrders);
     document.getElementById('toggle-product-form-btn').addEventListener('click', toggleProductForm);
     document.getElementById('cancel-product-form-btn').addEventListener('click', toggleProductForm);
@@ -1331,32 +1333,7 @@
       urlInput.value = '';
       renderProductImagePreview();
     });
-    document.getElementById('variant-groups-wrap').addEventListener('input', updateVariantSummary);
-    document.getElementById('variant-groups-wrap').addEventListener('change', updateVariantSummary);
-    document.getElementById('variant-groups-wrap').addEventListener('click', e => {
-      const removeBtn = e.target.closest('.remove-variant-row');
-      if (!removeBtn) return;
-      removeBtn.closest('.variant-row')?.remove();
-      if (!document.querySelector('#variant-groups-wrap .variant-row')) {
-        renderVariantGroups([]);
-      } else {
-        updateVariantSummary();
-      }
-    });
-    document.getElementById('add-variant-group-btn').addEventListener('click', () => {
-      document.getElementById('variant-groups-wrap').appendChild(createVariantRow({ name: 'color', options: [] }));
-      updateVariantSummary();
-    });
-    document.getElementById('pf-image-preview').addEventListener('click', e => {
-      const btn = e.target.closest('[data-remove-image]');
-      if (!btn) return;
-      const src = decodeURIComponent(btn.dataset.removeImage || '');
-      productImageState = productImageState.filter(image => image !== src);
-      if (normalizeImagePath(document.getElementById('pf-image').value) === src) {
-        document.getElementById('pf-image').value = '';
-      }
-      renderProductImagePreview();
-    });
+
     document.getElementById('pf-image-upload').addEventListener('change', async e => {
       const files = [...(e.target.files || [])];
       if (!files.length) return;
@@ -1366,35 +1343,11 @@
       renderProductImagePreview();
       e.target.value = '';
     });
-    fillCategoryOptions('makeup');
-    populateSubcategoryOptions('makeup');
-    renderVariantGroups([]);
-    renderProductImagePreview();
 
     function checkAdminSession() {
       const user = MDB.Auth.getUser();
       const legacyAdmin = localStorage.getItem('mdb_admin') === '1';
       if ((user && user.role === 'admin') || legacyAdmin) {
-        // If legacy but no session, create session
-        if (legacyAdmin && (!user || user.role !== 'admin')) {
-            MDB.Auth.login('admin@mdboutiquee.com', 'admin123');
-        }
-      pendingImageFiles = [...pendingImageFiles, ...files];
-      const uploadedImages = await Promise.all(files.map(readFileAsDataUrl));
-      productImageState = uniqueList([...productImageState, ...uploadedImages]);
-      renderProductImagePreview();
-      e.target.value = '';
-    });
-    fillCategoryOptions('makeup');
-    populateSubcategoryOptions('makeup');
-    renderVariantGroups([]);
-    renderProductImagePreview();
-
-    function checkAdminSession() {
-      const user = MDB.Auth.getUser();
-      const legacyAdmin = localStorage.getItem('mdb_admin') === '1';
-      if ((user && user.role === 'admin') || legacyAdmin) {
-        // If legacy but no session, create session
         if (legacyAdmin && (!user || user.role !== 'admin')) {
             MDB.Auth.login('admin@mdboutiquee.com', 'admin123');
         }
@@ -1403,7 +1356,6 @@
         document.getElementById('admin-login').style.display = 'block';
       }
     }
-    // checkAdminSession(); // Removed duplicate call, already in DOMContentLoaded
 
     function bindAdminTabs() {
       document.querySelectorAll('.admin-tab').forEach(tab => {
@@ -1428,55 +1380,29 @@
 
       dashboard.addEventListener('click', e => {
         const editBtn = e.target.closest('[data-edit-product]');
-        if (editBtn) {
-          editProduct(decodeURIComponent(editBtn.dataset.editProduct));
-          return;
-        }
-
+        if (editBtn) { editProduct(decodeURIComponent(editBtn.dataset.editProduct)); return; }
         const deleteProductBtn = e.target.closest('[data-delete-product]');
-        if (deleteProductBtn) {
-          deleteProduct(decodeURIComponent(deleteProductBtn.dataset.deleteProduct));
-          return;
-        }
-
+        if (deleteProductBtn) { deleteProduct(decodeURIComponent(deleteProductBtn.dataset.deleteProduct)); return; }
         const deleteOrderBtn = e.target.closest('[data-delete-order]');
-        if (deleteOrderBtn) {
-          deleteOrder(decodeURIComponent(deleteOrderBtn.dataset.deleteOrder));
-          return;
-        }
-
+        if (deleteOrderBtn) { deleteOrder(decodeURIComponent(deleteOrderBtn.dataset.deleteOrder)); return; }
         const deleteReviewBtn = e.target.closest('[data-delete-review]');
-        if (deleteReviewBtn) {
-          deleteReview(decodeURIComponent(deleteReviewBtn.dataset.deleteReview));
-          return;
-        }
-
+        if (deleteReviewBtn) { deleteReview(decodeURIComponent(deleteReviewBtn.dataset.deleteReview)); return; }
         const deleteCouponBtn = e.target.closest('[data-delete-coupon]');
-        if (deleteCouponBtn) {
-          deleteCoupon(decodeURIComponent(deleteCouponBtn.dataset.deleteCoupon));
-          return;
-        }
-
+        if (deleteCouponBtn) { deleteCoupon(decodeURIComponent(deleteCouponBtn.dataset.deleteCoupon)); return; }
         const stockBtn = e.target.closest('[data-adjust-stock]');
         if (stockBtn) {
-          adjustStock(
-            decodeURIComponent(stockBtn.dataset.adjustStock),
-            parseInt(stockBtn.dataset.delta || '0', 10)
-          );
+          adjustStock(decodeURIComponent(stockBtn.dataset.adjustStock), parseInt(stockBtn.dataset.delta || '0', 10));
         }
       });
 
       dashboard.addEventListener('change', e => {
         const statusSelect = e.target.closest('[data-order-status]');
-        if (!statusSelect) return;
-        updateStatus(
-          decodeURIComponent(statusSelect.dataset.orderStatus),
-          statusSelect.value
-        );
+        if (statusSelect) updateStatus(decodeURIComponent(statusSelect.dataset.orderStatus), statusSelect.value);
       });
     }
 
     async function showDashboard() {
+      document.getElementById('admin-login').style.display = 'none';
       document.getElementById('admin-dashboard').style.display = 'block';
       bindAdminTabs();
       bindAdminActions();
@@ -1497,6 +1423,7 @@
     async function renderInventory() {
       const products = await MDB.Products.getAll();
       const tbody = document.querySelector('#inventory-table tbody');
+      if (!tbody) return;
       tbody.innerHTML = products.map(p => {
         const stock = parseInt(p.stock, 10) || 0;
         const lowStock = stock < 10;
@@ -1519,25 +1446,13 @@
     async function adjustStock(pid, delta) {
       try {
         const p = await MDB.Products.getById(pid);
-        if (!p) {
-          MDB.UI.toast('Product not found', 'error');
-          return;
-        }
-        
-        const updatedProduct = {
-          ...p,
-          stock: Math.max(0, (parseInt(p.stock, 10) || 0) + delta)
-        };
-
+        if (!p) { MDB.UI.toast('Product not found', 'error'); return; }
+        const updatedProduct = { ...p, stock: Math.max(0, (parseInt(p.stock, 10) || 0) + delta) };
         await MDB.Products.save(updatedProduct);
-        
         await renderInventory();
         await renderProducts(document.getElementById('product-search')?.value || '');
         MDB.UI.toast(`Stock updated for ${p.name}`, 'success');
-      } catch (error) {
-        console.error('Adjust Stock Error:', error);
-        showProductActionError(error, 'Failed to update stock.');
-      }
+      } catch (error) { showProductActionError(error, 'Failed to update stock.'); }
     }
 
     function renderStats() {
@@ -1545,62 +1460,38 @@
       const revenue = orders.reduce((s, o) => s + o.total, 0);
       const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
       const pendingOrders = orders.filter(o => o.status === 'pending').length;
-      
       document.getElementById('admin-stats').innerHTML = `
-        <div class="stat-card">
-          <div class="stat-value">${orders.length}</div>
-          <div class="stat-label">Total Orders</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">${MDB.UI ? MDB.UI.formatPrice(revenue) : revenue + ' LE'}</div>
-          <div class="stat-label">Total Revenue</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">${users.length}</div>
-          <div class="stat-label">Customers</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" style="color:${pendingOrders > 0 ? 'var(--admin-warning)' : 'var(--admin-success)'}">${pendingOrders}</div>
-          <div class="stat-label">Pending Orders</div>
-        </div>
+        <div class="stat-card"><div class="stat-value">${orders.length}</div><div class="stat-label">Total Orders</div></div>
+        <div class="stat-card"><div class="stat-value">${MDB.UI ? MDB.UI.formatPrice(revenue) : revenue + ' LE'}</div><div class="stat-label">Total Revenue</div></div>
+        <div class="stat-card"><div class="stat-value">${users.length}</div><div class="stat-label">Customers</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:${pendingOrders > 0 ? 'var(--admin-warning)' : 'var(--admin-success)'}">${pendingOrders}</div><div class="stat-label">Pending Orders</div></div>
       `;
     }
 
-    let allOrders = [];
     function renderOrders(searchTerm = '') {
-      allOrders = MDB.Orders.get();
+      const allOrders = MDB.Orders.get();
       let filtered = allOrders;
       if (searchTerm) {
         const q = searchTerm.toLowerCase();
-        filtered = allOrders.filter(o => 
-          safeText(o.id).toLowerCase().includes(q) ||
-          getOrderCustomer(o).name.toLowerCase().includes(q) ||
-          getOrderCustomer(o).email.toLowerCase().includes(q)
-        );
+        filtered = allOrders.filter(o => safeText(o.id).toLowerCase().includes(q) || getOrderCustomer(o).name.toLowerCase().includes(q) || getOrderCustomer(o).email.toLowerCase().includes(q));
       }
       const tbody = document.querySelector('#orders-table tbody');
-      if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders found</p></div></td></tr>';
-        return;
-      }
+      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders found</p></div></td></tr>'; return; }
       tbody.innerHTML = filtered.map(o => {
-      const customer = getOrderCustomer(o);
-      const itemCount = Array.isArray(o.items) ? o.items.length : 0;
-      const status = safeText(o.status, 'pending');
-      return `<tr>
-      <td><strong>${safeText(o.id, '-')}</strong></td>
-      <td>${customer.name}<br><small style="color:#888">${customer.email}</small></td>
-      <td>${itemCount} items</td>
-      <td><strong>${MDB.UI.formatPrice(Number(o.total || 0))}</strong></td>
-      <td><span class="order-status-badge ${status}">${status}</span></td>
-      <td>${formatAdminDate(o.createdAt)}</td>
-      <td>
-        <div style="display:flex;gap:4px">
-          <select data-order-status="${encodeURIComponent(safeText(o.id, ''))}">${['pending','processing','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${status===s?'selected':''}>${s}</option>`).join('')}</select>
-          <button class="admin-btn admin-btn-danger" type="button" data-delete-order="${encodeURIComponent(safeText(o.id, ''))}"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </td>
-    </tr>`;
+        const customer = getOrderCustomer(o);
+        const status = safeText(o.status, 'pending');
+        return `<tr>
+          <td><strong>${safeText(o.id, '-')}</strong></td>
+          <td>${customer.name}<br><small style="color:#888">${customer.email}</small></td>
+          <td>${Array.isArray(o.items) ? o.items.length : 0} items</td>
+          <td><strong>${MDB.UI.formatPrice(Number(o.total || 0))}</strong></td>
+          <td><span class="order-status-badge ${status}">${status}</span></td>
+          <td>${formatAdminDate(o.createdAt)}</td>
+          <td><div style="display:flex;gap:4px">
+            <select data-order-status="${encodeURIComponent(safeText(o.id, ''))}">${['pending','processing','shipped','delivered','cancelled'].map(s=>`<option value="${s}" ${status===s?'selected':''}>${s}</option>`).join('')}</select>
+            <button class="admin-btn admin-btn-danger" type="button" data-delete-order="${encodeURIComponent(safeText(o.id, ''))}"><i class="fa-solid fa-trash"></i></button>
+          </div></td>
+        </tr>`;
       }).join('');
     }
 
@@ -1615,26 +1506,17 @@
     function showProductActionError(error, fallback = 'Product action failed.') {
       console.error(error);
       const message = error && error.message ? error.message : fallback;
-      if (window.MDB && MDB.UI && typeof MDB.UI.toast === 'function') {
-        MDB.UI.toast(message, 'error');
-      } else {
-        alert(message);
-      }
+      MDB.UI ? MDB.UI.toast(message, 'error') : alert(message);
     }
 
     async function clearAllProducts() {
-      if (!confirm('Delete all products from the current catalog? You can add a new test product after this.')) return;
+      if (!confirm('Delete all products?')) return;
       try {
         const products = await MDB.Products.getAll();
-        for (const product of products) {
-          await MDB.Products.delete(product.id);
-        }
-        renderProducts('');
-        renderInventory();
-        MDB.UI.toast('All products cleared', 'success');
-      } catch (error) {
-        showProductActionError(error, 'Failed to clear products.');
-      }
+        for (const p of products) await MDB.Products.delete(p.id);
+        await refreshAll();
+        MDB.UI.toast('All products cleared');
+      } catch (error) { showProductActionError(error); }
     }
 
     async function renderProducts(searchTerm = '') {
@@ -1643,37 +1525,24 @@
       let filtered = products;
       if (searchTerm) {
         const q = searchTerm.toLowerCase();
-        filtered = products.filter(p =>
-          safeText(p.name).toLowerCase().includes(q) ||
-          safeText(p.brand).toLowerCase().includes(q) ||
-          safeText(p.id).toLowerCase().includes(q) ||
-          safeText(p.category).toLowerCase().includes(q) ||
-          safeText(p.subcategory).toLowerCase().includes(q)
-        );
+        filtered = products.filter(p => safeText(p.name).toLowerCase().includes(q) || safeText(p.brand).toLowerCase().includes(q) || safeText(p.id).toLowerCase().includes(q));
       }
       document.getElementById('low-stock-alert').style.display = lowStock.length ? 'block' : 'none';
-      document.getElementById('products-summary').textContent = searchTerm
-        ? `Showing ${filtered.length} of ${products.length} current products`
-        : `Showing all ${products.length} current products`;
-
+      document.getElementById('products-summary').textContent = `Showing ${filtered.length} of ${products.length} products`;
       const tbody = document.querySelector('#products-table tbody');
-      if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No products found</p></div></td></tr>';
-        return;
-      }
+      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7">No products found</td></tr>'; return; }
       tbody.innerHTML = filtered.map(p => `<tr>
-      <td><img src="${adminImageSrc(p.image)}" class="admin-product-img" onerror="this.src='../img/logo.svg'"></td>
-      <td><strong>${p.name}</strong><br><small style="color:#888">${p.id}</small></td>
-      <td>${p.brand}</td>
-      <td>${MDB.UI.formatPrice(p.price)}</td>
-      <td style="color:${p.stock<10?'#ef4444':'inherit'};font-weight:${p.stock<10?'600':'normal'}">${p.stock}</td>
-      <td>${p.category}</td>
-      <td>
-        <a class="admin-btn" href="../product.html?id=${encodeURIComponent(p.id)}" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i></a>
-        <button class="admin-btn" type="button" data-edit-product="${encodeURIComponent(p.id)}"><i class="fa-solid fa-pen"></i></button>
-        <button class="admin-btn admin-btn-danger" type="button" data-delete-product="${encodeURIComponent(p.id)}"><i class="fa-solid fa-trash"></i></button>
-      </td>
-    </tr>`).join('');
+        <td><img src="${adminImageSrc(p.image)}" class="admin-product-img"></td>
+        <td><strong>${p.name}</strong><br><small>${p.id}</small></td>
+        <td>${p.brand}</td>
+        <td>${MDB.UI.formatPrice(p.price)}</td>
+        <td style="color:${p.stock<10?'red':'inherit'}">${p.stock}</td>
+        <td>${p.category}</td>
+        <td>
+          <button class="admin-btn" type="button" data-edit-product="${encodeURIComponent(p.id)}"><i class="fa-solid fa-pen"></i></button>
+          <button class="admin-btn admin-btn-danger" type="button" data-delete-product="${encodeURIComponent(p.id)}"><i class="fa-solid fa-trash"></i></button>
+        </td>
+      </tr>`).join('');
     }
 
     let editingPid = null;
@@ -1682,181 +1551,74 @@
         if(!p) return;
         editingPid = id;
         document.getElementById('product-form-title').textContent = 'Edit Product';
-        document.getElementById('save-product-btn').textContent = 'Update Product';
         document.getElementById('pf-id').value = p.id || '';
-        document.getElementById('pf-created').value = safeText(p.createdAt).slice(0, 10);
         document.getElementById('pf-name').value = p.name;
         document.getElementById('pf-brand').value = p.brand;
         document.getElementById('pf-price').value = p.price;
-        document.getElementById('pf-oprice').value = p.originalPrice || '';
-        fillCategoryOptions(p.category || 'makeup');
-        populateSubcategoryOptions(p.category || 'makeup', p.subcategory || '');
         document.getElementById('pf-stock').value = p.stock;
-        document.getElementById('pf-badge').value = p.badge || '';
         document.getElementById('pf-desc').value = p.description || '';
-        document.getElementById('pf-details').value = p.details || '';
-        document.getElementById('pf-ingredients').value = Array.isArray(p.ingredients) ? p.ingredients.join('\n') : '';
         document.getElementById('pf-image').value = p.image || '';
         productImageState = Array.isArray(p.images) ? p.images.slice() : [];
         renderProductImagePreview();
-        renderVariantGroups(
-          Array.isArray(p.variantGroups) && p.variantGroups.length
-            ? p.variantGroups
-            : (Array.isArray(p.variants) && p.variants.length ? [{ name: 'color', options: p.variants }] : [])
-        );
-        document.getElementById('pf-rating').value = p.rating || 0;
-        document.getElementById('pf-review-count').value = p.reviewCount || 0;
-        document.getElementById('pf-featured').checked = !!p.isFeatured;
-        document.getElementById('pf-new').checked = !!p.isNewArrival;
         document.getElementById('product-form-wrap').style.display = 'block';
     }
 
     async function deleteProduct(id) {
       if (confirm('Delete product?')) {
-        try {
-          await MDB.Products.delete(id);
-          renderProducts(getProductSearchTerm());
-          renderInventory();
-          MDB.UI.toast('Product deleted');
-        } catch (error) {
-          showProductActionError(error, 'Failed to delete product.');
-        }
+        try { await MDB.Products.delete(id); await refreshAll(); MDB.UI.toast('Deleted'); }
+        catch (error) { showProductActionError(error); }
       }
     }
+
     document.getElementById('product-form').onsubmit = async e => {
-        e.preventDefault();
-        const saveBtn = document.getElementById('save-product-btn');
-        const originalBtnText = saveBtn.textContent;
-        
-        try {
-          saveBtn.disabled = true;
-          saveBtn.textContent = 'Uploading images...';
-
-          const variantGroups = collectVariantGroups();
-          // 1. Process and upload pending images
-          const finalImages = [];
-          
-          // Check existing images (might be URLs or base64 previews)
-          for (const item of productImageState) {
-            if (item.startsWith('data:image')) {
-              // This is a new local image, find its File object
-              // We'll match by looking at our pending files if we wanted to be precise, 
-              // but here we'll just upload everything in pendingImageFiles that hasn't been uploaded
-            } else {
-              // This is already a URL
-              finalImages.push(item);
-            }
-          }
-
-          // Upload all pending files
-          for (const file of pendingImageFiles) {
-            try {
-              const publicUrl = await MDB.Products.uploadImage(file);
-              finalImages.push(publicUrl);
-            } catch (err) {
-              console.error('Failed to upload image:', file.name, err);
-              throw new Error(`Failed to upload image "${file.name}": ${err.message || 'Check storage permissions'}`);
-            }
-          }
-
-          const primaryImage = finalImages[0] || normalizeImagePath(document.getElementById('pf-image').value) || 'img/logo.svg';
-          const ingredients = normalizeListInput(document.getElementById('pf-ingredients').value);
-          const createdValue = document.getElementById('pf-created').value || new Date().toISOString().slice(0, 10);
-          
-          const data = {
-              id: document.getElementById('pf-id').value.trim() || editingPid,
-              name: document.getElementById('pf-name').value.trim(),
-              brand: document.getElementById('pf-brand').value.trim(),
-              price: parseFloat(document.getElementById('pf-price').value),
-              originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
-              category: document.getElementById('pf-cat').value,
-              subcategory: document.getElementById('pf-subcat').value.trim().toLowerCase(),
-              stock: parseInt(document.getElementById('pf-stock').value) || 0,
-              badge: document.getElementById('pf-badge').value || null,
-              description: document.getElementById('pf-desc').value.trim(),
-              details: document.getElementById('pf-details').value.trim(),
-              ingredients,
-              variants: variantGroups.flatMap(group => group.options),
-              variantGroups,
-              image: primaryImage,
-              images: finalImages,
-              rating: Math.max(0, Math.min(5, parseFloat(document.getElementById('pf-rating').value) || 0)),
-              reviewCount: Math.max(0, parseInt(document.getElementById('pf-review-count').value) || 0),
-              isFeatured: document.getElementById('pf-featured').checked,
-              isNewArrival: document.getElementById('pf-new').checked,
-              createdAt: createdValue
-          };
-
-          saveBtn.textContent = 'Saving product...';
-          await MDB.Products.save(data);
-          MDB.UI.toast('Product saved successfully!');
-          toggleProductForm();
-          renderProducts(getProductSearchTerm());
-          renderInventory();
-        } catch (error) {
-          showProductActionError(error, 'Failed to save product.');
-        } finally {
-          saveBtn.disabled = false;
-          saveBtn.textContent = originalBtnText;
-        }
+      e.preventDefault();
+      const saveBtn = document.getElementById('save-product-btn');
+      try {
+        saveBtn.disabled = true;
+        const data = {
+          id: document.getElementById('pf-id').value.trim() || editingPid,
+          name: document.getElementById('pf-name').value.trim(),
+          brand: document.getElementById('pf-brand').value.trim(),
+          price: parseFloat(document.getElementById('pf-price').value),
+          stock: parseInt(document.getElementById('pf-stock').value) || 0,
+          category: document.getElementById('pf-cat').value,
+          description: document.getElementById('pf-desc').value.trim(),
+          image: document.getElementById('pf-image').value || productImageState[0] || 'img/logo.svg',
+          images: productImageState
+        };
+        await MDB.Products.save(data);
+        MDB.UI.toast('Saved!');
+        toggleProductForm();
+        await refreshAll();
+      } catch (error) { showProductActionError(error); }
+      finally { saveBtn.disabled = false; }
     };
 
-    function toggleProductForm() { 
-        const w = document.getElementById('product-form-wrap');
-        const isHidden = w.style.display === 'none' || !w.style.display;
-        if (isHidden) {
-          resetProductFormFields();
-          w.style.display = 'block';
-        } else {
-          resetProductFormFields();
-          w.style.display = 'none';
-        }
+    function toggleProductForm() {
+      const w = document.getElementById('product-form-wrap');
+      w.style.display = (w.style.display === 'none' || !w.style.display) ? 'block' : 'none';
+      if (w.style.display === 'none') { editingPid = null; document.getElementById('product-form').reset(); productImageState = []; renderProductImagePreview(); }
     }
 
     function renderReviews() {
         const rs = MDB.Reviews.get();
         const tbody = document.querySelector('#reviews-table tbody');
-        if (!rs.length) {
-          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fa-regular fa-comment-dots"></i><p>No reviews yet</p></div></td></tr>';
-          return;
-        }
-        tbody.innerHTML = rs.map(r => `<tr>
-            <td>${safeText(r.productId, '-')}</td><td>${safeText(r.authorName, 'Guest')}</td><td>${Number(r.rating || 0)} <i class="fa-solid fa-star" style="color:#f59e0b"></i></td>
-            <td>${r.text ? r.text.substring(0,40) + '...' : '-'}</td><td>${formatAdminDate(r.createdAt)}</td>
-            <td><button class="admin-btn admin-btn-danger" type="button" data-delete-review="${encodeURIComponent(r.id)}"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>`).join('');
+        tbody.innerHTML = rs.map(r => `<tr><td>${r.productId}</td><td>${r.authorName}</td><td>${r.rating}*</td><td>${r.text}</td><td>${formatAdminDate(r.createdAt)}</td><td><button class="admin-btn admin-btn-danger" type="button" data-delete-review="${encodeURIComponent(r.id)}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') || '<tr><td colspan="6">No reviews</td></tr>';
     }
-    function deleteReview(id) { if(confirm('Delete review?')){ MDB.Reviews.delete(id); renderReviews(); } }
+    function deleteReview(id) { if(confirm('Delete?')){ MDB.Reviews.delete(id); renderReviews(); } }
 
     function renderCoupons() {
         const cs = MDB.Coupons.get();
         const tbody = document.querySelector('#coupons-table tbody');
-        tbody.innerHTML = cs.map(c => `<tr>
-            <td><strong>${safeText(c.code, '-')}</strong></td><td>${safeText(c.type, '-')}</td><td>${Number(c.value || 0)}${c.type==='percent'?'%':' LE'}</td>
-            <td>${Number(c.minOrder || 0)} LE</td>
-            <td><button class="admin-btn admin-btn-danger" type="button" data-delete-coupon="${encodeURIComponent(c.code)}"><i class="fa-solid fa-trash"></i></button></td>
-        </tr>`).join('') || '<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-ticket"></i><p>No custom coupons</p></div></td></tr>';
+        tbody.innerHTML = cs.map(c => `<tr><td>${c.code}</td><td>${c.type}</td><td>${c.value}</td><td>${c.minOrder}</td><td><button class="admin-btn admin-btn-danger" type="button" data-delete-coupon="${encodeURIComponent(c.code)}"><i class="fa-solid fa-trash"></i></button></td></tr>`).join('') || '<tr><td colspan="5">No coupons</td></tr>';
     }
-    function toggleCouponForm() { let w = document.getElementById('coupon-form-wrap'); w.style.display = w.style.display === 'none' ? 'block' : 'none'; }
-    document.getElementById('coupon-form').onsubmit = e => {
-        e.preventDefault();
-        MDB.Coupons.add({
-            code: document.getElementById('cf-code').value.toUpperCase(),
-            type: document.getElementById('cf-type').value,
-            value: parseFloat(document.getElementById('cf-val').value),
-            minOrder: parseFloat(document.getElementById('cf-min').value)
-        });
-        MDB.UI.toast('Coupon added');
-        toggleCouponForm();
-        renderCoupons();
-    };
     function deleteCoupon(code) { if(confirm('Delete?')){ MDB.Coupons.delete(code); renderCoupons(); } }
 
     function loadSettings() {
         const s = MDB.Settings.get();
-        document.getElementById('sf-ann').value = s.announcement;
-        document.getElementById('sf-ship').value = s.shippingThreshold;
-        document.getElementById('sf-email').value = s.contactEmail;
+        document.getElementById('sf-ann').value = s.announcement || '';
+        document.getElementById('sf-ship').value = s.shippingThreshold || 3500;
+        document.getElementById('sf-email').value = s.contactEmail || '';
     }
     document.getElementById('settings-form').onsubmit = e => {
         e.preventDefault();
@@ -1865,86 +1627,31 @@
             shippingThreshold: parseInt(document.getElementById('sf-ship').value),
             contactEmail: document.getElementById('sf-email').value
         });
-        MDB.UI.toast('Settings saved! Note: Some changes require page refresh.');
+        MDB.UI.toast('Settings saved');
     };
 
     function exportOrders() {
         const os = MDB.Orders.get();
-        let csv = 'Order ID,Customer,Email,Total,Status,Date\n';
+        let csv = 'ID,Customer,Email,Total,Status,Date\n';
         os.forEach(o => { csv += `${o.id},${o.customer.name},${o.customer.email},${o.total},${o.status},${o.createdAt}\n`; });
         const blob = new Blob([csv], { type: 'text/csv' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'orders.csv'; a.click();
+        const a = document.createElement('a'); a.href = window.URL.createObjectURL(blob); a.download = 'orders.csv'; a.click();
     }
 
     function renderCustomers() {
         const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
         const orders = MDB.Orders.get();
         const tbody = document.querySelector('#customers-table tbody');
-        if (!users.length) {
-          tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-users"></i><p>No registered customers yet</p></div></td></tr>';
-          return;
-        }
         tbody.innerHTML = users.map(u => {
-          const orderCount = orders.filter(o => o.customer.email.toLowerCase() === u.email.toLowerCase()).length;
-          return `<tr><td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.phone||'-'}</td><td>${u.city||'-'}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td>${orderCount}</td></tr>`;
-        }).join('');
+          const count = orders.filter(o => o.customer.email.toLowerCase() === u.email.toLowerCase()).length;
+          return `<tr><td>${u.firstName} ${u.lastName}</td><td>${u.email}</td><td>${u.phone||'-'}</td><td>${u.city||'-'}</td><td>${new Date(u.createdAt).toLocaleDateString()}</td><td>${count}</td></tr>`;
+        }).join('') || '<tr><td colspan="6">No customers</td></tr>';
     }
 
     function renderAnalytics() {
         const a = JSON.parse(localStorage.getItem('mdb_analytics') || '{}');
-        const views = Array.isArray(a.views) ? a.views : [];
-        const searches = Array.isArray(a.searches) ? a.searches : [];
-        const orderCount = Number(a.orders || 0);
-        const revenue = Number(a.revenue || 0);
-        document.getElementById('analytics-stats').innerHTML = `
-          <div class="stat-card">
-            <div class="stat-value">${views.length}</div>
-            <div class="stat-label">Page Views</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${orderCount}</div>
-            <div class="stat-label">Tracked Orders</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">${MDB.UI.formatPrice(revenue)}</div>
-            <div class="stat-label">Tracked Revenue</div>
-          </div>
-        `;
-
-        const topSearches = {};
-        searches.forEach(entry => {
-          const term = (entry && entry.query ? entry.query : '').trim();
-          if (!term) return;
-          topSearches[term] = (topSearches[term] || 0) + 1;
-        });
-        const sortedSearches = Object.entries(topSearches).sort((a, b) => b[1] - a[1]).slice(0, 5);
-        
-        document.getElementById('top-searches').innerHTML = sortedSearches.length ? 
-          sortedSearches.map(([term, count]) => `<span style="display:inline-block;padding:4px 12px;background:var(--admin-bg);border-radius:20px;margin:4px;font-size:13px">${term} <strong>${count}</strong></span>`).join('') :
-          '<p style="color:var(--admin-text-light);font-size:13px">No search data yet</p>';
-        
-        const chartEl = document.getElementById('views-chart');
-        if (chartEl) {
-          const dailyViews = [];
-          for (let i = 6; i >= 0; i--) {
-            const day = new Date();
-            day.setHours(0, 0, 0, 0);
-            day.setDate(day.getDate() - i);
-            const dateKey = day.toISOString().slice(0, 10);
-            const count = views.filter(v => (v.date || '').slice(0, 10) === dateKey).length;
-            dailyViews.push({
-              label: day.toLocaleDateString('en-US', { weekday: 'short' }),
-              count
-            });
-          }
-
-          const maxCount = Math.max(...dailyViews.map(v => v.count), 1);
-          chartEl.innerHTML = dailyViews.map(day => {
-            const height = Math.max(10, Math.round((day.count / maxCount) * 100));
-            return `<div class="chart-col" style="--height:${height}%" title="${day.label}: ${day.count} views"><span class="chart-col-label">${day.label}</span></div>`;
-          }).join('');
-        }
+        const views = Array.isArray(a.views) ? a.views.length : 0;
+        document.getElementById('analytics-stats').innerHTML = `<div class="stat-card"><div class="stat-value">${views}</div><div class="stat-label">Page Views</div></div>`;
     }
   </script>
 </body>

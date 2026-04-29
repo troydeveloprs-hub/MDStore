@@ -1,4 +1,4 @@
-﻿/* === js/app.js === */
+/* === js/app.js === */
 /* MDBOUTIQUEE â€” Main JavaScript â€” Production Grade */
 document.addEventListener('DOMContentLoaded', () => {
   'use strict';
@@ -70,15 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ============================================
      USER SESSION & NAVIGATION
      ============================================ */
-      const updateUserNav = () => {
+  const updateUserNav = () => {
     if (!window.MDB || !MDB.Auth) return;
     const user = MDB.Auth.getUser();
-    const accountLinks = $('a[href*="login.html"], a[aria-label="Account"], .mobile-bottom-nav a:last-child');
+    const accountLinks = $$('a[href*="login.html"], a[aria-label="Account"], .mobile-bottom-nav a:last-child');
     const basePath = window.location.pathname.includes("/collections/") || window.location.pathname.includes("/Pages/") ? "../" : "";
     
     accountLinks.forEach(link => {
       if (user) {
-        // Always go to account.html first, even for admin
         link.href = basePath + "Pages/account.html";
         if (link.textContent.includes("Account") || link.textContent.includes("Login")) {
            link.innerHTML = `<i class="fa-regular fa-user"></i> ${user.firstName || "Account"}`;
@@ -91,63 +90,18 @@ document.addEventListener('DOMContentLoaded', () => {
   updateUserNav();
   document.addEventListener("mdb:auth:changed", updateUserNav);
 
-
   /* ============================================
-     CART â€” LocalStorage Persistence
+     CART â€” Bridge to MDB.Cart
      ============================================ */
-  const CART_KEY = 'mdb_cart';
-  const LEGACY_CART_KEY = 'mdboutiquee_cart';
   const Cart = {
-    get() {
-      try {
-        const current = JSON.parse(localStorage.getItem(CART_KEY));
-        if (Array.isArray(current)) return current;
-
-        const legacy = JSON.parse(localStorage.getItem(LEGACY_CART_KEY));
-        if (Array.isArray(legacy) && legacy.length) {
-          localStorage.setItem(CART_KEY, JSON.stringify(legacy));
-          localStorage.removeItem(LEGACY_CART_KEY);
-          return legacy;
-        }
-      } catch {}
-      return [];
-    },
-    set(items) {
-      localStorage.setItem(CART_KEY, JSON.stringify(items));
-      localStorage.removeItem(LEGACY_CART_KEY);
-      this.updateBadge();
-      emit(document, 'mdb:cart:updated', { count: this.count(), total: this.total() });
-    },
-    add(item) {
-      const items = this.get();
-      const idx = items.findIndex(i => i.id === item.id && i.variant === item.variant);
-      if (idx > -1) { items[idx].qty += item.qty || 1; }
-      else { items.push({ ...item, qty: item.qty || 1 }); }
-      this.set(items);
-      if (window.MDB && window.MDB.Analytics && item.id) window.MDB.Analytics.trackCartAdd(item.id);
-    },
-    remove(id, variant) {
-      const items = this.get().filter(i => !(i.id === id && i.variant === variant));
-      this.set(items);
-    },
-    updateQty(id, variant, qty) {
-      const items = this.get();
-      const item = items.find(i => i.id === id && i.variant === variant);
-      if (item) { item.qty = Math.max(1, qty); this.set(items); }
-    },
-    count() { return this.get().reduce((s, i) => s + i.qty, 0); },
-    total() { return this.get().reduce((s, i) => s + i.price * i.qty, 0); },
-    updateBadge() {
-      const c = this.count();
-      $$('.cart-badge').forEach(b => {
-        b.textContent = c;
-        b.classList.toggle('visible', c > 0);
-      });
-      $$('.mob-cart-badge').forEach(b => {
-        b.textContent = c;
-        b.style.display = c > 0 ? 'flex' : 'none';
-      });
-    }
+    get() { return window.MDB?.Cart?.get() || []; },
+    set(items) { window.MDB?.Cart?._save(items); },
+    add(item) { window.MDB?.Cart?.add(item); },
+    remove(id, variant) { window.MDB?.Cart?.remove(id, variant); },
+    updateQty(id, variant, qty) { window.MDB?.Cart?.updateQty(id, variant, qty); },
+    count() { return window.MDB?.Cart?.count() || 0; },
+    total() { return window.MDB?.Cart?.total() || 0; },
+    updateBadge() { window.MDB?.UI?.updateCartBadges(); }
   };
   Cart.updateBadge();
 
@@ -840,7 +794,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Summary
       const subtotal = Cart.total();
-      const shipping = subtotal > 500 ? 0 : 50;
+      const threshold = (window.MDB && window.MDB.Settings && window.MDB.Settings.get().shippingThreshold) || 3500;
+      const shipping = subtotal >= threshold ? 0 : 50;
       const total = subtotal + shipping;
       if (summaryEl) {
         const subtotalEl = $('[data-subtotal]', summaryEl);
