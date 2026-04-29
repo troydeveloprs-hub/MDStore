@@ -1379,12 +1379,31 @@
         if (legacyAdmin && (!user || user.role !== 'admin')) {
             MDB.Auth.login('admin@mdboutiquee.com', 'admin123');
         }
+      pendingImageFiles = [...pendingImageFiles, ...files];
+      const uploadedImages = await Promise.all(files.map(readFileAsDataUrl));
+      productImageState = uniqueList([...productImageState, ...uploadedImages]);
+      renderProductImagePreview();
+      e.target.value = '';
+    });
+    fillCategoryOptions('makeup');
+    populateSubcategoryOptions('makeup');
+    renderVariantGroups([]);
+    renderProductImagePreview();
+
+    function checkAdminSession() {
+      const user = MDB.Auth.getUser();
+      const legacyAdmin = localStorage.getItem('mdb_admin') === '1';
+      if ((user && user.role === 'admin') || legacyAdmin) {
+        // If legacy but no session, create session
+        if (legacyAdmin && (!user || user.role !== 'admin')) {
+            MDB.Auth.login('admin@mdboutiquee.com', 'admin123');
+        }
         showDashboard();
       } else {
         document.getElementById('admin-login').style.display = 'block';
       }
     }
-    checkAdminSession();
+    // checkAdminSession(); // Removed duplicate call, already in DOMContentLoaded
 
     function bindAdminTabs() {
       document.querySelectorAll('.admin-tab').forEach(tab => {
@@ -1458,7 +1477,6 @@
     }
 
     async function showDashboard() {
-      
       document.getElementById('admin-dashboard').style.display = 'block';
       bindAdminTabs();
       bindAdminActions();
@@ -1496,18 +1514,6 @@
           <td>${stock > 0 ? '<span style="color:#10b981"><i class="fa-solid fa-check"></i> In Stock</span>' : '<span style="color:#ef4444"><i class="fa-solid fa-xmark"></i> Out of Stock</span>'}</td>
         </tr>`;
       }).join('');
-    }
-        <td>${p.id}</td>
-        <td><span class="stock-badge ${p.stock < 10 ? 'low' : ''}" style="padding:4px 8px; border-radius:4px; font-weight:600; ${p.stock < 10 ? 'background:#fef2f2;color:#dc2626' : 'background:#f0fdf4;color:#16a34a'}">${p.stock} units</span></td>
-        <td>
-          <div style="display:flex;gap:4px">
-            <button class="admin-btn" type="button" data-adjust-stock="${encodeURIComponent(p.id)}" data-delta="-1">-1</button>
-            <button class="admin-btn" type="button" data-adjust-stock="${encodeURIComponent(p.id)}" data-delta="1">+1</button>
-            <button class="admin-btn" type="button" data-adjust-stock="${encodeURIComponent(p.id)}" data-delta="10">+10</button>
-          </div>
-        </td>
-        <td>${p.stock > 0 ? '<span style="color:#10b981"><i class="fa-solid fa-check"></i> In Stock</span>' : '<span style="color:#ef4444"><i class="fa-solid fa-xmark"></i> Out of Stock</span>'}</td>
-      </tr>`).join('');
     }
 
     async function adjustStock(pid, delta) {
