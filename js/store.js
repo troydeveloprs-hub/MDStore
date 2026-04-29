@@ -199,6 +199,7 @@ const MDB = (() => {
         image: row.image || metadata.image || "",
         images: Array.isArray(row.images) && row.images.length ? row.images : (Array.isArray(metadata.images) ? metadata.images : []),
         description: row.description || metadata.description || "",
+        subcategory: row.sub_category || metadata.subcategory || metadata.subCategory || defaults.subcategory,
         createdAt: row.created_at || metadata.createdAt || defaults.createdAt
       };
       merged.stock = Number(merged.stock != null ? merged.stock : (metadata.stock != null ? metadata.stock : 0));
