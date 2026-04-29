@@ -754,8 +754,9 @@
 
         <!-- PRODUCTS PANEL -->
         <div class="admin-panel" id="panel-products">
-          <div class="admin-panel-title"><span>Product Catalog</span><button class="admin-btn"
-              type="button" id="toggle-product-form-btn"><i class="fa-solid fa-plus"></i> Add Product</button></div>
+          <div class="admin-panel-title"><span>Product Catalog</span><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="admin-btn admin-btn-danger"
+              type="button" id="clear-products-btn"><i class="fa-solid fa-trash"></i> Clear All Products</button><button class="admin-btn"
+              type="button" id="toggle-product-form-btn"><i class="fa-solid fa-plus"></i> Add Product</button></div></div>
           <div style="display:flex;gap:12px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:16px">
             <input type="text" class="admin-search" placeholder="Search current products by name, brand, ID, or category..." id="product-search" style="margin:0;max-width:420px">
             <div id="products-summary" style="color:var(--admin-text-light);font-size:13px">Loading current products...</div>
@@ -1361,6 +1362,7 @@
           document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
           const panel = document.getElementById('panel-' + tab.dataset.tab);
           if (panel) panel.classList.add('active');
+          if (tab.dataset.tab === 'products') renderProducts(getProductSearchTerm());
           if (tab.dataset.tab === 'settings') loadSettings();
         });
       });
@@ -1536,10 +1538,27 @@
 
     document.getElementById('order-search').addEventListener('input', e => renderOrders(e.target.value));
     document.getElementById('product-search').addEventListener('input', e => renderProducts(e.target.value));
+    document.getElementById('clear-products-btn').addEventListener('click', clearAllProducts);
 
     function updateStatus(id, s) { MDB.Orders.updateStatus(id, s); MDB.UI.toast('Updated'); renderOrders(); renderStats(); }
     function deleteOrder(id) { if(confirm('Delete?')){ let os = MDB.Orders.get().filter(o=>o.id!==id); localStorage.setItem('mdb_orders', JSON.stringify(os)); renderOrders(); renderStats(); } }
     function getProductSearchTerm() { return document.getElementById('product-search')?.value || ''; }
+
+    async function clearAllProducts() {
+      if (!confirm('Delete all products from the current catalog? You can add a new test product after this.')) return;
+      const products = await MDB.Products.getAll();
+      for (const product of products) {
+        await MDB.Products.delete(product.id);
+      }
+      localStorage.removeItem('mdb_custom_products');
+      localStorage.removeItem('mdb_product_overrides');
+      localStorage.removeItem('mdb_wishlist');
+      localStorage.removeItem('mdb_compare');
+      localStorage.removeItem('mdb_recently_viewed');
+      renderProducts('');
+      renderInventory();
+      MDB.UI.toast('All products cleared', 'success');
+    }
 
     async function renderProducts(searchTerm = '') {
       const products = await MDB.Products.getAll();

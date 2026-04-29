@@ -48,6 +48,29 @@ const MDB = (() => {
     };
   }
 
+  async function _loadProductsScript() {
+    if (Array.isArray(window.MDB_BASE_PRODUCTS)) return window.MDB_BASE_PRODUCTS;
+
+    const paths = ['data/products.js', '../data/products.js', '../../data/products.js'];
+    for (const path of paths) {
+      try {
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = path;
+          script.async = true;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+        if (Array.isArray(window.MDB_BASE_PRODUCTS)) return window.MDB_BASE_PRODUCTS;
+      } catch {
+        // Try the next relative path.
+      }
+    }
+
+    return [];
+  }
+
   /* ===================================================================
      PRODUCTS  — Fetch from local JSON
      =================================================================== */
@@ -64,7 +87,7 @@ const MDB = (() => {
           // Try the next relative path.
         }
       }
-      return [];
+      return _loadProductsScript();
     },
 
     async getAll() {
