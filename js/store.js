@@ -1,6 +1,6 @@
 /* ===================================================================
-   MDBOUTIQUEE — Local Store Engine
-   All data persists in localStorage. No server needed.
+   MDBOUTIQUEE — Store Engine
+   Products are loaded from Supabase; other storefront modules remain local.
    =================================================================== */
 const MDB = (() => {
   'use strict';
@@ -15,8 +15,6 @@ const MDB = (() => {
     REVIEWS:   'mdb_reviews',
     ADDRESSES: 'mdb_addresses',
     PROMO:     'mdb_applied_promo',
-    CUSTOM_PRODUCTS: 'mdb_custom_products',
-    PRODUCT_OVERRIDES: 'mdb_product_overrides',
     CUSTOM_COUPONS: 'mdb_custom_coupons',
     SETTINGS: 'mdb_settings',
   };
@@ -33,6 +31,64 @@ const MDB = (() => {
   }
   function _dateNow() {
     return new Date().toISOString();
+  }
+
+  const SUPABASE_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.99.0/dist/umd/supabase.min.js';
+  const SUPABASE_CONFIG_PATHS = [
+    'js/supabase-config.js',
+    '../js/supabase-config.js',
+    '../../js/supabase-config.js'
+  ];
+
+  function _isObject(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value);
+  }
+
+  function _safeObject(value) {
+    return _isObject(value) ? value : {};
+  }
+
+  function _isUuid(value) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value || '').trim());
+  }
+
+  function _loadScript(src, test) {
+    if (typeof test === 'function' && test()) return Promise.resolve();
+
+    return new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${src}"]`);
+      if (existing) {
+        existing.addEventListener('load', resolve, { once: true });
+        existing.addEventListener('error', () => reject(new Error(`Failed to load script: ${src}`)), { once: true });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+      document.head.appendChild(script);
+    });
+  }
+
+  async function _loadSupabaseConfig() {
+    if (_isObject(window.MDB_SUPABASE_CONFIG)) return window.MDB_SUPABASE_CONFIG;
+
+    for (const path of SUPABASE_CONFIG_PATHS) {
+      try {
+        await _loadScript(path, () => _isObject(window.MDB_SUPABASE_CONFIG));
+        if (_isObject(window.MDB_SUPABASE_CONFIG)) return window.MDB_SUPABASE_CONFIG;
+      } catch {
+        // Try the next relative path.
+      }
+    }
+
+    throw new Error('Supabase config not found. Create js/supabase-config.js and set window.MDB_SUPABASE_CONFIG.');
+  }
+
+  function _dispatchProductsEvent(type, detail = {}) {
+    document.dispatchEvent(new CustomEvent(`mdb:products:${type}`, { detail }));
   }
 
   function _normalizeProductImages(product) {
@@ -72,109 +128,275 @@ const MDB = (() => {
   }
 
   /* ===================================================================
-     PRODUCTS  — Fetch from local JSON
+     PRODUCTS  — Supabase-backed product catalog
      =================================================================== */
   const Products = {
     _cache: null,
+    _client: null,
+    _clientPromise: null,
+    _table: 'products',
 
-    async _loadBaseProducts() {
-      const paths = ['data/products.json', '../data/products.json', '../../data/products.json'];
-      for (const path of paths) {
-        try {
-          const res = await fetch(path);
-          if (res.ok) return await res.json();
-        } catch {
-          // Try the next relative path.
-        }
-      }
-      return _loadProductsScript();
+    _defaults() {
+      return {
+        name: '',
+        brand: '',
+        category: '',
+        subcategory: '',
+        price: 0,
+        originalPrice: null,
+        badge: null,
+        image: '',
+        images: [],
+        description: '',
+        details: '',
+        ingredients: [],
+        variants: [],
+        variantGroups: [],
+        stock: 0,
+        rating: 0,
+        reviewCount: 0,
+        isFeatured: false,
+        isNewArrival: false,
+        createdAt: _dateNow()
+      };
     },
 
-    async getAll() {
-      if (this._cache) return this._cache;
+    _fallbackCardHTML(product) {
+      const image = product.image || 'img/logo.svg';
+      const price = Number(product.price || 0);
+      return `
+        <article class="product-card" data-id="${product.id}">
+          <a class="product-card-media" href="product.html?id=${encodeURIComponent(product.id)}">
+            <img src="${image}" alt="${product.name}">
+          </a>
+          <div class="product-card-body">
+            <h3 class="product-card-title">${product.name}</h3>
+            <p class="product-card-price">${price.toFixed(2)}</p>
+          </div>
+        </article>
+      `;
+    },
 
-      const baseProducts = await this._loadBaseProducts();
-      const overrides = _get(KEYS.PRODUCT_OVERRIDES) || {};
-      let all = baseProducts.map(product => _normalizeProductImages(
-        overrides[product.id] ? { ...product, ...overrides[product.id] } : product
-      ));
+    _normalizeCreatedAt(value) {
+      const date = value ? new Date(value) : new Date();
+      return Number.isNaN(date.getTime()) ? _dateNow() : date.toISOString();
+    },
 
-      // Merge with custom products from localStorage
-      const custom = _get(KEYS.CUSTOM_PRODUCTS) || [];
+    _mapRow(row) {
+      const metadata = _safeObject(row?.metadata);
+      return _normalizeProductImages({
+        ...this._defaults(),
+        ...metadata,
+        id: row?.id || '',
+        name: row?.name || metadata.name || '',
+        price: Number(row?.price || metadata.price || 0),
+        image: row?.image || metadata.image || '',
+        description: row?.description || metadata.description || '',
+        createdAt: row?.created_at || metadata.createdAt || _dateNow()
+      });
+    },
 
-      // Handle deleted products (stored as IDs in custom products with a deleted flag)
-      const deletedIds = custom.filter(p => p.isDeleted).map(p => p.id);
-      all = all.filter(p => !deletedIds.includes(p.id));
-
-      // Handle updated products
-      custom.filter(p => !p.isDeleted).forEach(cp => {
-        const idx = all.findIndex(p => p.id === cp.id);
-        if (idx > -1) all[idx] = _normalizeProductImages({ ...all[idx], ...cp });
-        else all.push(_normalizeProductImages(cp));
+    _toRow(product) {
+      const base = _normalizeProductImages({
+        ...this._defaults(),
+        ...product,
+        price: Number(product?.price || 0),
+        stock: Number(product?.stock || 0),
+        rating: Number(product?.rating || 0),
+        reviewCount: Number(product?.reviewCount || 0),
+        createdAt: product?.createdAt || _dateNow()
       });
 
-      this._cache = all;
-      return all;
-    },
+      const metadata = {
+        ...base,
+        createdAt: this._normalizeCreatedAt(base.createdAt)
+      };
 
-    async save(product) {
-      const custom = _get(KEYS.CUSTOM_PRODUCTS) || [];
-      const idx = custom.findIndex(p => p.id === product.id);
+      delete metadata.id;
+      delete metadata.name;
+      delete metadata.price;
+      delete metadata.image;
+      delete metadata.description;
 
-      if (!product.id) product.id = 'P' + Date.now();
-
-      if (idx > -1) custom[idx] = _normalizeProductImages({ ...custom[idx], ...product });
-      else {
-        custom.push(_normalizeProductImages({
-          variants: [],
-          variantGroups: [],
-          images: [],
-          description: '',
-          details: '',
-          ingredients: [],
-          stock: 0,
-          rating: 0,
-          reviewCount: 0,
-          isFeatured: false,
-          isNewArrival: false,
-          createdAt: _dateNow().slice(0, 10),
-          ...product
-        }));
+      if (product?.id && !_isUuid(product.id)) {
+        metadata.legacyId = String(product.id).trim();
       }
 
-      _set(KEYS.CUSTOM_PRODUCTS, custom);
-      this._cache = null; // Invalidate cache
-      return _normalizeProductImages(product);
+      const row = {
+        name: base.name,
+        price: Number(base.price || 0),
+        image: base.image || '',
+        description: base.description || null,
+        created_at: this._normalizeCreatedAt(base.createdAt),
+        metadata
+      };
+
+      if (_isUuid(product?.id)) row.id = product.id;
+      return row;
     },
 
-    async delete(id) {
-      const custom = _get(KEYS.CUSTOM_PRODUCTS) || [];
-      const idx = custom.findIndex(p => p.id === id);
-      const overrides = _get(KEYS.PRODUCT_OVERRIDES) || {};
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (this._clientPromise) return this._clientPromise;
 
-      // Check if it's a JSON product or a custom one
-      const json = await this._loadBaseProducts();
-      const isJson = json.some(p => p.id === id);
+      this._clientPromise = (async () => {
+        if (!window.supabase?.createClient) {
+          await _loadScript(SUPABASE_SCRIPT_URL, () => !!window.supabase?.createClient);
+        }
 
-      if (isJson) {
-        // Mark as deleted in custom storage
-        const deletedEntry = custom.find(p => p.id === id);
-        if (deletedEntry) deletedEntry.isDeleted = true;
-        else custom.push({ id, isDeleted: true });
-      } else {
-        // Remove from custom storage
-        if (idx > -1) custom.splice(idx, 1);
+        const config = await _loadSupabaseConfig();
+        const url = String(config.url || config.supabaseUrl || '').trim();
+        const anonKey = String(config.anonKey || config.supabaseAnonKey || '').trim();
+
+        if (!url || !anonKey) {
+          throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY in js/supabase-config.js.');
+        }
+
+        this._client = window.supabase.createClient(url, anonKey);
+        return this._client;
+      })();
+
+      try {
+        return await this._clientPromise;
+      } finally {
+        this._clientPromise = null;
       }
+    },
 
-      delete overrides[id];
-      _set(KEYS.CUSTOM_PRODUCTS, custom);
-      _set(KEYS.PRODUCT_OVERRIDES, overrides);
-      this._cache = null;
+    async _run(operation, task, fallbackValue, shouldCache = false) {
+      _dispatchProductsEvent('loading', { operation, loading: true });
+      try {
+        const result = await task();
+        if (shouldCache) this._cache = result;
+        return result;
+      } catch (error) {
+        console.error(`MDB.Products.${operation} failed`, error);
+        _dispatchProductsEvent('error', { operation, error });
+        if (fallbackValue !== undefined) return fallbackValue;
+        throw error;
+      } finally {
+        _dispatchProductsEvent('loading', { operation, loading: false });
+      }
+    },
+
+    async getAll(forceRefresh = false) {
+      if (!forceRefresh && this._cache) return this._cache;
+
+      return this._run('getAll', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('id, name, price, image, description, created_at, metadata')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        return (data || []).map(row => this._mapRow(row));
+      }, this._cache || [], true);
+    },
+
+    async seedFromJson(options = {}) {
+      return this._run('seedFromJson', async () => {
+        const client = await this._ensureClient();
+        const baseProducts = await (async () => {
+          const paths = ['data/products.json', '../data/products.json', '../../data/products.json'];
+          for (const path of paths) {
+            try {
+              const res = await fetch(path);
+              if (res.ok) return await res.json();
+            } catch {
+              // Try the next relative path.
+            }
+          }
+          return _loadProductsScript();
+        })();
+
+        if (!Array.isArray(baseProducts) || !baseProducts.length) return [];
+
+        const force = !!options.force;
+        const existing = force ? [] : await this.getAll(true);
+        const existingLegacyIds = new Set(existing.map(product => String(product.legacyId || '').trim()).filter(Boolean));
+        const rows = baseProducts
+          .filter(product => force || !existingLegacyIds.has(String(product.id || '').trim()))
+          .map(product => this._toRow(product));
+
+        if (!rows.length) return [];
+
+        const { data, error } = await client
+          .from(this._table)
+          .insert(rows)
+          .select('id, name, price, image, description, created_at, metadata');
+
+        if (error) throw error;
+
+        this._cache = null;
+        const seeded = (data || []).map(row => this._mapRow(row));
+        _dispatchProductsEvent('changed', { operation: 'seed', count: seeded.length });
+        return seeded;
+      }, []);
     },
 
     async getById(id) {
-      const all = await this.getAll();
-      return all.find(p => p.id === id) || null;
+      if (!id) return null;
+
+      const cached = this._cache?.find(product => product.id === id);
+      if (cached) return cached;
+
+      if (!_isUuid(id)) {
+        const products = await this.getAll();
+        return products.find(product => product.id === id || product.legacyId === id) || null;
+      }
+
+      return this._run('getById', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('id, name, price, image, description, created_at, metadata')
+          .eq('id', id)
+          .maybeSingle();
+
+        if (error) throw error;
+        return data ? this._mapRow(data) : null;
+      }, null);
+    },
+
+    async save(product) {
+      return this._run('save', async () => {
+        const client = await this._ensureClient();
+        const row = this._toRow(product);
+        const query = row.id
+          ? client.from(this._table).upsert(row, { onConflict: 'id' })
+          : client.from(this._table).insert(row);
+
+        const { data, error } = await query
+          .select('id, name, price, image, description, created_at, metadata')
+          .single();
+
+        if (error) throw error;
+
+        this._cache = null;
+        const saved = this._mapRow(data);
+        _dispatchProductsEvent('changed', { operation: 'save', product: saved });
+        return saved;
+      });
+    },
+
+    async delete(id) {
+      if (!_isUuid(id)) {
+        throw new Error('Supabase products use UUID ids. This product id is not valid for delete.');
+      }
+
+      return this._run('delete', async () => {
+        const client = await this._ensureClient();
+        const { error } = await client.from(this._table).delete().eq('id', id);
+        if (error) throw error;
+        this._cache = null;
+        _dispatchProductsEvent('changed', { operation: 'delete', id });
+        return true;
+      });
+    },
+
+    async upsert(product) {
+      return this.save(product);
     },
 
     async getByCategory(cat) {
@@ -189,12 +411,16 @@ const MDB = (() => {
 
     async search(query) {
       const all = await this.getAll();
-      const q = query.toLowerCase();
+      const q = String(query || '').toLowerCase().trim();
+      if (!q) return all;
       return all.filter(p =>
-        p.name.toLowerCase().includes(q) ||
-        p.brand.toLowerCase().includes(q) ||
-        p.category.toLowerCase().includes(q) ||
-        p.subcategory.toLowerCase().includes(q)
+        String(p.id || '').toLowerCase().includes(q) ||
+        String(p.legacyId || '').toLowerCase().includes(q) ||
+        String(p.name || '').toLowerCase().includes(q) ||
+        String(p.brand || '').toLowerCase().includes(q) ||
+        String(p.category || '').toLowerCase().includes(q) ||
+        String(p.subcategory || '').toLowerCase().includes(q) ||
+        String(p.description || '').toLowerCase().includes(q)
       );
     },
 
@@ -220,6 +446,29 @@ const MDB = (() => {
       return all
         .filter(p => p.id !== productId && (p.category === product.category || p.brand === product.brand))
         .slice(0, limit);
+    },
+
+    async renderInto(containerOrSelector = '#products', products = null) {
+      const container = typeof containerOrSelector === 'string'
+        ? document.querySelector(containerOrSelector)
+        : containerOrSelector;
+
+      if (!container) return [];
+
+      container.innerHTML = '<p class="products-loading">Loading products...</p>';
+
+      const items = Array.isArray(products) ? products : await this.getAll();
+      if (!items.length) {
+        container.innerHTML = '<p class="products-empty">No products found.</p>';
+        return [];
+      }
+
+      const renderer = window.MDB?.UI?.productCardHTML
+        ? product => window.MDB.UI.productCardHTML(product)
+        : product => this._fallbackCardHTML(product);
+
+      container.innerHTML = items.map(renderer).join('');
+      return items;
     }
   };
 

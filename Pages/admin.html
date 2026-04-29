@@ -1461,15 +1461,19 @@
     }
 
     async function adjustStock(pid, delta) {
-      const p = await MDB.Products.getById(pid);
-      if (!p) return;
-      await MDB.Products.save({
-        ...p,
-        stock: Math.max(0, (p.stock || 0) + delta)
-      });
-      renderInventory();
-      renderProducts(getProductSearchTerm());
-      MDB.UI.toast(`Stock updated for ${p.name}`, 'success');
+      try {
+        const p = await MDB.Products.getById(pid);
+        if (!p) return;
+        await MDB.Products.save({
+          ...p,
+          stock: Math.max(0, (p.stock || 0) + delta)
+        });
+        renderInventory();
+        renderProducts(getProductSearchTerm());
+        MDB.UI.toast(`Stock updated for ${p.name}`, 'success');
+      } catch (error) {
+        showProductActionError(error, 'Failed to update stock.');
+      }
     }
 
     function renderStats() {
@@ -1544,20 +1548,29 @@
     function deleteOrder(id) { if(confirm('Delete?')){ let os = MDB.Orders.get().filter(o=>o.id!==id); localStorage.setItem('mdb_orders', JSON.stringify(os)); renderOrders(); renderStats(); } }
     function getProductSearchTerm() { return document.getElementById('product-search')?.value || ''; }
 
+    function showProductActionError(error, fallback = 'Product action failed.') {
+      console.error(error);
+      const message = error && error.message ? error.message : fallback;
+      if (window.MDB && MDB.UI && typeof MDB.UI.toast === 'function') {
+        MDB.UI.toast(message, 'error');
+      } else {
+        alert(message);
+      }
+    }
+
     async function clearAllProducts() {
       if (!confirm('Delete all products from the current catalog? You can add a new test product after this.')) return;
-      const products = await MDB.Products.getAll();
-      for (const product of products) {
-        await MDB.Products.delete(product.id);
+      try {
+        const products = await MDB.Products.getAll();
+        for (const product of products) {
+          await MDB.Products.delete(product.id);
+        }
+        renderProducts('');
+        renderInventory();
+        MDB.UI.toast('All products cleared', 'success');
+      } catch (error) {
+        showProductActionError(error, 'Failed to clear products.');
       }
-      localStorage.removeItem('mdb_custom_products');
-      localStorage.removeItem('mdb_product_overrides');
-      localStorage.removeItem('mdb_wishlist');
-      localStorage.removeItem('mdb_compare');
-      localStorage.removeItem('mdb_recently_viewed');
-      renderProducts('');
-      renderInventory();
-      MDB.UI.toast('All products cleared', 'success');
     }
 
     async function renderProducts(searchTerm = '') {
@@ -1636,49 +1649,57 @@
 
     async function deleteProduct(id) {
       if (confirm('Delete product?')) {
-        await MDB.Products.delete(id);
-        renderProducts(getProductSearchTerm());
-        renderInventory();
-        MDB.UI.toast('Product deleted');
+        try {
+          await MDB.Products.delete(id);
+          renderProducts(getProductSearchTerm());
+          renderInventory();
+          MDB.UI.toast('Product deleted');
+        } catch (error) {
+          showProductActionError(error, 'Failed to delete product.');
+        }
       }
     }
 
     document.getElementById('product-form').onsubmit = async e => {
         e.preventDefault();
-        const imageValue = normalizeImagePath(document.getElementById('pf-image').value);
-        const variantGroups = collectVariantGroups();
-        const normalizedImages = uniqueList([imageValue, ...productImageState]);
-        const primaryImage = imageValue || normalizedImages[0] || 'img/logo.svg';
-        const ingredients = normalizeListInput(document.getElementById('pf-ingredients').value);
-        const createdValue = document.getElementById('pf-created').value || new Date().toISOString().slice(0, 10);
-        const data = {
-            id: document.getElementById('pf-id').value.trim() || editingPid,
-            name: document.getElementById('pf-name').value.trim(),
-            brand: document.getElementById('pf-brand').value.trim(),
-            price: parseFloat(document.getElementById('pf-price').value),
-            originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
-            category: document.getElementById('pf-cat').value,
-            subcategory: document.getElementById('pf-subcat').value.trim().toLowerCase(),
-            stock: parseInt(document.getElementById('pf-stock').value),
-            badge: document.getElementById('pf-badge').value || null,
-            description: document.getElementById('pf-desc').value.trim(),
-            details: document.getElementById('pf-details').value.trim(),
-            ingredients,
-            variants: variantGroups.flatMap(group => group.options),
-            variantGroups,
-            image: primaryImage,
-            images: normalizedImages,
-            rating: Math.max(0, Math.min(5, parseFloat(document.getElementById('pf-rating').value) || 0)),
-            reviewCount: Math.max(0, parseInt(document.getElementById('pf-review-count').value) || 0),
-            isFeatured: document.getElementById('pf-featured').checked,
-            isNewArrival: document.getElementById('pf-new').checked,
-            createdAt: createdValue
-        };
-        await MDB.Products.save(data);
-        MDB.UI.toast('Product saved');
-        toggleProductForm();
-        renderProducts(getProductSearchTerm());
-        renderInventory();
+        try {
+          const imageValue = normalizeImagePath(document.getElementById('pf-image').value);
+          const variantGroups = collectVariantGroups();
+          const normalizedImages = uniqueList([imageValue, ...productImageState]);
+          const primaryImage = imageValue || normalizedImages[0] || 'img/logo.svg';
+          const ingredients = normalizeListInput(document.getElementById('pf-ingredients').value);
+          const createdValue = document.getElementById('pf-created').value || new Date().toISOString().slice(0, 10);
+          const data = {
+              id: document.getElementById('pf-id').value.trim() || editingPid,
+              name: document.getElementById('pf-name').value.trim(),
+              brand: document.getElementById('pf-brand').value.trim(),
+              price: parseFloat(document.getElementById('pf-price').value),
+              originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
+              category: document.getElementById('pf-cat').value,
+              subcategory: document.getElementById('pf-subcat').value.trim().toLowerCase(),
+              stock: parseInt(document.getElementById('pf-stock').value),
+              badge: document.getElementById('pf-badge').value || null,
+              description: document.getElementById('pf-desc').value.trim(),
+              details: document.getElementById('pf-details').value.trim(),
+              ingredients,
+              variants: variantGroups.flatMap(group => group.options),
+              variantGroups,
+              image: primaryImage,
+              images: normalizedImages,
+              rating: Math.max(0, Math.min(5, parseFloat(document.getElementById('pf-rating').value) || 0)),
+              reviewCount: Math.max(0, parseInt(document.getElementById('pf-review-count').value) || 0),
+              isFeatured: document.getElementById('pf-featured').checked,
+              isNewArrival: document.getElementById('pf-new').checked,
+              createdAt: createdValue
+          };
+          await MDB.Products.save(data);
+          MDB.UI.toast('Product saved');
+          toggleProductForm();
+          renderProducts(getProductSearchTerm());
+          renderInventory();
+        } catch (error) {
+          showProductActionError(error, 'Failed to save product.');
+        }
     };
 
     function toggleProductForm() { 
