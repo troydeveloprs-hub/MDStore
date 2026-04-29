@@ -689,7 +689,16 @@
         align-items: stretch;
       }
     }
-  </style>
+  
+    #pf-stock {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      font-weight: 700;
+      color: #92400e;
+    }
+    .stock-badge.low { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
+    .stock-badge.in-stock { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+</style>
 </head>
 
 <body>
@@ -1460,11 +1469,28 @@
       await renderInventory();
     }
 
-    async function renderInventory() {
+        async function renderInventory() {
       const products = await MDB.Products.getAll();
       const tbody = document.querySelector('#inventory-table tbody');
-      tbody.innerHTML = products.map(p => `<tr>
-        <td><strong>${p.name}</strong><br><small style="color:#888">${p.brand}</small></td>
+      tbody.innerHTML = products.map(p => {
+        const stock = parseInt(p.stock, 10) || 0;
+        const stockClass = stock < 5 ? 'low' : 'in-stock';
+        return <tr>
+          <td><strong>\</strong><br><small style='color:#888'>\</small></td>
+          <td>\</td>
+          <td><span class='stock-badge \' style='padding:6px 12px; border-radius:6px; font-weight:700;'>\ units</span></td>
+          <td>
+            <div style='display:flex;gap:4px'>
+              <button class='admin-btn' type='button' data-adjust-stock='\' data-delta='-1'>-1</button>
+              <button class='admin-btn' type='button' data-adjust-stock='\' data-delta='1'>+1</button>
+              <button class='admin-btn' type='button' data-adjust-stock='\' data-delta='10'>+10</button>
+              <button class='admin-btn' type='button' data-adjust-stock='\' data-delta='50'>+50</button>
+            </div>
+          </td>
+          <td>\</td>
+        </tr>;
+      }).join('');
+    }</strong><br><small style="color:#888">${p.brand}</small></td>
         <td>${p.id}</td>
         <td><span class="stock-badge ${p.stock < 10 ? 'low' : ''}" style="padding:4px 8px; border-radius:4px; font-weight:600; ${p.stock < 10 ? 'background:#fef2f2;color:#dc2626' : 'background:#f0fdf4;color:#16a34a'}">${p.stock} units</span></td>
         <td>
