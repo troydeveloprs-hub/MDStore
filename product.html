@@ -279,11 +279,8 @@
       <h1 class="product-detail-title">Product Name</h1>
       <div class="product-detail-rating"><span class="stars">★★★★★</span><span class="count">(0 reviews)</span></div>
       <div class="product-detail-price"><span class="price-current">0 LE</span></div>
-
-      <div class="variant-selector">
-        <label>Shades/Variants:</label>
-        <div class="variant-btns"></div>
-      </div>
+      <div id="product-meta-chips" style="display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px"></div>
+      <div id="variant-selectors-wrap"></div>
 
       <div class="variant-selector">
         <label>Quantity:</label>
@@ -437,6 +434,32 @@
   <script src="js/app.js"></script>
   <script src="js/features.js"></script>
   <script>
+    function formatVariantGroupLabel(value) {
+      const labels = {
+        color: 'Color',
+        size: 'Size',
+        shade: 'Shade',
+        volume: 'Volume',
+        scent: 'Scent',
+        style: 'Style',
+        material: 'Material',
+        finish: 'Finish',
+        option: 'Option'
+      };
+      return labels[value] || (value ? value.charAt(0).toUpperCase() + value.slice(1) : 'Option');
+    }
+
+    function getSelectedVariantSummary(container = document) {
+      const labels = [...container.querySelectorAll('[data-variant-group]')]
+        .map(group => {
+          const active = group.querySelector('.variant-btn.active');
+          const groupName = formatVariantGroupLabel(group.dataset.variantGroup || 'option');
+          return active ? `${groupName}: ${active.textContent.trim()}` : '';
+        })
+        .filter(Boolean);
+      return labels.join(' / ') || 'Default';
+    }
+
     document.addEventListener('DOMContentLoaded', async () => {
       const pid = new URLSearchParams(window.location.search).get('id');
       if (!pid) return;
@@ -450,6 +473,9 @@
       const detailsText = (p.details || p.description || '').trim();
       const ingredients = Array.isArray(p.ingredients) ? p.ingredients.filter(Boolean) : [];
       const productImages = Array.isArray(p.images) && p.images.length ? p.images : [p.image].filter(Boolean);
+      const variantGroups = Array.isArray(p.variantGroups) && p.variantGroups.length
+        ? p.variantGroups
+        : (Array.isArray(p.variants) && p.variants.length ? [{ name: 'option', options: p.variants }] : []);
 
       document.title = p.name + ' — MDBoutiquee';
       document.querySelector('.product-detail-brand').textContent = p.brand;
@@ -457,6 +483,11 @@
       document.querySelector('.product-detail-rating .stars').textContent = ratingStars;
       document.querySelector('.product-detail-rating .count').textContent = reviewCount ? `(${reviewCount} reviews)` : '(New product)';
       document.querySelector('.price-current').textContent = MDB.UI.formatPrice(p.price);
+      document.getElementById('product-meta-chips').innerHTML = [
+        p.category ? `<span class="product-badge">${p.category}</span>` : '',
+        p.subcategory ? `<span class="product-badge">${p.subcategory}</span>` : '',
+        typeof p.stock === 'number' ? `<span class="product-badge">${p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}</span>` : ''
+      ].filter(Boolean).join('');
       mainImage.src = p.image;
       mainImage.alt = p.name;
       document.getElementById('product-desc').textContent = p.description;
@@ -474,13 +505,24 @@
         `).join('');
       }
 
-      if (p.variants) {
-          document.querySelector('.variant-btns').innerHTML = p.variants.map((v, i) => `<button class="variant-btn${i===0?' active':''}">${v}</button>`).join('');
+      const variantWrap = document.getElementById('variant-selectors-wrap');
+      if (variantGroups.length) {
+        variantWrap.innerHTML = variantGroups.map(group => `
+          <div class="variant-selector">
+            <label>${formatVariantGroupLabel(group.name)}:</label>
+            <div class="variant-btns" data-variant-group="${group.name}">
+              ${(group.options || []).map((option, index) => `<button class="variant-btn${index === 0 ? ' active' : ''}" type="button">${option}</button>`).join('')}
+            </div>
+          </div>
+        `).join('');
+      } else {
+        variantWrap.innerHTML = '';
       }
 
       // WhatsApp Logic
       document.getElementById('wa-order-btn').onclick = () => {
-          const msg = `Hi! I want to order: ${p.name} (${p.brand}) - Price: ${MDB.UI.formatPrice(p.price)}. Link: ${window.location.href}`;
+          const variantSummary = getSelectedVariantSummary(document);
+          const msg = `Hi! I want to order: ${p.name} (${p.brand}) - ${variantSummary} - Price: ${MDB.UI.formatPrice(p.price)}. Link: ${window.location.href}`;
           window.open(`https://wa.me/201001234567?text=${encodeURIComponent(msg)}`, '_blank');
       };
 
@@ -491,7 +533,7 @@
       const buyNowBtn = document.querySelector('.buy-now-btn');
       if (buyNowBtn) {
         buyNowBtn.onclick = () => {
-          const variant = document.querySelector('.variant-btn.active')?.textContent || 'Default';
+          const variant = getSelectedVariantSummary(document);
           const qty = parseInt(document.querySelector('.qty-input')?.value || 1, 10);
           MDB.Cart.add({
             id: p.id,

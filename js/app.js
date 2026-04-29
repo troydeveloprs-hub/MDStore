@@ -584,6 +584,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  const getSelectedVariantSummary = (ctx = document) => {
+    const groups = $$('[data-variant-group]', ctx);
+    const selections = groups.map(group => {
+      const active = $('.variant-btn.active', group);
+      const groupName = group.dataset.variantGroup || 'option';
+      if (!active) return '';
+      return `${groupName.charAt(0).toUpperCase() + groupName.slice(1)}: ${active.textContent.trim()}`;
+    }).filter(Boolean);
+    return selections.join(' / ') || $('.variant-btn.active', ctx)?.textContent || 'Default';
+  };
+
   // Quantity selectors
   $$('.quantity-selector').forEach(sel => {
     const input = $('.qty-input', sel);
@@ -603,7 +614,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceText = $('.price-current', info)?.textContent || '0';
     const price = parseFloat(priceText.replace(/[^0-9.]/g, '') || 0);
     const image = mainImage?.src || '';
-    const variant = $('.variant-btn.active', info)?.textContent || 'Default';
+    const variant = getSelectedVariantSummary(info);
     const qty = parseInt($('.qty-input', info)?.value || 1);
 
     productAtc.classList.add('loading');
