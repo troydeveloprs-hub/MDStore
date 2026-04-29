@@ -298,6 +298,13 @@
   <script src="../js/app.js"></script>
   <script src="../js/features.js"></script>
   <script>
+  function resolvePageImage(image) {
+    if (!image) return '../img/logo.svg';
+    if (/^(https?:)?\/\//.test(image) || image.startsWith('data:') || image.startsWith('/')) return image;
+    if (image.startsWith('../') || image.startsWith('./')) return image;
+    return `../${image}`;
+  }
+
   document.addEventListener('DOMContentLoaded', async () => {
     renderCompare();
   });
@@ -321,7 +328,7 @@
     el.innerHTML = `<div class="compare-grid">${products.map(p => `
       <div class="compare-card">
         <button class="compare-remove-top" onclick="MDB.Compare.remove('${p.id}');renderCompare()">&times;</button>
-        <img src="../${p.image}" alt="${p.name}">
+        <img src="${resolvePageImage(p.image)}" alt="${p.name}">
         <div class="compare-card-body">
           <div class="compare-card-brand">${p.brand}</div>
           <div class="compare-card-name">${p.name}</div>

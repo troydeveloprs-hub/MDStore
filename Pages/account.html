@@ -546,6 +546,13 @@
   <script src="../js/store.js"></script>
   <script src="../js/app.js"></script><script src="../js/features.js"></script>
   <script>
+  function resolveAccountImage(image) {
+    if (!image) return '../img/logo.svg';
+    if (/^(https?:)?\/\//.test(image) || image.startsWith('data:') || image.startsWith('/')) return image;
+    if (image.startsWith('../') || image.startsWith('./')) return image;
+    return `../${image}`;
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     if (!MDB.Auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
     const user = MDB.Auth.getUser();
@@ -600,7 +607,7 @@
       const orders = MDB.Orders.getForCurrentUser();
       const el = document.getElementById('orders-list');
       if (!orders.length) { el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-box"></i><p>No orders yet</p><a href="../collections/makeup.html" class="btn btn-primary">Start Shopping</a></div>'; return; }
-      el.innerHTML = orders.map(o => `<div class="order-card"><div class="order-header"><div><span class="order-id">${o.id}</span><span class="order-date"> — ${new Date(o.createdAt).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'})}</span></div><span class="order-status ${o.status}">${o.status}</span></div><div class="order-items">${o.items.map(i=>`<img src="../${i.image}" alt="${i.name}" class="order-item-thumb">`).join('')}</div><div class="order-total">Total: ${MDB.UI.formatPrice(o.total)}</div></div>`).join('');
+      el.innerHTML = orders.map(o => `<div class="order-card"><div class="order-header"><div><span class="order-id">${o.id}</span><span class="order-date"> — ${new Date(o.createdAt).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'})}</span></div><span class="order-status ${o.status}">${o.status}</span></div><div class="order-items">${o.items.map(i=>`<img src="${resolveAccountImage(i.image)}" alt="${i.name}" class="order-item-thumb">`).join('')}</div><div class="order-total">Total: ${MDB.UI.formatPrice(o.total)}</div></div>`).join('');
     }
 
     // Wishlist
@@ -608,7 +615,7 @@
       const items = MDB.Wishlist.get();
       const el = document.getElementById('wishlist-grid');
       if (!items.length) { el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fa-regular fa-heart"></i><p>Your wishlist is empty</p><a href="../collections/makeup.html" class="btn btn-primary">Explore Products</a></div>'; return; }
-      el.innerHTML = items.map(i => `<div class="wishlist-item"><img src="../${i.image}" alt="${i.name}"><div class="wishlist-item-info"><div class="wishlist-item-brand">${i.brand}</div><div class="wishlist-item-name">${i.name}</div><div class="wishlist-item-price">${MDB.UI.formatPrice(i.price)}</div><div class="wishlist-item-actions"><button class="wishlist-atc" onclick="MDB.Cart.add({id:'${i.id}',name:'${i.name}',brand:'${i.brand}',price:${i.price},image:'${i.image}',variant:'Default',qty:1});MDB.UI.toast('Added to cart!','success')">Add to Cart</button><button class="wishlist-remove" onclick="MDB.Wishlist.remove('${i.id}');renderWishlist();MDB.UI.toast('Removed','info')"><i class="fa-solid fa-xmark"></i></button></div></div></div>`).join('');
+      el.innerHTML = items.map(i => `<div class="wishlist-item"><img src="${resolveAccountImage(i.image)}" alt="${i.name}"><div class="wishlist-item-info"><div class="wishlist-item-brand">${i.brand}</div><div class="wishlist-item-name">${i.name}</div><div class="wishlist-item-price">${MDB.UI.formatPrice(i.price)}</div><div class="wishlist-item-actions"><button class="wishlist-atc" onclick="MDB.Cart.add({id:'${i.id}',name:'${i.name}',brand:'${i.brand}',price:${i.price},image:'${i.image}',variant:'Default',qty:1});MDB.UI.toast('Added to cart!','success')">Add to Cart</button><button class="wishlist-remove" onclick="MDB.Wishlist.remove('${i.id}');renderWishlist();MDB.UI.toast('Removed','info')"><i class="fa-solid fa-xmark"></i></button></div></div></div>`).join('');
       // Expose for inline onclick
       window.renderWishlist = renderWishlist;
     }
