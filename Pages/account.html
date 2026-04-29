@@ -80,88 +80,6 @@
     <meta property="twitter:title" content="My Account — MDBoutiquee">
     <meta property="twitter:description" content="Manage your MDBoutiquee account, orders, and wishlist.">
     <meta property="twitter:image" content="https://mdboutiquee.com/img/og-image.jpg">
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Account — MDBoutiquee</title>
-  <meta name="description" content="Manage your MDBoutiquee account, orders, and wishlist.">
-  <link rel="stylesheet" href="../css/sofie.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <style>
-    .account-page{min-height:70vh;padding:80px 0 60px}
-    .account-layout{display:grid;grid-template-columns:240px 1fr;gap:40px;margin-top:24px}
-    .account-sidebar{display:flex;flex-direction:column;gap:4px}
-    .account-sidebar-btn{padding:14px 18px;background:none;border:none;text-align:left;font-size:.9rem;font-family:inherit;cursor:pointer;border-radius:8px;transition:all .3s;color:var(--color-text-light,#666);font-weight:500;display:flex;align-items:center;gap:10px}
-    .account-sidebar-btn:hover,.account-sidebar-btn.active{background:var(--color-bg-alt,#f5f5f5);color:var(--color-text,#1a1a1a);font-weight:600}
-    .account-sidebar-btn i{width:18px;text-align:center}
-    .account-sidebar-btn.logout-btn{color:#e74c3c;margin-top:12px}
-    .account-sidebar-btn.logout-btn:hover{background:#fef2f2}
-    .account-panel{display:none;animation:panelIn .4s ease}
-    .account-panel.active{display:block}
-    @keyframes panelIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-    .panel-title{font-size:1.4rem;font-weight:700;margin-bottom:24px;letter-spacing:-.3px}
-    .panel-subtitle{color:var(--color-text-light,#888);font-size:.88rem;margin-bottom:24px}
-    .profile-form{display:flex;flex-direction:column;gap:20px;max-width:520px}
-    .profile-form .form-row{display:flex;gap:16px}
-    .profile-form .form-group{flex:1;display:flex;flex-direction:column;gap:6px}
-    .profile-form label{font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}
-    .profile-form input{padding:13px 16px;border:1.5px solid var(--color-border,#e0e0e0);border-radius:8px;font-size:.92rem;font-family:inherit;transition:border-color .3s}
-    .profile-form input:focus{border-color:var(--color-primary,#1a1a1a);outline:none}
-    .profile-save{padding:14px 32px;background:var(--color-primary,#1a1a1a);color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;align-self:flex-start;font-family:inherit;transition:all .3s}
-    .profile-save:hover{opacity:.85;transform:translateY(-1px)}
-    .orders-list{display:flex;flex-direction:column;gap:16px}
-    .order-card{border:1.5px solid var(--color-border,#e5e5e5);border-radius:12px;padding:24px;transition:box-shadow .3s}
-    .order-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.06)}
-    .order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px}
-    .order-id{font-weight:700;font-size:.92rem}
-    .order-date{color:var(--color-text-light,#888);font-size:.82rem}
-    .order-status{padding:5px 14px;border-radius:20px;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-    .order-status.pending{background:#fef3c7;color:#d97706}
-    .order-status.processing{background:#dbeafe;color:#2563eb}
-    .order-status.shipped{background:#e0e7ff;color:#4f46e5}
-    .order-status.delivered{background:#d1fae5;color:#059669}
-    .order-status.cancelled{background:#fef2f2;color:#e74c3c}
-    .order-items{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-    .order-item-thumb{width:56px;height:56px;border-radius:8px;object-fit:cover;border:1px solid var(--color-border,#e5e5e5)}
-    .order-total{font-weight:700;font-size:1rem}
-    .wishlist-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px}
-    .wishlist-item{border:1.5px solid var(--color-border,#e5e5e5);border-radius:12px;overflow:hidden;transition:box-shadow .3s}
-    .wishlist-item:hover{box-shadow:0 4px 20px rgba(0,0,0,.06)}
-    .wishlist-item img{width:100%;aspect-ratio:1;object-fit:cover}
-    .wishlist-item-info{padding:14px}
-    .wishlist-item-brand{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:var(--color-text-light,#888)}
-    .wishlist-item-name{font-size:.88rem;font-weight:600;margin:4px 0 8px}
-    .wishlist-item-price{font-weight:700;font-size:.9rem;margin-bottom:10px}
-    .wishlist-item-actions{display:flex;gap:8px}
-    .wishlist-item-actions button{flex:1;padding:8px;border-radius:6px;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .3s}
-    .wishlist-atc{background:var(--color-primary,#1a1a1a);color:#fff;border:none}
-    .wishlist-atc:hover{opacity:.85}
-    .wishlist-remove{background:none;border:1.5px solid var(--color-border,#e0e0e0);color:var(--color-text-light,#888)}
-    .wishlist-remove:hover{border-color:#e74c3c;color:#e74c3c}
-    .empty-state{text-align:center;padding:60px 20px;color:var(--color-text-light,#888)}
-    .empty-state i{font-size:2.5rem;margin-bottom:16px;opacity:.4}
-    .empty-state p{margin-bottom:16px;font-size:.92rem}
-    .user-greeting{display:flex;align-items:center;gap:16px;padding:20px;background:var(--color-bg-alt,#f8f8f8);border-radius:12px;margin-bottom:20px}
-    .user-avatar{width:52px;height:52px;border-radius:50%;background:var(--color-primary,#1a1a1a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem}
-    .user-greeting-text h3{font-size:1rem;font-weight:600;margin-bottom:2px}
-    .user-greeting-text p{font-size:.82rem;color:var(--color-text-light,#888)}
-    @media(max-width:768px){.account-layout{grid-template-columns:1fr;gap:20px}.account-sidebar{flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:8px}.account-sidebar-btn{white-space:nowrap;padding:10px 16px;font-size:.82rem}.wishlist-grid{grid-template-columns:repeat(2,1fr)}}
-  </style>
-
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://mdboutiquee.com/">
-    <meta property="og:title" content="My Account — MDBoutiquee">
-    <meta property="og:description" content="Manage your MDBoutiquee account, orders, and wishlist.">
-    <meta property="og:image" content="https://mdboutiquee.com/img/og-image.jpg">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:title" content="My Account — MDBoutiquee">
-    <meta property="twitter:description" content="Manage your MDBoutiquee account, orders, and wishlist.">
-    <meta property="twitter:image" content="https://mdboutiquee.com/img/og-image.jpg">
     
 </head>
 <body>
@@ -639,8 +557,18 @@
     if (!MDB.Auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
     const user = MDB.Auth.getUser();
     
-
     // Greeting
+    const greetingEl = document.getElementById('user-greeting');
+    if (greetingEl && user) {
+      const initial = (user.firstName || user.email || 'U').charAt(0).toUpperCase();
+      greetingEl.innerHTML = `
+        <div class="user-avatar">${initial}</div>
+        <div class="user-greeting-text">
+          <h3>Hello, ${user.firstName || user.email}</h3>
+          <p>Member since ${new Date().getFullYear()}</p>
+        </div>
+      `;
+    }
     
     // Add Admin button if user is admin
     if (user && user.role === "admin") {
@@ -655,9 +583,99 @@
       sidebar.appendChild(adminBtn);
     }
 
-      if (!items.length) { el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fa-regular fa-heart"></i><p>Your wishlist is empty</p><a href="../collections/makeup.html" class="btn btn-primary">Explore Products</a></div>'; return; }
+    // Sidebar buttons
+    document.querySelectorAll('.account-sidebar-btn[data-panel]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const panel = btn.dataset.panel;
+        document.querySelectorAll('.account-sidebar-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === panel));
+        document.querySelectorAll('.account-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
+        if (panel === 'orders') renderOrders();
+        if (panel === 'wishlist') renderWishlist();
+      });
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      MDB.Auth.logout();
+      window.location.href = 'login.html';
+    });
+
+    // Profile form
+    const profileForm = document.getElementById('profile-form');
+    if (profileForm) {
+      document.getElementById('pf-first').value = user.firstName || '';
+      document.getElementById('pf-last').value = user.lastName || '';
+      document.getElementById('pf-email').value = user.email || '';
+      document.getElementById('pf-phone').value = user.phone || '';
+      document.getElementById('pf-address').value = user.address || '';
+      document.getElementById('pf-city').value = user.city || '';
+      
+      profileForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        MDB.Auth.updateProfile({
+          firstName: document.getElementById('pf-first').value,
+          lastName: document.getElementById('pf-last').value,
+          phone: document.getElementById('pf-phone').value,
+          address: document.getElementById('pf-address').value,
+          city: document.getElementById('pf-city').value
+        });
+        MDB.UI.toast('Profile updated!', 'success');
+      });
+    }
+
+    // Password form
+    const passwordForm = document.getElementById('password-form');
+    if (passwordForm) {
+      passwordForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const current = document.getElementById('set-current').value;
+        const newPass = document.getElementById('set-new').value;
+        const confirm = document.getElementById('set-confirm').value;
+        if (newPass !== confirm) {
+          MDB.UI.toast('Passwords do not match', 'error');
+          return;
+        }
+        if (newPass.length < 6) {
+          MDB.UI.toast('Password must be at least 6 characters', 'error');
+          return;
+        }
+        MDB.UI.toast('Password updated!', 'success');
+        passwordForm.reset();
+      });
+    }
+
+    // Render Orders
+    function renderOrders() {
+      const el = document.getElementById('orders-list');
+      const orders = MDB.Orders.getAll();
+      if (!orders.length) {
+        el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders yet</p><a href="../collections/makeup.html" class="btn btn-primary">Start Shopping</a></div>';
+        return;
+      }
+      el.innerHTML = orders.map(order => `
+        <div class="order-card">
+          <div class="order-header">
+            <span class="order-id">#${order.id}</span>
+            <span class="order-date">${new Date(order.date).toLocaleDateString()}</span>
+            <span class="order-status ${order.status}">${order.status}</span>
+          </div>
+          <div class="order-items">
+            ${order.items.map(item => `<img src="${resolveAccountImage(item.image)}" alt="${item.name}" class="order-item-thumb">`).join('')}
+          </div>
+          <div class="order-total">Total: ${MDB.UI.formatPrice(order.total)}</div>
+        </div>
+      `).join('');
+    }
+
+    // Render Wishlist
+    function renderWishlist() {
+      const el = document.getElementById('wishlist-grid');
+      const items = MDB.Wishlist.getAll();
+      if (!items.length) {
+        el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fa-regular fa-heart"></i><p>Your wishlist is empty</p><a href="../collections/makeup.html" class="btn btn-primary">Explore Products</a></div>';
+        return;
+      }
       el.innerHTML = items.map(i => `<div class="wishlist-item"><img src="${resolveAccountImage(i.image)}" alt="${i.name}"><div class="wishlist-item-info"><div class="wishlist-item-brand">${i.brand}</div><div class="wishlist-item-name">${i.name}</div><div class="wishlist-item-price">${MDB.UI.formatPrice(i.price)}</div><div class="wishlist-item-actions"><button class="wishlist-atc" onclick="MDB.Cart.add({id:'${i.id}',name:'${i.name}',brand:'${i.brand}',price:${i.price},image:'${i.image}',variant:'Default',qty:1});MDB.UI.toast('Added to cart!','success')">Add to Cart</button><button class="wishlist-remove" onclick="MDB.Wishlist.remove('${i.id}');renderWishlist();MDB.UI.toast('Removed','info')"><i class="fa-solid fa-xmark"></i></button></div></div></div>`).join('');
-      // Expose for inline onclick
       window.renderWishlist = renderWishlist;
     }
     window.renderWishlist = renderWishlist;
