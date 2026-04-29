@@ -262,7 +262,6 @@ const MDB = (() => {
         if (!url || !anonKey) {
           throw new Error('Missing SUPABASE_URL or SUPABASE_ANON_KEY in js/supabase-config.js.');
         }
-
         this._client = window.supabase.createClient(url, anonKey);
         return this._client;
       })();
@@ -270,17 +269,6 @@ const MDB = (() => {
       try {
         return await this._clientPromise;
       } finally {
-        const client = await this._ensureClient();
-        const baseProducts = await (async () => {
-          const paths = ['data/products.json', '../data/products.json', '../../data/products.json'];
-          for (const path of paths) {
-            try {
-              const res = await fetch(path);
-              if (res.ok) return await res.json();
-            } catch {
-              // Try the next relative path.
-            }
-          }
           return _loadProductsScript();
         })();
 
