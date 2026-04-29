@@ -2593,8 +2593,9 @@
       wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
     }
 
-    function renderCoupons() {
-      const cs = MDB.Coupons.get();
+    async function renderCoupons() {
+      const cs = await MDB.Coupons.get();
+      if (!Array.isArray(cs)) return;
       const tbody = document.querySelector('#coupons-table tbody');
       tbody.innerHTML = cs.map(c => `<tr>
       <td><strong style="font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--gold)">${escapeHtml(c.code)}</strong></td>
@@ -2605,7 +2606,7 @@
     </tr>`).join('') || '<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-ticket"></i><p>No coupons yet</p></div></td></tr>';
     }
 
-    function deleteCoupon(code) { if (confirm('Delete coupon?')) { MDB.Coupons.delete(code); renderCoupons(); } }
+    async function deleteCoupon(code) { if (confirm('Delete coupon?')) { await MDB.Coupons.delete(code); await renderCoupons(); } }
 
     /* ─ INVENTORY ─ */
     async function renderInventory() {
@@ -2667,8 +2668,8 @@
     }
 
     /* ─ SETTINGS ─ */
-    function loadSettings() {
-      const s = MDB.Settings.get();
+    async function loadSettings() {
+      const s = await MDB.Settings.get();
       document.getElementById('sf-ann').value = s.announcement || '';
       document.getElementById('sf-ship').value = s.shippingThreshold || 3500;
       document.getElementById('sf-email').value = s.contactEmail || '';
