@@ -1,7 +1,7 @@
 window.MDB_SUPABASE_CONFIG = {
-  url: 'https://YOUR_PROJECT_ID.supabase.co',
-  anonKey: 'YOUR_SUPABASE_ANON_KEY',
+  url: 'https://hohuqmotoeqgjxahqncx.supabase.co',
+  anonKey: 'sb_publishable_gG2UuuqPLX6f9uIerZT4oQ_S5sDkU8Z',
   adminEmails: [
-    'admin@example.com'
+    'admin@email.com'
   ]
 };
