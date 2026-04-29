@@ -1603,8 +1603,8 @@ const MDB = (() => {
               </div>
             </div>
             <a href="${basePath}product.html?id=${p.id}" class="product-card-image-link">
-              <img src="${basePath}${image}" alt="${p.name}" class="product-card-img main-img" loading="lazy" onerror="this.src='${basePath}img/logo.svg'">
-              <img src="${basePath}${hoverImage}" alt="${p.name}" class="product-card-img hover-img" loading="lazy" onerror="this.style.display='none'">
+              <img src="${basePath}${image}" alt="${p.name}" class="product-card-img main-img" onerror="this.src='${basePath}img/logo.svg'">
+              <img src="${basePath}${hoverImage}" alt="${p.name}" class="product-card-img hover-img" onerror="this.style.display='none'">
             </a>
           </div>
           <div class="product-card-info">
