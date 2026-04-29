@@ -1961,14 +1961,50 @@
 
     /* ─ TAXONOMY ─ */
     const PRODUCT_TAXONOMY = {
-      makeup: ['foundation', 'bb-cc-cream', 'concealer', 'face-primer', 'setting-spray', 'highlighter', 'contour', 'eye-palettes', 'mascara', 'eyeliner', 'eyebrow', 'lipstick', 'lip-gloss', 'brushes-applicators', 'makeup-accessories', 'nail'].map(v => [v, v.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())]),
-      skincare: ['night-creams', 'face-oils', 'mists-essences', 'sunscreen', 'face-sunscreen', 'body-sunscreen', 'face-wash', 'exfoliators', 'makeup-removers', 'toners', 'face-serums', 'blemish-treatments', 'peels', 'masks', 'face-masks', 'sheet-masks', 'eye-care', 'eye-creams', 'lip-balms', 'anti-aging'].map(v => [v, v.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())]),
-      hair: ['shampoo', 'conditioner', 'hair-mask', 'hair-oil', 'styling', 'hair-treatment'].map(v => [v, v.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())]),
-      fragrance: ['perfume', 'body-mist', 'gift-set'].map(v => [v, v.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())]),
-      tools: ['brushes', 'sponges', 'beauty-tools', 'high-tech-tools'].map(v => [v, v.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())]),
-      'bath-body': ['body-lotion', 'body-wash', 'scrub', 'deodorant'].map(v => [v, v.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())])
+      makeup: [
+        ['new-in', 'New In'], ['foundation', 'Foundation'], ['bb-cc-cream', 'BB & CC Cream'], ['concealer', 'Concealer'],
+        ['face-primer', 'Face Primer'], ['setting-spray', 'Setting Spray & Powder'], ['highlighter', 'Highlighter'],
+        ['contour', 'Contour'], ['eye-palettes', 'Eye Palettes'], ['mascara', 'Mascara'], ['eyeliner', 'Eyeliner'],
+        ['eyebrow', 'Eyebrow'], ['lipstick', 'Lipstick'], ['lip-gloss', 'Lip Gloss'], ['value-gift-sets', 'Value & Gift Sets'],
+        ['makeup-palettes', 'Makeup Palettes'], ['clean-makeup', 'Clean Makeup'], ['mini-size', 'Mini Size'],
+        ['value-size', 'Value Size'], ['brushes-applicators', 'Brushes & Applicators'], ['makeup-accessories', 'Makeup Accessories'],
+        ['nail', 'Nail']
+      ],
+      skincare: [
+        ['moisturizers', 'Moisturizers'], ['night-creams', 'Night Creams'], ['face-oils', 'Face Oils'],
+        ['mists-essences', 'Mists & Essences'], ['sunscreen', 'Sunscreen'], ['face-sunscreen', 'Face Sunscreen'],
+        ['body-sunscreen', 'Body Sunscreen'], ['face-wash', 'Face Wash & Cleansers'], ['exfoliators', 'Exfoliators'],
+        ['makeup-removers', 'Makeup Removers'], ['face-wipes', 'Face Wipes'], ['toners', 'Toners'],
+        ['face-serums', 'Face Serums'], ['blemish-treatments', 'Blemish & Acne Treatments'], ['peels', 'Facial Peels'],
+        ['masks', 'Masks'], ['face-masks', 'Face Masks'], ['sheet-masks', 'Sheet Masks'], ['eye-care', 'Eye Care'],
+        ['eye-creams', 'Eye Creams & Treatments'], ['eye-masks', 'Eye Masks'], ['lip-balms', 'Lip Balms & Treatments'],
+        ['high-tech-tools', 'High Tech Tools'], ['acne', 'Acne & Blemishes'], ['anti-aging', 'Anti-Aging'],
+        ['dark-spots', 'Dark Spots'], ['pores', 'Pores'], ['dryness', 'Dryness'], ['fine-lines', 'Fine Lines & Wrinkles'],
+        ['dullness', 'Dullness'], ['supplements', 'Supplements'], ['feminine-care', 'Feminine Care']
+      ],
+      hair: [
+        ['shampoo', 'Shampoo'], ['conditioner', 'Conditioner'], ['hair-mask', 'Hair Mask'],
+        ['hair-oil', 'Hair Oil'], ['styling', 'Styling'], ['hair-treatment', 'Hair Treatment']
+      ],
+      fragrance: [
+        ['perfume', 'Perfume'], ['body-mist', 'Body Mist'], ['gift-set', 'Gift Set']
+      ],
+      tools: [
+        ['brushes', 'Brushes'], ['sponges', 'Sponges'], ['beauty-tools', 'Beauty Tools'],
+        ['high-tech-tools', 'High Tech Tools']
+      ],
+      'bath-body': [
+        ['body-lotion', 'Body Lotion'], ['body-wash', 'Body Wash'], ['scrub', 'Scrub'], ['deodorant', 'Deodorant']
+      ]
     };
-    const CATEGORY_LABELS = { makeup: 'Makeup', skincare: 'Skincare', hair: 'Hair', fragrance: 'Fragrance', tools: 'Tools & Brushes', 'bath-body': 'Bath & Body' };
+    const CATEGORY_LABELS = { 
+      makeup: 'Makeup', 
+      skincare: 'Skincare', 
+      hair: 'Hair', 
+      fragrance: 'Fragrance', 
+      tools: 'Tools & Brushes', 
+      'bath-body': 'Bath & Body' 
+    };
     const VARIANT_TYPES = [['color', 'Color'], ['size', 'Size'], ['shade', 'Shade'], ['volume', 'Volume'], ['scent', 'Scent'], ['style', 'Style'], ['material', 'Material'], ['finish', 'Finish']];
 
     let productImageState = [], pendingImageFiles = [], editingPid = null;
