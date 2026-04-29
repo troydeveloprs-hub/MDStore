@@ -559,6 +559,20 @@ document.addEventListener('DOMContentLoaded', () => {
       if (mainImage && src) { mainImage.style.opacity = 0; setTimeout(() => { mainImage.src = src; mainImage.style.opacity = 1; }, 200); }
     });
   });
+  document.addEventListener('click', (e) => {
+    const thumb = e.target.closest('.gallery-thumb');
+    if (!thumb) return;
+    $$('.gallery-thumb').forEach(t => t.classList.remove('active'));
+    thumb.classList.add('active');
+    const src = $('img', thumb)?.src;
+    if (mainImage && src) {
+      mainImage.style.opacity = 0;
+      setTimeout(() => {
+        mainImage.src = src;
+        mainImage.style.opacity = 1;
+      }, 200);
+    }
+  });
 
   // Variant buttons
   $$('.variant-btns').forEach(group => {

@@ -316,6 +316,10 @@
       <div class="product-accordions" style="margin-top:30px">
         <button class="accordion-toggle">Description <i class="fa-solid fa-chevron-down"></i></button>
         <div class="accordion-body"><p id="product-desc"></p></div>
+        <button class="accordion-toggle">Details <i class="fa-solid fa-chevron-down"></i></button>
+        <div class="accordion-body"><p id="product-details"></p></div>
+        <button class="accordion-toggle">Ingredients <i class="fa-solid fa-chevron-down"></i></button>
+        <div class="accordion-body"><div id="product-ingredients"></div></div>
         <button class="accordion-toggle">Shipping <i class="fa-solid fa-chevron-down"></i></button>
         <div class="accordion-body">
           <p><strong>Shipping:</strong> Free on orders over 3500 LE. Standard delivery 3-5 business days.</p>
@@ -411,14 +415,37 @@
       if (!pid) return;
       const p = await MDB.Products.getById(pid);
       if (!p) return;
+      const galleryThumbs = document.querySelector('.gallery-thumbs');
+      const mainImage = document.querySelector('.product-main-image img');
+      const ratingValue = Math.max(0, Math.min(5, parseFloat(p.rating) || 0));
+      const ratingStars = '★'.repeat(Math.round(ratingValue)) + '☆'.repeat(5 - Math.round(ratingValue));
+      const reviewCount = parseInt(p.reviewCount, 10) || 0;
+      const detailsText = (p.details || p.description || '').trim();
+      const ingredients = Array.isArray(p.ingredients) ? p.ingredients.filter(Boolean) : [];
+      const productImages = Array.isArray(p.images) && p.images.length ? p.images : [p.image].filter(Boolean);
 
       document.title = p.name + ' — MDBoutiquee';
       document.querySelector('.product-detail-brand').textContent = p.brand;
       document.querySelector('.product-detail-title').textContent = p.name;
+      document.querySelector('.product-detail-rating .stars').textContent = ratingStars;
+      document.querySelector('.product-detail-rating .count').textContent = reviewCount ? `(${reviewCount} reviews)` : '(New product)';
       document.querySelector('.price-current').textContent = MDB.UI.formatPrice(p.price);
-      document.querySelector('.product-main-image img').src = p.image;
+      mainImage.src = p.image;
+      mainImage.alt = p.name;
       document.getElementById('product-desc').textContent = p.description;
+      document.getElementById('product-details').textContent = detailsText || 'More product details will be added soon.';
+      document.getElementById('product-ingredients').innerHTML = ingredients.length
+        ? `<ul>${ingredients.map(item => `<li>${item}</li>`).join('')}</ul>`
+        : '<p>Ingredients will be updated soon.</p>';
       document.querySelector('.breadcrumb-current').textContent = p.name;
+
+      if (galleryThumbs) {
+        galleryThumbs.innerHTML = productImages.map((image, index) => `
+          <button class="gallery-thumb${index === 0 ? ' active' : ''}" type="button">
+            <img src="${image}" alt="${p.name} view ${index + 1}">
+          </button>
+        `).join('');
+      }
 
       if (p.variants) {
           document.querySelector('.variant-btns').innerHTML = p.variants.map((v, i) => `<button class="variant-btn${i===0?' active':''}">${v}</button>`).join('');
