@@ -541,23 +541,36 @@
           </div>
         `).join('');
         
-        // Add click handlers for variant buttons - single selection per group (radio button behavior)
+        // Add click handlers for variant buttons - single selection per group
         variantWrap.querySelectorAll('.variant-btn').forEach(btn => {
           btn.addEventListener('click', function(e) {
             e.preventDefault();
             const groupWrap = this.closest('.variant-btns');
+            const groupName = (groupWrap.dataset.variantGroup || '').toLowerCase();
             
-            // Remove active class from all buttons in the same group only
-            groupWrap.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+            // Check if this is a color group
+            const isColorGroup = groupName.includes('color');
+            
+            if (isColorGroup) {
+              // For color groups: remove active from ALL color buttons across ALL groups
+              variantWrap.querySelectorAll('.variant-btns').forEach(otherGroup => {
+                const otherGroupName = (otherGroup.dataset.variantGroup || '').toLowerCase();
+                if (otherGroupName.includes('color')) {
+                  otherGroup.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+                }
+              });
+            } else {
+              // For non-color groups: remove active only from same group
+              groupWrap.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+            }
             
             // Add active class to the clicked button
             this.classList.add('active');
             
             // Dispatch custom event for variant change
             const variantName = this.textContent.trim();
-            const groupName = groupWrap.dataset.variantGroup;
             document.dispatchEvent(new CustomEvent('variant:selected', {
-              detail: { group: groupName, value: variantName }
+              detail: { group: groupWrap.dataset.variantGroup, value: variantName }
             }));
           });
         });

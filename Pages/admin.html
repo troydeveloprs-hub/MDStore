@@ -2059,10 +2059,10 @@
     }
 
     async function refreshAll() {
-      renderStats();
-      renderOrders();
+      await renderStats();
+      await renderOrders();
       await renderProducts(document.getElementById('product-search')?.value || '');
-      renderCustomers();
+      await renderCustomers();
       renderAnalytics();
       renderReviews();
       renderCoupons();
@@ -2080,7 +2080,7 @@
           document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
           const panel = document.getElementById('panel-' + tab.dataset.tab);
           if (panel) panel.classList.add('active');
-          if (tab.dataset.tab === 'products') renderProducts(getProductSearchTerm());
+          if (tab.dataset.tab === 'products') await renderProducts(getProductSearchTerm());
           if (tab.dataset.tab === 'settings') loadSettings();
           // Hide export btn on non-order tabs
           const exportBtn = document.getElementById('export-orders-btn');
@@ -2119,8 +2119,8 @@
       document.getElementById('cancel-product-form-btn')?.addEventListener('click', () => toggleProductForm(false));
       document.getElementById('toggle-coupon-form-btn')?.addEventListener('click', toggleCouponForm);
       document.getElementById('clear-products-btn')?.addEventListener('click', clearAllProducts);
-      document.getElementById('order-search')?.addEventListener('input', e => renderOrders(e.target.value));
-      document.getElementById('product-search')?.addEventListener('input', e => renderProducts(e.target.value));
+      document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value));
+      document.getElementById('product-search')?.addEventListener('input', async e => await renderProducts(e.target.value));
       document.getElementById('pf-cat')?.addEventListener('change', e => populateSubcategoryOptions(e.target.value));
       document.getElementById('pf-image')?.addEventListener('input', renderProductImagePreview);
 
@@ -2260,9 +2260,10 @@
     }
 
     /* ─ STATS ─ */
-    function renderStats() {
-      const orders = MDB.Orders.get();
-      const revenue = orders.reduce((s, o) => s + o.total, 0);
+    async function renderStats() {
+      let orders = await MDB.Orders.get();
+      if (!Array.isArray(orders)) orders = [];
+      const revenue = orders.reduce((s, o) => s + (Number(o.total) || 0), 0);
       const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
       const pending = orders.filter(o => o.status === 'pending').length;
       const badge = document.getElementById('pending-badge');
@@ -2304,8 +2305,9 @@
     }
 
     /* ─ ORDERS ─ */
-    function renderOrders(q = '') {
-      let orders = MDB.Orders.get();
+    async function renderOrders(q = '') {
+      let orders = await MDB.Orders.get();
+      if (!Array.isArray(orders)) orders = [];
       if (q) { const ql = q.toLowerCase(); orders = orders.filter(o => safeText(o.id).toLowerCase().includes(ql) || getOrderCustomer(o).name.toLowerCase().includes(ql)); }
       const tbody = document.querySelector('#orders-table tbody');
       if (!orders.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders found</p></div></td></tr>`; return; }
@@ -2331,12 +2333,12 @@
       }).join('');
     }
 
-    function updateStatus(id, s) { MDB.Orders.updateStatus(id, s); MDB.UI.toast('Status updated'); renderOrders(); renderStats(); }
-    function deleteOrder(id) {
+    async function updateStatus(id, s) { await MDB.Orders.updateStatus(id, s); MDB.UI.toast('Status updated'); await renderOrders(); await renderStats(); }
+    async function deleteOrder(id) {
       if (!confirm('Delete this order?')) return;
-      let os = MDB.Orders.get().filter(o => o.id !== id);
+      let os = (await MDB.Orders.get()).filter(o => o.id !== id);
       localStorage.setItem('mdb_orders', JSON.stringify(os));
-      renderOrders(); renderStats();
+      await renderOrders(); await renderStats();
     }
 
     /* ─ PRODUCTS ─ */
@@ -2551,9 +2553,9 @@
     }
 
     /* ─ CUSTOMERS ─ */
-    function renderCustomers() {
+    async function renderCustomers() {
       const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
-      const orders = MDB.Orders.get();
+      const orders = await MDB.Orders.get();
       const tbody = document.querySelector('#customers-table tbody');
       tbody.innerHTML = users.map(u => {
         const cnt = orders.filter(o => o.customer.email?.toLowerCase() === u.email?.toLowerCase()).length;
@@ -2672,8 +2674,8 @@
     }
 
     /* ─ EXPORT ─ */
-    function exportOrders() {
-      const os = MDB.Orders.get();
+    async function exportOrders() {
+      const os = await MDB.Orders.get();
       let csv = 'ID,Customer,Email,Total,Status,Date\n';
       os.forEach(o => { csv += `${o.id},${o.customer?.name || ''},${o.customer?.email || ''},${o.total},${o.status},${o.createdAt}\n`; });
       const a = document.createElement('a');
