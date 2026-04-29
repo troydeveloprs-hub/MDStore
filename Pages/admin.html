@@ -1692,6 +1692,15 @@
               isNewArrival: document.getElementById('pf-new').checked,
               createdAt: createdValue
           };
+
+          // Payload size validation (Base64 strings can be huge)
+          const payloadSize = JSON.stringify(data).length;
+          if (payloadSize > 2 * 1024 * 1024) { // 2MB limit warning
+            if (!confirm(`Warning: This product data is quite large (${(payloadSize / 1024 / 1024).toFixed(1)}MB). Large images can cause "Failed to fetch" or 502 errors. Would you like to try saving anyway?`)) {
+              return;
+            }
+          }
+
           await MDB.Products.save(data);
           MDB.UI.toast('Product saved');
           toggleProductForm();

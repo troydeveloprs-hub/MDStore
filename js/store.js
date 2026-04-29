@@ -207,17 +207,16 @@ const MDB = (() => {
         createdAt: product?.createdAt || _dateNow()
       });
 
-      const metadata = {
-        ...base,
-        createdAt: this._normalizeCreatedAt(base.createdAt)
-      };
-
+      // Create metadata by removing fields that have their own top-level columns
+      const metadata = { ...base };
       delete metadata.id;
       delete metadata.name;
       delete metadata.price;
       delete metadata.image;
       delete metadata.description;
+      delete metadata.created_at; // Ensure no snake_case version exists in metadata
 
+      // Store the legacy ID if it's not a UUID
       if (product?.id && !_isUuid(product.id)) {
         metadata.legacyId = String(product.id).trim();
       }
@@ -231,7 +230,10 @@ const MDB = (() => {
         metadata
       };
 
-      if (_isUuid(product?.id)) row.id = product.id;
+      if (_isUuid(product?.id)) {
+        row.id = product.id;
+      }
+
       return row;
     },
 
@@ -363,15 +365,25 @@ const MDB = (() => {
       return this._run('save', async () => {
         const client = await this._ensureClient();
         const row = this._toRow(product);
+        
+        // Use upsert only if we have a valid UUID, otherwise insert
         const query = row.id
-          ? client.from(this._table).upsert(row, { onConflict: 'id' })
+          ? client.from(this._table).upsert(row)
           : client.from(this._table).insert(row);
 
         const { data, error } = await query
           .select('id, name, price, image, description, created_at, metadata')
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase Save Error Details:', {
+            code: error.code,
+            message: error.message,
+            details: error.details,
+            hint: error.hint
+          });
+          throw error;
+        }
 
         this._cache = null;
         const saved = this._mapRow(data);
