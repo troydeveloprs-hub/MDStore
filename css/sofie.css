@@ -4311,8 +4311,8 @@ object-fit: cover;
 
    /* Page hero */
    .page-hero {
-      padding: 40px 0 32px;
-      margin-bottom: 32px
+      padding: 20px 0 16px;
+      margin-bottom: 16px
    }
 
    .page-hero-title {
@@ -4387,7 +4387,7 @@ object-fit: cover;
 
    /* Products */
    .products-section {
-      padding: var(--space-xl) 0
+      padding: 24px 0
    }
 
    .products-grid {
