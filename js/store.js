@@ -182,7 +182,7 @@ const MDB = (() => {
       return Number.isNaN(date.getTime()) ? _dateNow() : date.toISOString();
     },
 
-            _mapRow(row) {
+                _mapRow(row) {
       if (!row) return null;
       let metadata = row.metadata;
       if (typeof metadata === "string") {
@@ -196,13 +196,12 @@ const MDB = (() => {
         id: row.id || metadata.legacyId || "",
         name: row.name || metadata.name || "",
         price: Number(row.price != null ? row.price : (metadata.price || 0)),
-        stock: Number(row.stock != null ? row.stock : (metadata.stock != null ? metadata.stock : 0)),
         image: row.image || metadata.image || "",
         images: Array.isArray(row.images) && row.images.length ? row.images : (Array.isArray(metadata.images) ? metadata.images : []),
         description: row.description || metadata.description || "",
         createdAt: row.created_at || metadata.createdAt || defaults.createdAt
       };
-      merged.stock = Number(merged.stock);
+      merged.stock = Number(merged.stock != null ? merged.stock : (metadata.stock != null ? metadata.stock : 0));
       merged.rating = Number(merged.rating || 0);
       merged.reviewCount = Number(merged.reviewCount || 0);
       merged.price = Number(merged.price);
@@ -210,7 +209,7 @@ const MDB = (() => {
       return _normalizeProductImages(merged);
     },
 
-        _toRow(product) {
+            _toRow(product) {
       const base = _normalizeProductImages({
         ...this._defaults(),
         ...product,
@@ -225,7 +224,6 @@ const MDB = (() => {
       delete metadata.id;
       delete metadata.name;
       delete metadata.price;
-      delete metadata.stock;
       delete metadata.image;
       delete metadata.images;
       delete metadata.description;
@@ -234,7 +232,6 @@ const MDB = (() => {
       const row = {
         name: base.name,
         price: Number(base.price || 0),
-        stock: Number(base.stock || 0),
         image: base.image || '',
         images: base.images || [],
         description: base.description || null,
@@ -300,7 +297,7 @@ const MDB = (() => {
         const client = await this._ensureClient();
         const { data, error } = await client
           .from(this._table)
-          .select('id, name, price, stock, image, images, description, created_at, metadata')
+          .select('id, name, price, image, images, description, created_at, metadata')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -364,7 +361,7 @@ const MDB = (() => {
         const client = await this._ensureClient();
         const { data, error } = await client
           .from(this._table)
-          .select('id, name, price, stock, image, images, description, created_at, metadata')
+          .select('id, name, price, image, images, description, created_at, metadata')
           .eq('id', id)
           .maybeSingle();
 
@@ -384,7 +381,7 @@ const MDB = (() => {
           : client.from(this._table).insert(row);
 
         const { data, error } = await query
-          .select('id, name, price, stock, image, images, description, created_at, metadata')
+          .select('id, name, price, image, images, description, created_at, metadata')
           .single();
 
         if (error) {
