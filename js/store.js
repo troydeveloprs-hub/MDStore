@@ -1,6 +1,6 @@
 /* ===================================================================
    MDBOUTIQUEE — Store Engine
-   Products are loaded from Supabase; other storefront modules remain local.
+   ALL data is now stored in Supabase (products, cart, wishlist, orders, users, etc.)
    =================================================================== */
 const MDB = (() => {
   'use strict';
@@ -16,7 +16,7 @@ const MDB = (() => {
     ADDRESSES: 'mdb_addresses',
     PROMO:     'mdb_applied_promo',
     CUSTOM_COUPONS: 'mdb_custom_coupons',
-    SETTINGS: 'mdb_settings',
+    SETTINGS:  'mdb_settings',
   };
 
   /* â”€â”€â”€ Helpers â”€â”€â”€ */
@@ -495,14 +495,97 @@ const MDB = (() => {
   };
 
   /* ===================================================================
-     CART
+     CART — Supabase-backed
      =================================================================== */
   const Cart = {
-    get() { return _get(KEYS.CART) || []; },
-    _save(items) { _set(KEYS.CART, items); this._notify(); },
+    _cache: null,
+    _table: 'cart',
+    _client: null,
 
-    add(item) {
-      const items = this.get();
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
+      }
+      return await Products._ensureClient();
+    },
+
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.warn(`MDB Cart ${opName} error:`, err);
+        return fallback;
+      }
+    },
+
+    async get() {
+      const user = Auth.getUser();
+      if (!user) {
+        return _get(KEYS.CART) || []; // Fallback to localStorage for guest users
+      }
+
+      return this._run('get', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        this._cache = (data || []).map(row => ({
+          id: row.product_id,
+          name: row.name,
+          brand: row.brand || '',
+          price: Number(row.price) || 0,
+          image: row.image || '',
+          variant: row.variant || 'Default',
+          qty: row.qty || 1,
+          addedAt: row.created_at
+        }));
+        return this._cache;
+      }, _get(KEYS.CART) || []);
+    },
+
+    async _save(items) {
+      const user = Auth.getUser();
+      if (!user) {
+        _set(KEYS.CART, items);
+        this._notify();
+        return;
+      }
+
+      this._run('save', async () => {
+        const client = await this._ensureClient();
+        
+        // Delete existing cart items for user
+        await client.from(this._table).delete().eq('user_id', user.id);
+
+        // Insert new cart items
+        if (items.length > 0) {
+          const rows = items.map(item => ({
+            user_id: user.id,
+            product_id: item.id,
+            name: item.name,
+            brand: item.brand || '',
+            price: Number(item.price) || 0,
+            image: item.image || '',
+            variant: item.variant || 'Default',
+            qty: item.qty || 1
+          }));
+          await client.from(this._table).insert(rows);
+        }
+
+        this._cache = items;
+      });
+      this._notify();
+    },
+
+    async add(item) {
+      const items = await this.get();
       const idx = items.findIndex(i => i.id === item.id && i.variant === item.variant);
       if (idx > -1) {
         items[idx].qty += (item.qty || 1);
@@ -518,41 +601,47 @@ const MDB = (() => {
           addedAt: _dateNow()
         });
       }
-      this._save(items);
+      await this._save(items);
       return items;
     },
 
-    remove(id, variant) {
-      const items = this.get().filter(i => !(i.id === id && i.variant === (variant || 'Default')));
-      this._save(items);
+    async remove(id, variant) {
+      const items = (await this.get()).filter(i => !(i.id === id && i.variant === (variant || 'Default')));
+      await this._save(items);
       return items;
     },
 
-    updateQty(id, variant, qty) {
-      const items = this.get();
+    async updateQty(id, variant, qty) {
+      const items = await this.get();
       const item = items.find(i => i.id === id && i.variant === (variant || 'Default'));
       if (item) {
         item.qty = Math.max(1, qty);
-        this._save(items);
+        await this._save(items);
       }
       return items;
     },
 
-    clear() { this._save([]); },
+    async clear() { await this._save([]); },
 
-    count() { return this.get().reduce((s, i) => s + i.qty, 0); },
+    async count() { 
+      const items = await this.get();
+      return items.reduce((s, i) => s + i.qty, 0);
+    },
 
-    subtotal() { return this.get().reduce((s, i) => s + (i.price * i.qty), 0); },
+    async subtotal() {
+      const items = await this.get();
+      return items.reduce((s, i) => s + (i.price * i.qty), 0);
+    },
 
-    shipping() {
-      const sub = this.subtotal();
-      const threshold = Settings.get().shippingThreshold || 3500;
+    async shipping() {
+      const sub = await this.subtotal();
+      const threshold = (await Settings.get()).shippingThreshold || 3500;
       return sub >= threshold ? 0 : 50;
     },
 
-    total() {
-      let t = this.subtotal() + this.shipping();
-      const promo = this.getAppliedPromo();
+    async total() {
+      let t = (await this.subtotal()) + (await this.shipping());
+      const promo = await this.getAppliedPromo();
       if (promo) {
         if (promo.type === 'percent') t = t * (1 - promo.value / 100);
         else if (promo.type === 'fixed') t = Math.max(0, t - promo.value);
@@ -560,16 +649,16 @@ const MDB = (() => {
       return Math.round(t * 100) / 100;
     },
 
-    discount() {
-      const promo = this.getAppliedPromo();
+    async discount() {
+      const promo = await this.getAppliedPromo();
       if (!promo) return 0;
-      const base = this.subtotal() + this.shipping();
+      const base = (await this.subtotal()) + (await this.shipping());
       if (promo.type === 'percent') return Math.round(base * promo.value / 100);
       if (promo.type === 'fixed') return Math.min(promo.value, base);
       return 0;
     },
 
-    applyPromo(code) {
+    async applyPromo(code) {
       const fixedPromos = {
         'MDB10':   { code: 'MDB10',   type: 'percent', value: 10, label: '10% Off' },
         'MDB20':   { code: 'MDB20',   type: 'percent', value: 20, label: '20% Off' },
@@ -577,7 +666,7 @@ const MDB = (() => {
         'FREESHIP': { code: 'FREESHIP', type: 'fixed', value: 50, label: 'Free Shipping' },
       };
       
-      const customPromos = _get(KEYS.CUSTOM_COUPONS) || [];
+      const customPromos = await Coupons.get();
       const upper = (code || '').trim().toUpperCase();
       
       const found = fixedPromos[upper] || customPromos.find(p => p.code.toUpperCase() === upper);
