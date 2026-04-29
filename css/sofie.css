@@ -1024,7 +1024,7 @@ h6 {
 
 /* CATEGORY BANNERS */
 .category-banners {
-   padding: var(--space-section) 0
+   padding: 24px 0
 }
 
 .category-banners-grid {
@@ -1195,7 +1195,7 @@ h6 {
 
 /* PRODUCTS GRID */
 .products-section {
-   padding: var(--space-section) 0
+   padding: 24px 0
 }
 
 .products-grid {
