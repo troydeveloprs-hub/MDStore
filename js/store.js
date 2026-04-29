@@ -1,5 +1,5 @@
 /* ===================================================================
-   MDBOUTIQUEE â€” Store Engine
+   MDBOUTIQUEE — Store Engine
    Products are loaded from Supabase; other storefront modules remain local.
    =================================================================== */
 const MDB = (() => {
@@ -270,43 +270,6 @@ const MDB = (() => {
       try {
         return await this._clientPromise;
       } finally {
-        this._clientPromise = null;
-      }
-    },
-
-    async _run(operation, task, fallbackValue, shouldCache = false) {
-      _dispatchProductsEvent('loading', { operation, loading: true });
-      try {
-        const result = await task();
-        if (shouldCache) this._cache = result;
-        return result;
-      } catch (error) {
-        console.error(`MDB.Products.${operation} failed`, error);
-        _dispatchProductsEvent('error', { operation, error });
-        if (fallbackValue !== undefined) return fallbackValue;
-        throw error;
-      } finally {
-        _dispatchProductsEvent('loading', { operation, loading: false });
-      }
-    },
-
-    async getAll(forceRefresh = false) {
-      if (!forceRefresh && this._cache) return this._cache;
-
-      return this._run('getAll', async () => {
-        const client = await this._ensureClient();
-        const { data, error } = await client
-          .from(this._table)
-          .select('id, name, price, image, images, description, created_at, metadata')
-          .order('created_at', { ascending: false });
-
-        if (error) throw error;
-        return (data || []).map(row => this._mapRow(row));
-      }, this._cache || [], true);
-    },
-
-    async seedFromJson(options = {}) {
-      return this._run('seedFromJson', async () => {
         const client = await this._ensureClient();
         const baseProducts = await (async () => {
           const paths = ['data/products.json', '../data/products.json', '../../data/products.json'];
@@ -740,7 +703,7 @@ const MDB = (() => {
   };
 
   /* ===================================================================
-     AUTH  â€” Local user management
+     AUTH  — Local user management
      =================================================================== */
   const Auth = {
     _getUsers() { return _get('mdb_users') || []; },
