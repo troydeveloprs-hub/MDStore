@@ -688,14 +688,93 @@ const MDB = (() => {
   };
 
   /* ===================================================================
-     WISHLIST
+     WISHLIST — Supabase-backed
      =================================================================== */
   const Wishlist = {
-    get() { return _get(KEYS.WISHLIST) || []; },
-    _save(items) { _set(KEYS.WISHLIST, items); this._notify(); },
+    _cache: null,
+    _table: 'wishlist',
+    _client: null,
 
-    add(product) {
-      const items = this.get();
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
+      }
+      return await Products._ensureClient();
+    },
+
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.warn(`MDB Wishlist ${opName} error:`, err);
+        return fallback;
+      }
+    },
+
+    async get() {
+      const user = Auth.getUser();
+      if (!user) {
+        return _get(KEYS.WISHLIST) || []; // Fallback to localStorage for guest users
+      }
+
+      return this._run('get', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        this._cache = (data || []).map(row => ({
+          id: row.product_id,
+          name: row.name,
+          brand: row.brand || '',
+          price: Number(row.price) || 0,
+          image: row.image || '',
+          addedAt: row.created_at
+        }));
+        return this._cache;
+      }, _get(KEYS.WISHLIST) || []);
+    },
+
+    async _save(items) {
+      const user = Auth.getUser();
+      if (!user) {
+        _set(KEYS.WISHLIST, items);
+        this._notify();
+        return;
+      }
+
+      this._run('save', async () => {
+        const client = await this._ensureClient();
+        
+        // Delete existing wishlist items for user
+        await client.from(this._table).delete().eq('user_id', user.id);
+
+        // Insert new wishlist items
+        if (items.length > 0) {
+          const rows = items.map(item => ({
+            user_id: user.id,
+            product_id: item.id,
+            name: item.name,
+            brand: item.brand || '',
+            price: Number(item.price) || 0,
+            image: item.image || ''
+          }));
+          await client.from(this._table).insert(rows);
+        }
+
+        this._cache = items;
+      });
+      this._notify();
+    },
+
+    async add(product) {
+      const items = await this.get();
       if (items.some(i => i.id === product.id)) return items; // already exists
       items.push({
         id: product.id,
@@ -705,31 +784,37 @@ const MDB = (() => {
         image: product.image || '',
         addedAt: _dateNow()
       });
-      this._save(items);
+      await this._save(items);
       return items;
     },
 
-    remove(id) {
-      const items = this.get().filter(i => i.id !== id);
-      this._save(items);
+    async remove(id) {
+      const items = (await this.get()).filter(i => i.id !== id);
+      await this._save(items);
       return items;
     },
 
-    toggle(product) {
-      if (this.has(product.id)) {
-        this.remove(product.id);
+    async toggle(product) {
+      if (await this.has(product.id)) {
+        await this.remove(product.id);
         return false; // removed
       } else {
-        this.add(product);
+        await this.add(product);
         return true; // added
       }
     },
 
-    has(id) { return this.get().some(i => i.id === id); },
+    async has(id) { 
+      const items = await this.get();
+      return items.some(i => i.id === id);
+    },
 
-    count() { return this.get().length; },
+    async count() { 
+      const items = await this.get();
+      return items.length;
+    },
 
-    clear() { this._save([]); },
+    async clear() { await this._save([]); },
 
     _notify() {
       document.dispatchEvent(new CustomEvent('mdb:wishlist:updated', { detail: { count: this.count() } }));
@@ -737,84 +822,216 @@ const MDB = (() => {
   };
 
   /* ===================================================================
-     ORDERS
+     ORDERS — Supabase-backed
      =================================================================== */
   const Orders = {
-    get() { return _get(KEYS.ORDERS) || []; },
-    _save(orders) { _set(KEYS.ORDERS, orders); },
+    _cache: null,
+    _table: 'orders',
+    _client: null,
 
-    create(orderData) {
-      const orders = this.get();
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
+      }
+      return await Products._ensureClient();
+    },
+
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.warn(`MDB Orders ${opName} error:`, err);
+        return fallback;
+      }
+    },
+
+    async get() {
+      const user = Auth.getUser();
+      if (!user || user.role === 'admin') {
+        return _get(KEYS.ORDERS) || []; // Fallback to localStorage for guest users or admin
+      }
+
+      return this._run('get', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        this._cache = (data || []).map(row => ({
+          id: row.id,
+          items: row.items,
+          total: Number(row.total) || 0,
+          customer: {
+            name: row.customer_name,
+            email: row.customer_email,
+            phone: row.customer_phone,
+            address: row.customer_address,
+            city: row.customer_city
+          },
+          status: row.status,
+          paymentMethod: row.payment_method,
+          paymentStatus: row.payment_status,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at
+        }));
+        return this._cache;
+      }, _get(KEYS.ORDERS) || []);
+    },
+
+    async _save(orders) {
+      // Orders are saved individually in Supabase
+      this._cache = orders;
+    },
+
+    async create(orderData) {
+      const user = Auth.getUser();
+      const cartItems = await Cart.get();
       const order = {
-        id: _uid(),
-        items: Cart.get(),
-        subtotal: Cart.subtotal(),
-        shipping: Cart.shipping(),
-        discount: Cart.discount(),
-        promoCode: Cart.getAppliedPromo()?.code || null,
-        total: Cart.total(),
-        customer: {
-          name: orderData.name || '',
-          email: orderData.email || '',
-          phone: orderData.phone || '',
-          address: orderData.address || '',
-          city: orderData.city || '',
-          notes: orderData.notes || ''
-        },
-        paymentMethod: orderData.paymentMethod || 'cash',
+        user_id: user?.id || null,
+        customer_name: orderData.name || '',
+        customer_email: orderData.email || '',
+        customer_phone: orderData.phone || '',
+        customer_address: orderData.address || '',
+        customer_city: orderData.city || '',
+        items: cartItems,
+        total: await Cart.total(),
         status: 'pending',
-        statusHistory: [
-          { status: 'pending', date: _dateNow(), note: 'Order placed' }
-        ],
-        createdAt: _dateNow(),
-        updatedAt: _dateNow()
+        payment_method: orderData.paymentMethod || 'cash',
+        payment_status: 'pending'
       };
-      orders.unshift(order);
-      this._save(orders);
-      // Clear cart & promo after order
-      Cart.clear();
-      Cart.removePromo();
-      return order;
+
+      if (user) {
+        return this._run('create', async () => {
+          const client = await this._ensureClient();
+          const { data, error } = await client.from(this._table).insert(order).select().single();
+          if (error) throw error;
+          this._cache = null;
+          // Clear cart & promo after order
+          await Cart.clear();
+          Cart.removePromo();
+          return data;
+        }, null);
+      } else {
+        // Fallback to localStorage for guest users
+        const localOrders = this.get();
+        const localOrder = {
+          id: _uid(),
+          items: cartItems,
+          subtotal: await Cart.subtotal(),
+          shipping: await Cart.shipping(),
+          discount: await Cart.discount(),
+          promoCode: Cart.getAppliedPromo()?.code || null,
+          total: await Cart.total(),
+          customer: {
+            name: orderData.name || '',
+            email: orderData.email || '',
+            phone: orderData.phone || '',
+            address: orderData.address || '',
+            city: orderData.city || '',
+            notes: orderData.notes || ''
+          },
+          paymentMethod: orderData.paymentMethod || 'cash',
+          status: 'pending',
+          statusHistory: [
+            { status: 'pending', date: _dateNow(), note: 'Order placed' }
+          ],
+          createdAt: _dateNow(),
+          updatedAt: _dateNow()
+        };
+        localOrders.unshift(localOrder);
+        _set(KEYS.ORDERS, localOrders);
+        // Clear cart & promo after order
+        await Cart.clear();
+        Cart.removePromo();
+        return localOrder;
+      }
     },
 
-    getById(id) {
-      return this.get().find(o => o.id === id) || null;
+    async getById(id) {
+      const orders = await this.get();
+      return orders.find(o => o.id === id) || null;
     },
 
-    getByEmail(email) {
-      return this.get().filter(o => o.customer.email.toLowerCase() === email.toLowerCase());
+    async getByEmail(email) {
+      const orders = await this.get();
+      return orders.filter(o => o.customer.email?.toLowerCase() === email.toLowerCase() || o.customer_email?.toLowerCase() === email.toLowerCase());
     },
 
-    getForCurrentUser() {
+    async getForCurrentUser() {
       const user = Auth.getUser();
       if (!user) return [];
-      return this.get().filter(o => o.customer.email.toLowerCase() === user.email.toLowerCase());
+      return await this.get();
     },
 
-    updateStatus(id, newStatus, note) {
-      const orders = this.get();
-      const order = orders.find(o => o.id === id);
-      if (order) {
-        order.status = newStatus;
-        order.updatedAt = _dateNow();
-        order.statusHistory.push({ status: newStatus, date: _dateNow(), note: note || '' });
-        this._save(orders);
-      }
-      return order;
+    async updateStatus(id, newStatus, note) {
+      return this._run('updateStatus', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .update({ status: newStatus, updated_at: _dateNow() })
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw error;
+        this._cache = null;
+        return data;
+      }, null);
     },
 
-    count() { return this.get().length; }
+    async count() { 
+      const orders = await this.get();
+      return orders.length;
+    }
   };
 
   /* ===================================================================
-     AUTH  — Local user management
+     AUTH  — Supabase-backed user management
      =================================================================== */
   const Auth = {
-    _getUsers() { return _get('mdb_users') || []; },
-    _saveUsers(users) { _set('mdb_users', users); },
+    _cache: null,
+    _table: 'users',
+    _client: null,
 
-    register(data) {
-      const users = this._getUsers();
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
+      }
+      return await Products._ensureClient();
+    },
+
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.warn(`MDB Auth ${opName} error:`, err);
+        return fallback;
+      }
+    },
+
+    async _getUsers() { 
+      return this._run('getUsers', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).select('*');
+        if (error) throw error;
+        return data || [];
+      }, _get('mdb_users') || []); 
+    },
+
+    async _saveUsers(users) {
+      // Users are saved individually in Supabase
+      this._cache = users;
+    },
+
+    async register(data) {
+      const users = await this._getUsers();
       const email = (data.email || '').trim().toLowerCase();
 
       if (!email || !data.password) {
@@ -828,48 +1045,58 @@ const MDB = (() => {
       }
 
       const user = {
-        id: _uid(),
-        firstName: data.firstName || '',
-        lastName: data.lastName || '',
         email: email,
-        phone: data.phone || '',
         password: btoa(data.password), // simple encoding (NOT for production)
+        first_name: data.firstName || '',
+        last_name: data.lastName || '',
+        phone: data.phone || '',
         address: data.address || '',
         city: data.city || '',
-        createdAt: _dateNow()
+        role: 'customer'
       };
-      users.push(user);
-      this._saveUsers(users);
-      // Auto login
-      this._setSession(user);
-      return { success: true, user: this._sanitize(user) };
+
+      return this._run('register', async () => {
+        const client = await this._ensureClient();
+        const { data: newUser, error } = await client.from(this._table).insert(user).select().single();
+        if (error) throw error;
+        // Auto login
+        await this._setSession(newUser);
+        return { success: true, user: this._sanitize(newUser) };
+      }, { success: false, message: 'Registration failed' });
     },
 
-    login(email, password) {
+    async login(email, password) {
       const target = (email || '').trim().toLowerCase();
       // Special check for Admin - accepts both 'admin' username and 'admin@mdboutiquee.com' email
       if ((target === 'admin' || target === 'admin@mdboutiquee.com') && password === 'admin123') {
-        const adminUser = { id: 'admin', firstName: 'Site', lastName: 'Admin', email: 'admin@mdboutiquee.com', role: 'admin' };
-        this._setSession(adminUser);
+        const adminUser = { id: 'admin', first_name: 'Site', last_name: 'Admin', email: 'admin@mdboutiquee.com', role: 'admin' };
+        await this._setSession(adminUser);
         return { success: true, user: adminUser, isAdmin: true };
       }
 
-      const users = this._getUsers();
-      const user = users.find(u => u.email === target && u.password === btoa(password));
-      if (!user) {
-        return { success: false, message: 'Invalid email or password' };
-      }
-      this._setSession(user);
-      return { success: true, user: this._sanitize(user) };
+      return this._run('login', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('*')
+          .eq('email', target)
+          .single();
+        
+        if (error || !data) return { success: false, message: 'Invalid email or password' };
+        if (data.password !== btoa(password)) return { success: false, message: 'Invalid email or password' };
+        
+        await this._setSession(data);
+        return { success: true, user: this._sanitize(data) };
+      }, { success: false, message: 'Login failed' });
     },
 
-    logout() {
+    async logout() {
       sessionStorage.removeItem(KEYS.SESSION);
       localStorage.removeItem(KEYS.SESSION);
       document.dispatchEvent(new CustomEvent('mdb:auth:changed', { detail: { user: null } }));
     },
 
-    isLoggedIn() {
+    async isLoggedIn() {
       return !!this.getUser();
     },
 
@@ -877,27 +1104,37 @@ const MDB = (() => {
       return _get(KEYS.SESSION) || JSON.parse(sessionStorage.getItem(KEYS.SESSION) || 'null');
     },
 
-    updateProfile(data) {
-      const users = this._getUsers();
+    async updateProfile(data) {
+      const users = await this._getUsers();
       const current = this.getUser();
       if (!current) return { success: false, message: 'Not logged in' };
 
       const idx = users.findIndex(u => u.id === current.id);
       if (idx === -1) return { success: false, message: 'User not found' };
 
-      if (data.firstName !== undefined) users[idx].firstName = data.firstName;
-      if (data.lastName !== undefined) users[idx].lastName = data.lastName;
-      if (data.phone !== undefined) users[idx].phone = data.phone;
-      if (data.address !== undefined) users[idx].address = data.address;
-      if (data.city !== undefined) users[idx].city = data.city;
+      const updates = {};
+      if (data.firstName !== undefined) updates.first_name = data.firstName;
+      if (data.lastName !== undefined) updates.last_name = data.lastName;
+      if (data.phone !== undefined) updates.phone = data.phone;
+      if (data.address !== undefined) updates.address = data.address;
+      if (data.city !== undefined) updates.city = data.city;
 
-      this._saveUsers(users);
-      this._setSession(users[idx]);
-      return { success: true, user: this._sanitize(users[idx]) };
+      return this._run('updateProfile', async () => {
+        const client = await this._ensureClient();
+        const { data: updated, error } = await client
+          .from(this._table)
+          .update(updates)
+          .eq('id', current.id)
+          .select()
+          .single();
+        if (error) throw error;
+        await this._setSession(updated);
+        return { success: true, user: this._sanitize(updated) };
+      }, { success: false, message: 'Update failed' });
     },
 
-    changePassword(currentPass, newPass) {
-      const users = this._getUsers();
+    async changePassword(currentPass, newPass) {
+      const users = await this._getUsers();
       const current = this.getUser();
       if (!current) return { success: false, message: 'Not logged in' };
 
@@ -906,12 +1143,18 @@ const MDB = (() => {
       if (users[idx].password !== btoa(currentPass)) return { success: false, message: 'Current password is incorrect' };
       if (newPass.length < 6) return { success: false, message: 'New password must be at least 6 characters' };
 
-      users[idx].password = btoa(newPass);
-      this._saveUsers(users);
-      return { success: true };
+      return this._run('changePassword', async () => {
+        const client = await this._ensureClient();
+        const { error } = await client
+          .from(this._table)
+          .update({ password: btoa(newPass) })
+          .eq('id', current.id);
+        if (error) throw error;
+        return { success: true };
+      }, { success: false, message: 'Password change failed' });
     },
 
-    _setSession(user) {
+    async _setSession(user) {
       const safe = this._sanitize(user);
       _set(KEYS.SESSION, safe);
       sessionStorage.setItem(KEYS.SESSION, JSON.stringify(safe));
@@ -920,7 +1163,16 @@ const MDB = (() => {
 
     _sanitize(user) {
       const { password, ...safe } = user;
-      return safe;
+      return {
+        id: safe.id,
+        firstName: safe.first_name || safe.firstName,
+        lastName: safe.last_name || safe.lastName,
+        email: safe.email,
+        phone: safe.phone,
+        address: safe.address,
+        city: safe.city,
+        role: safe.role
+      };
     }
   };
 
