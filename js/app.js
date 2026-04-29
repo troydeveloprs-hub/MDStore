@@ -541,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <span class="shipping-progress-text" style="font-size:12px; display:block; margin-bottom:6px; font-weight:600;">
           ${remaining > 0 
             ? `You're ${remaining.toLocaleString()} LE away from <strong>FREE SHIPPING</strong>` 
-            : `ðŸŽ‰ You've unlocked <strong>FREE SHIPPING!</strong>`}
+            : `🎉 You've unlocked <strong>FREE SHIPPING!</strong>`}
         </span>
         <div class="shipping-progress-bar" style="height:6px; background:#e0e0e0; border-radius:10px; overflow:hidden;">
           <div class="shipping-progress-fill" style="width:${progressPercent}%; height:100%; background:var(--color-accent); transition:width 0.4s ease;"></div>

@@ -1,5 +1,5 @@
 /* === css/style.css === */
-/* SOFIE STORE â€” Master Stylesheet â€” Production Grade */
+/* SOFIE STORE — Master Stylesheet — Production Grade */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 :root {
@@ -4013,7 +4013,7 @@ object-fit: cover;
 }
 
 /* ============================================
-   RESPONSIVE â€” MOBILE (max-width:767px)
+   RESPONSIVE — MOBILE (max-width:767px)
    ============================================ */
 @media(max-width:767px) {
    :root {
@@ -4745,7 +4745,7 @@ object-fit: cover;
 }
 
 /* ============================================
-   RESPONSIVE â€” SMALL MOBILE (max-width:480px)
+   RESPONSIVE — SMALL MOBILE (max-width:480px)
    ============================================ */
 @media(max-width:480px) {
    :root {
@@ -4818,7 +4818,7 @@ object-fit: cover;
 }
 
 /* ============================================
-   RESPONSIVE â€” TABLET (768px+)
+   RESPONSIVE — TABLET (768px+)
    ============================================ */
 @media(min-width:768px) {
    .category-banners-grid {
@@ -4901,7 +4901,7 @@ object-fit: cover;
 }
 
 /* ============================================
-   RESPONSIVE â€” DESKTOP (1024px+)
+   RESPONSIVE — DESKTOP (1024px+)
    ============================================ */
 @media(min-width:1024px) {
    .header-nav {
@@ -4954,7 +4954,7 @@ object-fit: cover;
 }
 
 /* ============================================
-   RESPONSIVE â€” LARGE DESKTOP (1280px+)
+   RESPONSIVE — LARGE DESKTOP (1280px+)
    ============================================ */
 @media(min-width:1280px) {
    .nav-link {

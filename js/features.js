@@ -151,13 +151,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.MDB.shareOrderWhatsApp = function(orderId) {
     const order = MDB.Orders.getById(orderId);
     if (!order) return;
-    const items = order.items.map(i => `â€¢ ${i.name} (${i.variant}) x${i.qty} â€” ${MDB.UI.formatPrice(i.price * i.qty)}`).join('\n');
-    const msg = `ðŸ›ï¸ New Order: ${order.id}\n\n${items}\n\nðŸ’° Total: ${MDB.UI.formatPrice(order.total)}\nðŸ“ ${order.customer.address}, ${order.customer.city}\nðŸ“ž ${order.customer.phone}`;
+    const items = order.items.map(i => `• ${i.name} (${i.variant}) x${i.qty} — ${MDB.UI.formatPrice(i.price * i.qty)}`).join('\n');
+    const msg = `🛍️ New Order: ${order.id}\n\n${items}\n\n💰 Total: ${MDB.UI.formatPrice(order.total)}\n📍 ${order.customer.address}, ${order.customer.city}\n📞 ${order.customer.phone}`;
     window.open(`https://wa.me/${whatsappNum}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   /* ===================================================================
-     4. STOCK COUNTER â€” Show on product cards & pages
+     4. STOCK COUNTER — Show on product cards & pages
      =================================================================== */
   const StockCounter = {
     async init() {
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Welcome notification
   if (!localStorage.getItem('mdb_welcomed')) {
-    Notifications.add('Welcome! ðŸŽ‰', 'Thanks for visiting MDBoutiquee. Use code MDB10 for 10% off!', 'promo');
+    Notifications.add('Welcome! 🎉', 'Thanks for visiting MDBoutiquee. Use code MDB10 for 10% off!', 'promo');
     localStorage.setItem('mdb_welcomed', '1');
   }
 
