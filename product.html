@@ -538,6 +538,15 @@
             </div>
           </div>
         `).join('');
+        
+        // Add click handlers for variant buttons
+        variantWrap.querySelectorAll('.variant-btn').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const group = this.closest('.variant-btns');
+            group.querySelectorAll('.variant-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+          });
+        });
       } else {
         variantWrap.innerHTML = '';
       }
