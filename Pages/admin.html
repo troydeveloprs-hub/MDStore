@@ -1270,6 +1270,132 @@
               <span class="product-upload-tag">${src === cover ? 'Cover' : `Image ${index + 1}`}</span>
               <button type="button" class="icon-action-btn" data-remove-image="${encodeURIComponent(src)}"><i class="fa-solid fa-xmark"></i></button>
             </div>
+    let pendingImageFiles = []; // To store actual File objects for uploading
+
+    function uniqueList(items) {
+      return [...new Set(items.filter(Boolean))];
+    }
+
+    function normalizeImagePath(value) {
+      const cleaned = safeText(value).trim();
+      if (!cleaned) return '';
+      if (/^(data:image|https?:\/\/|blob:)/i.test(cleaned)) return cleaned;
+      return cleaned.replace(/^\.\//, '').replace(/^(\.\.\/)+/, '');
+    }
+
+    function adminImageSrc(value) {
+      const image = normalizeImagePath(value) || 'img/logo.svg';
+      return /^(data:image|https?:\/\/|blob:)/i.test(image) ? image : `../${image}`;
+    }
+
+    function escapeHtml(value) {
+      return safeText(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function fillCategoryOptions(selectedCategory = 'makeup') {
+      const select = document.getElementById('pf-cat');
+      select.innerHTML = Object.entries(CATEGORY_LABELS)
+        .map(([value, label]) => `<option value="${value}" ${value === selectedCategory ? 'selected' : ''}>${label}</option>`)
+        .join('');
+    }
+
+    function populateSubcategoryOptions(category, selectedSubcategory = '') {
+      const subSelect = document.getElementById('pf-subcat');
+      const subcategories = PRODUCT_TAXONOMY[category] || [];
+      let options = subcategories.map(([value, label]) => (
+        `<option value="${value}" ${value === selectedSubcategory ? 'selected' : ''}>${label}</option>`
+      ));
+
+      if (selectedSubcategory && !subcategories.some(([value]) => value === selectedSubcategory)) {
+        options = [`<option value="${selectedSubcategory}" selected>${selectedSubcategory}</option>`].concat(options);
+      }
+
+      subSelect.innerHTML = options.join('');
+    }
+
+    function getVariantTypeLabel(type) {
+      const match = VARIANT_TYPES.find(([value]) => value === type);
+      return match ? match[1] : type;
+    }
+
+    function createVariantRow(group = {}) {
+      const row = document.createElement('div');
+      row.className = 'variant-row';
+      const selectedType = safeText(group.name, 'color');
+      const optionsValue = Array.isArray(group.options) ? group.options.join(', ') : '';
+      row.innerHTML = `
+        <div class="form-group">
+          <label>Variant Type</label>
+          <select class="variant-name-select">
+            ${VARIANT_TYPES.map(([value, label]) => `<option value="${value}" ${value === selectedType ? 'selected' : ''}>${label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Options</label>
+          <input class="variant-options-input" placeholder="Red, Pink, Nude" value="${escapeHtml(optionsValue)}">
+        </div>
+        <button type="button" class="admin-btn admin-btn-danger remove-variant-row"><i class="fa-solid fa-trash"></i></button>
+      `;
+      return row;
+    }
+
+    function renderVariantGroups(groups = []) {
+      const wrap = document.getElementById('variant-groups-wrap');
+      wrap.innerHTML = '';
+      groups.forEach(group => wrap.appendChild(createVariantRow(group)));
+      if (!groups.length) wrap.appendChild(createVariantRow({ name: 'color', options: [] }));
+      updateVariantSummary();
+    }
+
+    function collectVariantGroups() {
+      return [...document.querySelectorAll('#variant-groups-wrap .variant-row')]
+        .map(row => {
+          const name = row.querySelector('.variant-name-select')?.value || '';
+          const options = normalizeListInput(row.querySelector('.variant-options-input')?.value || '');
+          return { name, options };
+        })
+        .filter(group => group.name && group.options.length);
+    }
+
+    function updateVariantSummary() {
+      const summary = document.getElementById('variant-summary');
+      const groups = collectVariantGroups();
+      summary.textContent = groups.length
+        ? groups.map(group => `${getVariantTypeLabel(group.name)}: ${group.options.join(', ')}`).join(' | ')
+        : 'No variant groups added yet.';
+    }
+
+    function getAllProductImages() {
+      const cover = normalizeImagePath(document.getElementById('pf-image').value);
+      return uniqueList([cover, ...productImageState]);
+    }
+
+    function syncPrimaryImageField() {
+      const coverInput = document.getElementById('pf-image');
+      const currentValue = normalizeImagePath(coverInput.value);
+      if (!currentValue && productImageState.length) {
+        coverInput.value = productImageState[0];
+      }
+    }
+
+    function renderProductImagePreview() {
+      syncPrimaryImageField();
+      const preview = document.getElementById('pf-image-preview');
+      const cover = normalizeImagePath(document.getElementById('pf-image').value);
+      const images = getAllProductImages();
+      preview.innerHTML = images.length
+        ? images.map((src, index) => `
+          <div class="product-upload-item">
+            <img src="${adminImageSrc(src)}" alt="Product image ${index + 1}">
+            <div class="product-upload-meta">
+              <span class="product-upload-tag">${src === cover ? 'Cover' : `Image ${index + 1}`}</span>
+              <button type="button" class="icon-action-btn" data-remove-image="${encodeURIComponent(src)}"><i class="fa-solid fa-xmark"></i></button>
+            </div>
           </div>
         `).join('')
         : '<div class="variant-summary">No images selected yet.</div>';
@@ -1284,20 +1410,32 @@
       });
     }
 
+    function toggleProductForm(show = false) {
+      const container = document.getElementById('product-form-container');
+      if (container) container.style.display = show ? 'block' : 'none';
+    }
+
     function resetProductFormFields() {
       editingPid = null;
       productImageState = [];
-      pendingImageFiles = []; // Clear files
-      pendingImageFiles = []; // Clear files
-      document.getElementById('product-form').reset();
+      pendingImageFiles = [];
+      const form = document.getElementById('product-form');
+      if (form) form.reset();
+      
       document.getElementById('product-form-title').textContent = 'Add Product';
       document.getElementById('save-product-btn').textContent = 'Save Product';
       document.getElementById('pf-id').value = '';
       document.getElementById('pf-created').value = new Date().toISOString().slice(0, 10);
       document.getElementById('pf-stock').value = 50;
       document.getElementById('pf-badge').value = '';
+      document.getElementById('pf-oprice').value = '';
       document.getElementById('pf-rating').value = 0;
       document.getElementById('pf-review-count').value = 0;
+      document.getElementById('pf-featured').checked = false;
+      document.getElementById('pf-new').checked = false;
+      document.getElementById('pf-details').value = '';
+      document.getElementById('pf-ingredients').value = '';
+      
       fillCategoryOptions('makeup');
       populateSubcategoryOptions('makeup');
       renderVariantGroups([]);
@@ -1552,15 +1690,31 @@
         editingPid = id;
         document.getElementById('product-form-title').textContent = 'Edit Product';
         document.getElementById('pf-id').value = p.id || '';
-        document.getElementById('pf-name').value = p.name;
-        document.getElementById('pf-brand').value = p.brand;
-        document.getElementById('pf-price').value = p.price;
-        document.getElementById('pf-stock').value = p.stock;
+        document.getElementById('pf-created').value = p.createdAt ? new Date(p.createdAt).toISOString().slice(0,10) : new Date().toISOString().slice(0, 10);
+        document.getElementById('pf-name').value = p.name || '';
+        document.getElementById('pf-brand').value = p.brand || '';
+        document.getElementById('pf-price').value = p.price || '';
+        document.getElementById('pf-oprice').value = p.originalPrice || '';
+        document.getElementById('pf-stock').value = p.stock != null ? p.stock : 50;
+        document.getElementById('pf-badge').value = p.badge || '';
+        document.getElementById('pf-rating').value = p.rating || 0;
+        document.getElementById('pf-review-count').value = p.reviewCount || 0;
+        document.getElementById('pf-featured').checked = !!p.isFeatured;
+        document.getElementById('pf-new').checked = !!p.isNewArrival;
         document.getElementById('pf-desc').value = p.description || '';
+        document.getElementById('pf-details').value = p.details || '';
+        document.getElementById('pf-ingredients').value = Array.isArray(p.ingredients) ? p.ingredients.join(', ') : (p.ingredients || '');
         document.getElementById('pf-image').value = p.image || '';
+        
+        fillCategoryOptions(p.category || 'makeup');
+        populateSubcategoryOptions(p.category || 'makeup', p.subCategory || '');
+        
         productImageState = Array.isArray(p.images) ? p.images.slice() : [];
+        renderVariantGroups(p.variantGroups || []);
         renderProductImagePreview();
+        
         document.getElementById('product-form-wrap').style.display = 'block';
+        window.scrollTo({ top: document.getElementById('product-form-wrap').offsetTop - 20, behavior: 'smooth' });
     }
 
     async function deleteProduct(id) {
@@ -1577,14 +1731,25 @@
         saveBtn.disabled = true;
         const data = {
           id: document.getElementById('pf-id').value.trim() || editingPid,
+          createdAt: document.getElementById('pf-created').value ? new Date(document.getElementById('pf-created').value).toISOString() : new Date().toISOString(),
           name: document.getElementById('pf-name').value.trim(),
           brand: document.getElementById('pf-brand').value.trim(),
           price: parseFloat(document.getElementById('pf-price').value),
+          originalPrice: parseFloat(document.getElementById('pf-oprice').value) || null,
           stock: parseInt(document.getElementById('pf-stock').value) || 0,
+          badge: document.getElementById('pf-badge').value,
           category: document.getElementById('pf-cat').value,
+          subCategory: document.getElementById('pf-subcat').value,
+          rating: parseFloat(document.getElementById('pf-rating').value) || 0,
+          reviewCount: parseInt(document.getElementById('pf-review-count').value) || 0,
+          isFeatured: document.getElementById('pf-featured').checked,
+          isNewArrival: document.getElementById('pf-new').checked,
           description: document.getElementById('pf-desc').value.trim(),
+          details: document.getElementById('pf-details').value.trim(),
+          ingredients: normalizeListInput(document.getElementById('pf-ingredients').value),
           image: document.getElementById('pf-image').value || productImageState[0] || 'img/logo.svg',
-          images: productImageState
+          images: productImageState,
+          variantGroups: collectVariantGroups()
         };
         await MDB.Products.save(data);
         MDB.UI.toast('Saved!');
@@ -1594,10 +1759,6 @@
       finally { saveBtn.disabled = false; }
     };
 
-    function toggleProductForm() {
-      const w = document.getElementById('product-form-wrap');
-      w.style.display = (w.style.display === 'none' || !w.style.display) ? 'block' : 'none';
-      if (w.style.display === 'none') { editingPid = null; document.getElementById('product-form').reset(); productImageState = []; renderProductImagePreview(); }
     }
 
     function renderReviews() {
