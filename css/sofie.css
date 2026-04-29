@@ -2708,6 +2708,59 @@ h6 {
    outline-offset: 2px;
 }
 
+.variant-group {
+   margin-bottom: 24px;
+}
+
+.variant-label {
+   font-size: 14px;
+   font-weight: 600;
+   text-transform: uppercase;
+   letter-spacing: 0.5px;
+   color: var(--color-text-primary);
+   margin-bottom: 12px;
+}
+
+.variant-options {
+   display: flex;
+   gap: 10px;
+   flex-wrap: wrap;
+   align-items: center;
+}
+
+.variant-option {
+   padding: 10px 20px;
+   border: 2px solid var(--color-border);
+   border-radius: 25px;
+   font-size: 14px;
+   font-weight: 500;
+   cursor: pointer;
+   transition: all var(--transition-base);
+   background: var(--color-bg);
+   color: var(--color-text-secondary);
+   min-width: 60px;
+   text-align: center;
+   white-space: nowrap;
+}
+
+.variant-option:hover {
+   border-color: var(--color-text-primary);
+   color: var(--color-text-primary);
+   background: var(--color-bg-light);
+}
+
+.variant-option.active {
+   border-color: var(--color-text-primary);
+   background: var(--color-text-primary);
+   color: var(--color-text-white);
+   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.variant-option:focus {
+   outline: 2px solid var(--color-text-primary);
+   outline-offset: 2px;
+}
+
 #variant-selectors-wrap {
    display: flex;
    flex-direction: column;
