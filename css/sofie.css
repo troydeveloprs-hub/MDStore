@@ -4423,10 +4423,10 @@ object-fit: cover;
    ============================================ */
 @media(max-width:767px) {
    :root {
-      --space-section: 48px;
+      --space-section: 32px;
       --container-padding: 16px;
-      --header-height: 70px;
-      --announcement-height: 44px
+      --header-height: 65px;
+      --announcement-height: 40px
    }
 
    /* Announcement */
@@ -4530,7 +4530,8 @@ object-fit: cover;
    .hero {
       height: calc(100vh - var(--header-height));
       min-height: 350px;
-      max-height: 600px
+      max-height: 600px;
+      margin-bottom: 24px
    }
 
    .hero::after {
@@ -4594,7 +4595,8 @@ object-fit: cover;
 
    /* Category banners */
    .category-banners {
-      padding: 0 0
+      padding: 0 0;
+      margin-bottom: 24px
    }
 
    .category-banners-grid {
@@ -4631,7 +4633,8 @@ object-fit: cover;
 
    /* Brands strip */
    .brands-strip {
-      padding: 24px 0
+      padding: 24px 0;
+      margin-bottom: 24px
    }
 
    .section-title-small {
@@ -4647,6 +4650,26 @@ object-fit: cover;
    /* Brands section */
    .brands-section {
       display: none
+   }
+
+   /* Products section */
+   .products-section {
+      margin-bottom: 24px
+   }
+
+   /* Reviews section */
+   .reviews-section {
+      margin-bottom: 24px
+   }
+
+   /* Instagram section */
+   .instagram-section {
+      margin-bottom: 24px
+   }
+
+   /* Promo banner */
+   .promo-banner {
+      margin-bottom: 24px
    }
 
    /* Section header */
