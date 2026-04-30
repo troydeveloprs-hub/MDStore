@@ -177,46 +177,6 @@ INSERT INTO settings (key, value) VALUES
 ON CONFLICT (key) DO NOTHING;
 
 -- =====================================================
--- CATEGORIES TABLE
--- =====================================================
-CREATE TABLE IF NOT EXISTS categories (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  subcategories TEXT[] DEFAULT '{}',
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_categories_name ON categories(name);
-
--- Insert default categories
-INSERT INTO categories (name, subcategories) VALUES
-  ('Makeup', ARRAY['Blush', 'Highlighter', 'Lip Liner', 'Lip Oil', 'Lip Plumper', 'Lip Sets', 'Lipstick', 'Mascara', 'Setting Spray & Powder']),
-  ('Skincare', ARRAY['Cleanser', 'Moisturizer', 'Serum', 'Sunscreen']),
-  ('Haircare', ARRAY['Shampoo', 'Conditioner', 'Hair Mask'])
-ON CONFLICT DO NOTHING;
-
--- =====================================================
--- BRANDS TABLE
--- =====================================================
-CREATE TABLE IF NOT EXISTS brands (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-  name TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_brands_name ON brands(name);
-
--- Insert default brands
-INSERT INTO brands (name) VALUES
-  ('MAC'),
-  ('Maybelline'),
-  ('L''Oreal'),
-  ('NYX')
-ON CONFLICT DO NOTHING;
-
--- =====================================================
 -- CART & WISHLIST (stored in localStorage, but tables for future sync)
 -- =====================================================
 CREATE TABLE IF NOT EXISTS cart (
@@ -249,8 +209,6 @@ ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE addresses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE brands ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cart ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wishlist ENABLE ROW LEVEL SECURITY;
 
@@ -262,8 +220,6 @@ CREATE POLICY "Allow all access to reviews" ON reviews FOR ALL USING (true) WITH
 CREATE POLICY "Allow all access to coupons" ON coupons FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to addresses" ON addresses FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to settings" ON settings FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all access to categories" ON categories FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all access to brands" ON brands FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to cart" ON cart FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all access to wishlist" ON wishlist FOR ALL USING (true) WITH CHECK (true);
 
@@ -277,7 +233,5 @@ CREATE TRIGGER update_reviews_updated_at BEFORE UPDATE ON reviews FOR EACH ROW E
 CREATE TRIGGER update_coupons_updated_at BEFORE UPDATE ON coupons FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_addresses_updated_at BEFORE UPDATE ON addresses FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_settings_updated_at BEFORE UPDATE ON settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_categories_updated_at BEFORE UPDATE ON categories FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_brands_updated_at BEFORE UPDATE ON brands FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_cart_updated_at BEFORE UPDATE ON cart FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_wishlist_updated_at BEFORE UPDATE ON wishlist FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

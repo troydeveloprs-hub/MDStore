@@ -1545,13 +1545,6 @@
           </div>
           
           <div class="form-row">
-            <div class="form-card" style="flex:2">
-              <h4>Recent Activity</h4>
-              <p>Your store's latest events will appear here.</p>
-              <div id="recent-activity-list" style="margin-top:15px">
-                <div class="empty-state" style="padding:20px"><i class="fa-solid fa-bolt"></i><p>Monitoring live events...</p></div>
-              </div>
-            </div>
             <div class="form-card" style="flex:1">
               <h4>Quick Actions</h4>
               <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
@@ -2045,50 +2038,6 @@
     </div>
   </div>
 
-  <!-- Category/Brand Modal -->
-  <div id="category-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center; padding:20px;">
-    <div style="background:var(--surface); width:100%; max-width:500px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); animation: fadeUp 0.3s ease;">
-      <div style="padding:24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="font-family:'Inter', 'Cairo', sans-serif; font-size:20px; font-weight:600; color:var(--text);" id="category-modal-title">Add Category</h2>
-        <button onclick="closeCategoryModal()" style="background:transparent; border:none; font-size:20px; color:var(--text2); cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div style="padding:24px;">
-        <form id="category-form" style="display:flex; flex-direction:column; gap:16px;">
-          <input type="hidden" id="category-id">
-          <div class="form-group">
-            <label class="f-label">Name</label>
-            <input class="f-input" id="category-name" required>
-          </div>
-          <div class="form-group" id="subcategory-group">
-            <label class="f-label">Subcategories (comma-separated)</label>
-            <input class="f-input" id="category-subcategories" placeholder="e.g. Blush, Highlighter, Mascara">
-          </div>
-          <button type="submit" class="btn btn-gold">Save</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Brand Modal -->
-  <div id="brand-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center; padding:20px;">
-    <div style="background:var(--surface); width:100%; max-width:500px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); animation: fadeUp 0.3s ease;">
-      <div style="padding:24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="font-family:'Inter', 'Cairo', sans-serif; font-size:20px; font-weight:600; color:var(--text);" id="brand-modal-title">Add Brand</h2>
-        <button onclick="closeBrandModal()" style="background:transparent; border:none; font-size:20px; color:var(--text2); cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
-      </div>
-      <div style="padding:24px;">
-        <form id="brand-form" style="display:flex; flex-direction:column; gap:16px;">
-          <input type="hidden" id="brand-id">
-          <div class="form-group">
-            <label class="f-label">Name</label>
-            <input class="f-input" id="brand-name" required>
-          </div>
-          <button type="submit" class="btn btn-gold">Save</button>
-        </form>
-      </div>
-    </div>
-  </div>
-
   <script src="../js/store.js"></script>
   <script>
     /* ═══════════════════════════════════════════
@@ -2106,7 +2055,6 @@
       dashboard: ['Dashboard', 'Overview of your store performance'],
       orders: ['Orders', 'Manage and track customer orders'],
       products: ['Products', 'Manage your product catalog'],
-      categories: ['Categories', 'Manage product categories and brands'],
       customers: ['Customers', 'View registered customer accounts'],
       reviews: ['Reviews', 'Moderate customer reviews'],
       coupons: ['Coupons', 'Create and manage discount codes'],
@@ -2117,17 +2065,11 @@
 
     function setupPageTitles() {
       document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', async () => {
+        item.addEventListener('click', () => {
           const tab = item.dataset.tab;
           const info = PAGE_TITLES[tab] || ['Dashboard', ''];
           document.getElementById('page-title').textContent = info[0];
           document.getElementById('page-sub').textContent = info[1];
-          
-          // Render categories and brands when categories tab is opened
-          if (tab === 'categories') {
-            await renderCategories();
-            await renderBrands();
-          }
         });
       });
     }
@@ -2374,10 +2316,6 @@
       document.getElementById('toggle-product-form-btn')?.addEventListener('click', () => toggleProductForm(true));
       document.getElementById('cancel-product-form-btn')?.addEventListener('click', () => toggleProductForm(false));
       document.getElementById('toggle-coupon-form-btn')?.addEventListener('click', toggleCouponForm);
-      document.getElementById('add-category-btn')?.addEventListener('click', () => openCategoryModal());
-      document.getElementById('add-brand-btn')?.addEventListener('click', () => openBrandModal());
-      document.getElementById('category-form')?.addEventListener('submit', handleCategorySubmit);
-      document.getElementById('brand-form')?.addEventListener('submit', handleBrandSubmit);
             document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value, document.getElementById('order-status-filter').value));
       document.getElementById('order-status-filter')?.addEventListener('change', async e => await renderOrders(document.getElementById('order-search').value, e.target.value));
       document.getElementById('product-search')?.addEventListener('input', async e => await renderProducts(e.target.value, document.getElementById('product-category-filter').value));
@@ -3064,155 +3002,6 @@
       document.getElementById('sf-ship').value = s.shippingThreshold || 3500;
       document.getElementById('sf-cod-fee').value = s.codFee || 50;
       document.getElementById('sf-email').value = s.contactEmail || '';
-    }
-
-    /* ─ CATEGORIES & BRANDS ─ */
-    async function renderCategories() {
-      const categories = await MDB.Categories.get();
-      const container = document.getElementById('categories-list');
-      if (!container) return;
-      
-      container.innerHTML = categories.map(cat => `
-        <div style="background:var(--surface2); padding:16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-          <div>
-            <strong style="color:var(--text)">${escapeHtml(cat.name)}</strong>
-            <div style="font-size:12px; color:var(--text2); margin-top:4px;">${cat.subcategories.length} subcategories</div>
-          </div>
-          <div style="display:flex; gap:8px;">
-            <button class="act-btn" onclick="editCategory('${cat.id}')"><i class="fa-solid fa-pen"></i></button>
-            <button class="act-btn danger" onclick="deleteCategory('${cat.id}')"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function renderBrands() {
-      const brands = await MDB.Brands.get();
-      const container = document.getElementById('brands-list');
-      if (!container) return;
-      
-      container.innerHTML = brands.map(brand => `
-        <div style="background:var(--surface2); padding:16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-          <strong style="color:var(--text)">${escapeHtml(brand.name)}</strong>
-          <div style="display:flex; gap:8px;">
-            <button class="act-btn" onclick="editBrand('${brand.id}')"><i class="fa-solid fa-pen"></i></button>
-            <button class="act-btn danger" onclick="deleteBrand('${brand.id}')"><i class="fa-solid fa-trash"></i></button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    async function openCategoryModal(id = null) {
-      const modal = document.getElementById('category-modal-overlay');
-      const title = document.getElementById('category-modal-title');
-      const form = document.getElementById('category-form');
-      
-      form.reset();
-      document.getElementById('category-id').value = '';
-      
-      if (id) {
-        const categories = await MDB.Categories.get();
-        const cat = categories.find(c => c.id === id);
-        if (cat) {
-          title.textContent = 'Edit Category';
-          document.getElementById('category-id').value = cat.id;
-          document.getElementById('category-name').value = cat.name;
-          document.getElementById('category-subcategories').value = cat.subcategories.join(', ');
-        }
-      } else {
-        title.textContent = 'Add Category';
-      }
-      
-      modal.style.display = 'flex';
-    }
-
-    function closeCategoryModal() {
-      document.getElementById('category-modal-overlay').style.display = 'none';
-    }
-
-    async function handleCategorySubmit(e) {
-      e.preventDefault();
-      const id = document.getElementById('category-id').value;
-      const name = document.getElementById('category-name').value;
-      const subcategoriesStr = document.getElementById('category-subcategories').value;
-      const subcategories = subcategoriesStr.split(',').map(s => s.trim()).filter(s => s);
-      
-      if (id) {
-        await MDB.Categories.update(id, { name, subcategories });
-      } else {
-        await MDB.Categories.add({ name, subcategories });
-      }
-      
-      closeCategoryModal();
-      await renderCategories();
-      MDB.UI.toast('Category saved successfully', 'success');
-    }
-
-    function editCategory(id) {
-      openCategoryModal(id);
-    }
-
-    async function deleteCategory(id) {
-      if (confirm('Delete this category?')) {
-        await MDB.Categories.delete(id);
-        await renderCategories();
-        MDB.UI.toast('Category deleted', 'success');
-      }
-    }
-
-    async function openBrandModal(id = null) {
-      const modal = document.getElementById('brand-modal-overlay');
-      const title = document.getElementById('brand-modal-title');
-      const form = document.getElementById('brand-form');
-      
-      form.reset();
-      document.getElementById('brand-id').value = '';
-      
-      if (id) {
-        const brands = await MDB.Brands.get();
-        const brand = brands.find(b => b.id === id);
-        if (brand) {
-          title.textContent = 'Edit Brand';
-          document.getElementById('brand-id').value = brand.id;
-          document.getElementById('brand-name').value = brand.name;
-        }
-      } else {
-        title.textContent = 'Add Brand';
-      }
-      
-      modal.style.display = 'flex';
-    }
-
-    function closeBrandModal() {
-      document.getElementById('brand-modal-overlay').style.display = 'none';
-    }
-
-    async function handleBrandSubmit(e) {
-      e.preventDefault();
-      const id = document.getElementById('brand-id').value;
-      const name = document.getElementById('brand-name').value;
-      
-      if (id) {
-        await MDB.Brands.update(id, { name });
-      } else {
-        await MDB.Brands.add({ name });
-      }
-      
-      closeBrandModal();
-      await renderBrands();
-      MDB.UI.toast('Brand saved successfully', 'success');
-    }
-
-    function editBrand(id) {
-      openBrandModal(id);
-    }
-
-    async function deleteBrand(id) {
-      if (confirm('Delete this brand?')) {
-        await MDB.Brands.delete(id);
-        await renderBrands();
-        MDB.UI.toast('Brand deleted', 'success');
-      }
     }
 
     /* ─ EXPORT ─ */
