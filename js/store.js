@@ -932,7 +932,7 @@ const MDB = (() => {
         }, null);
       } else {
         // Fallback to localStorage for guest users
-        const localOrders = this.get();
+        const localOrders = await this.get();
         const localOrder = {
           id: _uid(),
           items: cartItems,
