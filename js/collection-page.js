@@ -11,10 +11,20 @@
 
   if (!grid || !countEl || !sortEl || !loadMoreBtn) return;
 
+  // Add loading class
+  countEl.classList.add('loading');
+
   const slug = window.location.pathname.split('/').pop().replace(/\.html$/i, '').toLowerCase();
   const pageTitle = (document.querySelector('.page-hero-title')?.textContent || '').trim();
   const allProducts = await MDB.Products.getAll();
-  let currentLimit = 24;
+  
+  // Pagination settings
+  const isMobile = window.innerWidth < 768;
+  const productsPerPage = isMobile ? 6 : 10;
+  let currentPage = 1;
+
+  // Remove loading class after products are loaded
+  countEl.classList.remove('loading');
 
   const slugAliases = {
     'bath-body': ['bath body', 'bath-body', 'body'],
@@ -201,18 +211,97 @@
 
     countEl.textContent = `${filtered.length} products`;
 
-    const visible = filtered.slice(0, currentLimit);
+    // Pagination logic
+    const totalPages = Math.ceil(filtered.length / productsPerPage);
+    const startIndex = (currentPage - 1) * productsPerPage;
+    const endIndex = startIndex + productsPerPage;
+    const visible = filtered.slice(startIndex, endIndex);
+    
     grid.innerHTML = visible.map(product => MDB.UI.productCardHTML(product)).join('');
 
     if (noProducts) noProducts.style.display = filtered.length ? 'none' : 'block';
-    loadMoreBtn.style.display = filtered.length > currentLimit ? 'inline-block' : 'none';
+    
+    // Hide load more button, show pagination
+    loadMoreBtn.style.display = 'none';
+    renderPagination(totalPages, filtered.length);
+  }
+
+  function renderPagination(totalPages, totalProducts) {
+    // Remove existing pagination
+    const existingPagination = document.querySelector('.pagination');
+    if (existingPagination) existingPagination.remove();
+
+    if (totalPages <= 1) return;
+
+    const pagination = document.createElement('div');
+    pagination.className = 'pagination';
+
+    // Previous button
+    const prevBtn = document.createElement('button');
+    prevBtn.className = 'pagination-btn';
+    prevBtn.innerHTML = '<i class="fa-solid fa-chevron-left"></i>';
+    prevBtn.disabled = currentPage === 1;
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        render();
+        window.scrollTo({ top: grid.offsetTop - 100, behavior: 'smooth' });
+      }
+    });
+    pagination.appendChild(prevBtn);
+
+    // Page numbers
+    const maxVisiblePages = isMobile ? 3 : 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage < maxVisiblePages - 1) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      const pageBtn = document.createElement('button');
+      pageBtn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+      pageBtn.textContent = i;
+      pageBtn.addEventListener('click', () => {
+        currentPage = i;
+        render();
+        window.scrollTo({ top: grid.offsetTop - 100, behavior: 'smooth' });
+      });
+      pagination.appendChild(pageBtn);
+    }
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'pagination-btn';
+    nextBtn.innerHTML = '<i class="fa-solid fa-chevron-right"></i>';
+    nextBtn.disabled = currentPage === totalPages;
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        render();
+        window.scrollTo({ top: grid.offsetTop - 100, behavior: 'smooth' });
+      }
+    });
+    pagination.appendChild(nextBtn);
+
+    // Pagination info
+    const info = document.createElement('span');
+    info.className = 'pagination-info';
+    const start = (currentPage - 1) * productsPerPage + 1;
+    const end = Math.min(currentPage * productsPerPage, totalProducts);
+    info.textContent = `${start}-${end} of ${totalProducts}`;
+    pagination.appendChild(info);
+
+    // Insert pagination after grid
+    grid.parentNode.insertBefore(pagination, grid.nextSibling);
   }
 
   fixPriceLabels();
 
   document.querySelectorAll('.filter-check input').forEach(input => {
     input.addEventListener('change', () => {
-      currentLimit = 24;
+      currentPage = 1;
       render();
     });
   });
@@ -221,14 +310,21 @@
     document.querySelectorAll('.filter-check input').forEach(input => {
       input.checked = false;
     });
-    currentLimit = 24;
+    currentPage = 1;
     render();
   });
 
-  sortEl.addEventListener('change', render);
-  loadMoreBtn.addEventListener('click', () => {
-    currentLimit += 8;
+  sortEl.addEventListener('change', () => {
+    currentPage = 1;
     render();
+  });
+
+  // Handle window resize to update products per page
+  window.addEventListener('resize', () => {
+    const newIsMobile = window.innerWidth < 768;
+    if (newIsMobile !== isMobile) {
+      window.location.reload(); // Reload to recalculate products per page
+    }
   });
 
   render();

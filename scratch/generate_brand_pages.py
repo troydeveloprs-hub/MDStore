@@ -104,6 +104,19 @@ for brand in brands:
         content
     )
     
+    # Add loading class to brand script
+    content = re.sub(
+        r"document\.addEventListener\('DOMContentLoaded', function\(\) \{\s*const originalLoadProducts = window\.loadProducts;",
+        "document.addEventListener('DOMContentLoaded', function() {\n      const countEl = document.querySelector('.collection-count');\n      if (countEl) countEl.classList.add('loading');\n\n      const originalLoadProducts = window.loadProducts;",
+        content
+    )
+    
+    content = re.sub(
+        r"return filteredProducts;\s*\};\);",
+        "if (countEl) countEl.classList.remove('loading');\n        return filteredProducts;\n      };\n    });",
+        content
+    )
+    
     # Write the file
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(content)

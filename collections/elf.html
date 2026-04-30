@@ -492,7 +492,7 @@
           </div>
           <div id="no-products" style="display:none;text-align:center;padding:40px;color:#888;grid-column:1/-1">No
             products found for this brand.</div>
-          <div class="load-more-wrap"><button class="btn btn-outline" id="load-more">Load More</button></div>
+          <div class="load-more-wrap" style="display:none;"><button class="btn btn-outline" id="load-more">Load More</button></div>
         </div>
       </div>
     </div>
@@ -502,14 +502,18 @@
   <script>
     // Filter products by brand
     const brandName = 'E.L.F';
-    
+
     // Override the loadProducts function to filter by brand
     document.addEventListener('DOMContentLoaded', function() {
+      const countEl = document.querySelector('.collection-count');
+      if (countEl) countEl.classList.add('loading');
+
       const originalLoadProducts = window.loadProducts;
-      
+
       window.loadProducts = async function() {
         const products = await originalLoadProducts();
         const filteredProducts = products.filter(p => p.brand === brandName);
+        if (countEl) countEl.classList.remove('loading');
         return filteredProducts;
       };
     });
@@ -556,7 +560,7 @@
           </ul>
           <div class="footer-contact-info">
             <p><i class="fa-solid fa-envelope"></i> hello@mdboutiquee2.com</p>
-            <p><i class="fa-solid fa-phone"></i> +20 100 123 4567</p>
+            <p><i class="fa-solid fa-phone"></i> +201037070888</p>
           </div>
         </div>
       </div>
