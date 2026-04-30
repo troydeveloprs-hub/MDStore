@@ -476,8 +476,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const cartDrawerClose = $('.cart-drawer-close');
   const cartDrawerToggle = $('[data-cart-toggle]');
 
-  function openCartDrawer() {
-    renderMiniCart();
+  async function openCartDrawer() {
+    await renderMiniCart();
     if (cartDrawer) cartDrawer.classList.add('open');
     if (cartDrawerOverlay) cartDrawerOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -487,15 +487,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (cartDrawerOverlay) cartDrawerOverlay.classList.remove('open');
     document.body.style.overflow = '';
   }
-
   $$('[data-cart-toggle]').forEach(el => on(el, 'click', (e) => { e.preventDefault(); openCartDrawer(); }));
   if (cartDrawerClose) on(cartDrawerClose, 'click', closeCartDrawer);
   if (cartDrawerOverlay) on(cartDrawerOverlay, 'click', closeCartDrawer);
 
-  function renderMiniCart() {
+  async function renderMiniCart() {
     const body = $('.cart-drawer-body');
     const subtotal = $('.cart-subtotal-value');
-    const items = Cart.get();
+    const items = await Cart.get();
     if (!body) return;
 
     if (items.length === 0) {
@@ -518,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <div class="mini-cart-bottom">
             <span class="mini-cart-price">${(item.price * item.qty).toLocaleString('en-US', {minimumFractionDigits: 0})} LE</span>
             <div class="quantity-selector quantity-selector-sm">
-              <button class="qty-btn mini-qty-minus" aria-label="Decrease">âˆ’</button>
+              <button class="qty-btn mini-qty-minus" aria-label="Decrease">−</button>
               <input type="number" class="qty-input mini-qty-input" value="${item.qty}" min="1" readonly>
               <button class="qty-btn mini-qty-plus" aria-label="Increase">+</button>
             </div>
@@ -769,6 +768,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const placeholderLink = e.target.closest('a[href="#"]');
     if (!placeholderLink || placeholderLink.closest('[data-cart-toggle]') || placeholderLink.classList.contains('more-options')) return;
+
+    // Don't show toast for header navigation toggles or parent items that just open menus
+    if (placeholderLink.closest('.header-nav') || placeholderLink.classList.contains('nav-link') || placeholderLink.querySelector('.fa-chevron-down')) {
+      e.preventDefault();
+      return;
+    }
 
     e.preventDefault();
     window.MDB?.UI?.toast('This section will be available soon', 'info');

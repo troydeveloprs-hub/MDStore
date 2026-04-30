@@ -39,7 +39,7 @@
   <header class="header">
     <div class="header-inner container">
       <!-- Hamburger (mobile) -->
-      <button class="hamburger" aria-label="Open menu">
+      <button type="button" class="hamburger" aria-label="Open menu">
         <span></span><span></span><span></span>
       </button>
 
@@ -577,6 +577,274 @@
   <script src="js/store.js"></script>
   <script src="js/app.js"></script>
   <script src="js/features.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const itemsEl = document.querySelector('.cart-items');
+      const emptyEl = document.querySelector('.cart-empty-state');
+      const subtotalEl = document.querySelector('[data-subtotal]');
+      const shippingEl = document.querySelector('[data-shipping]');
+      const totalEl = document.querySelector('[data-total]');
+      
+      const items = await MDB.Cart.get();
+      
+      if (!items || items.length === 0) {
+        if (emptyEl) emptyEl.style.display = 'block';
+        if (itemsEl) itemsEl.style.display = 'none';
+        if (document.querySelector('.cart-summary')) document.querySelector('.cart-summary').style.display = 'none';
+        return;
+      }
+      
+      if (emptyEl) emptyEl.style.display = 'none';
+      
+      // Render cart items
+      if (itemsEl) {
+        itemsEl.innerHTML = items.map(item => `
+          <div class="cart-item" data-id="${item.id}" data-variant="${item.variant}">
+            <div class="cart-item-image">
+              <img src="${item.image}" alt="${item.name}">
+            </div>
+            <div class="cart-item-details">
+              <div class="cart-item-name">${item.name}</div>
+              <div class="cart-item-variant">${item.variant || ''}</div>
+              <div class="cart-item-price">${MDB.UI.formatPrice(item.price)}</div>
+            </div>
+            <div class="cart-item-quantity">
+              <div class="quantity-selector quantity-selector-sm">
+                <button class="qty-btn cart-qty-minus" aria-label="Decrease">−</button>
+                <input type="number" class="qty-input cart-qty-input" value="${item.qty}" min="1" readonly>
+                <button class="qty-btn cart-qty-plus" aria-label="Increase">+</button>
+              </div>
+            </div>
+            <div class="cart-item-total">${MDB.UI.formatPrice(item.price * item.qty)}</div>
+            <button class="cart-item-remove" aria-label="Remove"><i class="fa-solid fa-trash"></i></button>
+          </div>
+        `).join('');
+        
+        // Bind events
+        document.querySelectorAll('.cart-item').forEach(el => {
+          const id = el.dataset.id;
+          const variant = el.dataset.variant;
+          
+          el.querySelector('.cart-qty-minus').addEventListener('click', async () => {
+            const input = el.querySelector('.cart-qty-input');
+            const newQty = Math.max(1, parseInt(input.value) - 1);
+            input.value = newQty;
+            await MDB.Cart.updateQty(id, variant, newQty);
+            location.reload();
+          });
+          
+          el.querySelector('.cart-qty-plus').addEventListener('click', async () => {
+            const input = el.querySelector('.cart-qty-input');
+            const newQty = parseInt(input.value) + 1;
+            input.value = newQty;
+            await MDB.Cart.updateQty(id, variant, newQty);
+            location.reload();
+          });
+          
+          el.querySelector('.cart-item-remove').addEventListener('click', async () => {
+            await MDB.Cart.remove(id, variant);
+            location.reload();
+          });
+        });
+      }
+      
+      // Calculate totals
+      const subtotal = await MDB.Cart.subtotal();
+      const shipping = await MDB.Cart.shipping();
+      const total = await MDB.Cart.total();
+      
+      if (subtotalEl) subtotalEl.textContent = MDB.UI.formatPrice(subtotal);
+      if (shippingEl) shippingEl.textContent = shipping === 0 ? 'Free' : MDB.UI.formatPrice(shipping);
+      if (totalEl) totalEl.textContent = MDB.UI.formatPrice(total);
+    });
+  </script>
+  <style>
+    /* Mobile optimizations for cart page */
+    @media (max-width: 768px) {
+      .cart-main {
+        padding: 60px 0 40px;
+      }
+
+      .cart-title {
+        font-size: 1.4rem;
+        margin-bottom: 16px;
+      }
+
+      .cart-layout {
+        gap: 20px;
+      }
+
+      .cart-table-header {
+        display: none; /* Hide desktop table header on mobile */
+      }
+
+      .cart-item {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--color-border, #e5e5e5);
+      }
+
+      .cart-item-image {
+        width: 100%;
+        height: 200px;
+        border-radius: 8px;
+        overflow: hidden;
+      }
+
+      .cart-item-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .cart-item-details {
+        width: 100%;
+        text-align: center;
+      }
+
+      .cart-item-name {
+        font-size: 1rem;
+        margin-bottom: 4px;
+      }
+
+      .cart-item-variant {
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+      }
+
+      .cart-item-price {
+        font-size: 0.9rem;
+      }
+
+      .cart-item-quantity {
+        justify-content: center;
+        margin: 12px 0;
+      }
+
+      .cart-item-total {
+        text-align: center;
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 12px;
+      }
+
+      .cart-item-remove {
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        background: #f5f5f5;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .cart-summary {
+        padding: 20px;
+        border-radius: 12px;
+      }
+
+      .cart-summary-title {
+        font-size: 1rem;
+        margin-bottom: 16px;
+      }
+
+      .cart-summary-row {
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+      }
+
+      .cart-summary-total {
+        font-size: 1rem;
+        margin-top: 8px;
+      }
+
+      .cart-promo {
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+
+      .cart-promo-input {
+        padding: 12px 14px;
+        font-size: 0.85rem;
+      }
+
+      .cart-promo-btn {
+        padding: 12px;
+        font-size: 0.85rem;
+      }
+
+      .cart-notes {
+        margin-top: 20px;
+      }
+
+      .cart-notes-label {
+        font-size: 0.8rem;
+        margin-bottom: 8px;
+      }
+
+      .cart-notes-input {
+        padding: 12px 14px;
+        font-size: 0.85rem;
+        min-height: 80px;
+      }
+
+      .container {
+        padding: 0 16px;
+      }
+
+      .breadcrumb {
+        font-size: 0.75rem;
+        margin-bottom: 16px;
+      }
+
+      /* Better mobile layout for cart items */
+      .cart-items {
+        background: #fff;
+        border-radius: 12px;
+        padding: 0 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      }
+
+      .cart-item {
+        position: relative;
+        padding: 16px;
+      }
+
+      .cart-item:first-child {
+        border-radius: 12px 12px 0 0;
+      }
+
+      .cart-item:last-child {
+        border-bottom: none;
+        border-radius: 0 0 12px 12px;
+      }
+
+      .cart-item:only-child {
+        border-radius: 12px;
+      }
+
+      /* Mobile quantity selector improvements */
+      .quantity-selector-sm {
+        transform: scale(0.9);
+      }
+
+      .qty-btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+      }
+
+      .qty-input {
+        width: 50px;
+        font-size: 0.85rem;
+      }
+    }
+  </style>
 </body>
 
 </html>

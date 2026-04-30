@@ -210,6 +210,140 @@
     .status-step.active .status-label {
       color: #059669
     }
+
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      .confirmation-page {
+        padding: 60px 0 40px;
+      }
+
+      .confirm-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+      }
+
+      .confirm-title {
+        font-size: 1.4rem;
+        margin-bottom: 6px;
+      }
+
+      .confirm-subtitle {
+        font-size: 0.85rem;
+        margin-bottom: 24px;
+      }
+
+      .confirm-card {
+        max-width: none;
+        margin: 0 16px;
+        padding: 20px;
+        border-radius: 12px;
+      }
+
+      .confirm-row {
+        padding: 8px 0;
+        font-size: 0.8rem;
+      }
+
+      .confirm-row .label {
+        font-size: 0.75rem;
+      }
+
+      .confirm-row .value {
+        font-size: 0.8rem;
+        word-break: break-word;
+      }
+
+      .confirm-items {
+        margin: 16px 0;
+        gap: 10px;
+      }
+
+      .confirm-item {
+        gap: 12px;
+      }
+
+      .confirm-item img {
+        width: 48px;
+        height: 48px;
+      }
+
+      .confirm-item-name {
+        font-size: 0.8rem;
+      }
+
+      .confirm-item-meta {
+        font-size: 0.72rem;
+      }
+
+      .confirm-item-price {
+        font-size: 0.8rem;
+      }
+
+      .confirm-total {
+        font-size: 1rem;
+        padding: 14px 0 0;
+        margin-top: 6px;
+      }
+
+      .confirm-actions {
+        margin-top: 24px;
+        gap: 12px;
+      }
+
+      .confirm-actions .btn {
+        padding: 12px 20px;
+        font-size: 0.85rem;
+      }
+
+      .status-tracker {
+        max-width: none;
+        margin: 20px 16px 0;
+        padding: 0 16px;
+      }
+
+      .status-tracker::before {
+        left: 40px;
+        right: 40px;
+        top: 14px;
+      }
+
+      .status-step {
+        gap: 6px;
+      }
+
+      .status-dot {
+        width: 28px;
+        height: 28px;
+        font-size: 0.7rem;
+        border-width: 2.5px;
+      }
+
+      .status-label {
+        font-size: 0.65rem;
+        letter-spacing: 0.3px;
+      }
+
+      .container {
+        padding: 0;
+      }
+
+      h1 {
+        font-size: 1.4rem;
+      }
+
+      /* Better spacing for order details */
+      .confirm-card {
+        overflow: hidden;
+      }
+
+      /* Scrollable items list on mobile */
+      .confirm-items {
+        max-height: 300px;
+        overflow-y: auto;
+      }
+    }
   </style>
 
     <!-- Open Graph / Facebook -->

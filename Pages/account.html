@@ -65,7 +65,22 @@
     .user-avatar{width:52px;height:52px;border-radius:50%;background:var(--color-primary,#1a1a1a);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.1rem}
     .user-greeting-text h3{font-size:1rem;font-weight:600;margin-bottom:2px}
     .user-greeting-text p{font-size:.82rem;color:var(--color-text-light,#888)}
-    @media(max-width:768px){.account-layout{grid-template-columns:1fr;gap:20px}.account-sidebar{flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:8px}.account-sidebar-btn{white-space:nowrap;padding:10px 16px;font-size:.82rem}.wishlist-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:768px){
+      .account-layout{grid-template-columns:1fr;gap:20px}
+      .account-sidebar{flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:8px}
+      .account-sidebar-btn{white-space:nowrap;padding:10px 16px;font-size:.82rem}
+      .wishlist-grid{grid-template-columns:repeat(2,1fr)}
+      /* Mobile overflow and centering fixes */
+      .account-page{padding:60px 0 40px}
+      .container{padding:0 16px;max-width:100%}
+      .profile-form{max-width:100%}
+      .profile-form input{width:100%;max-width:100%}
+      .profile-save{width:100%;max-width:100%}
+      .account-content{width:100%;max-width:100%}
+      .account-panel{width:100%;max-width:100%}
+      .form-row{flex-direction:column;gap:12px}
+      .form-group{width:100%}
+    }
   </style>
 
     <!-- Open Graph / Facebook -->
