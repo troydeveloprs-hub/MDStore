@@ -6680,6 +6680,13 @@ h6 {
    padding: 0;
 }
 
+@media(max-width: 768px) {
+   .gallery-thumb {
+      flex: 0 0 60px;
+      height: 60px;
+   }
+}
+
 .gallery-thumb img {
    width: 100%;
    height: 100%;
@@ -6746,13 +6753,19 @@ body {
    🔥 PRODUCT PAGE IMAGE FIX
 ========================= */
 .product-main-image {
-   max-height: none !important;
-   aspect-ratio: unset !important;
+   max-height: 450px !important;
+   aspect-ratio: 1/1 !important;
+}
+
+@media(max-width: 768px) {
+   .product-main-image {
+      max-height: 320px !important;
+   }
 }
 
 .product-main-image img {
    width: 100% !important;
-   height: auto !important;
+   height: 100% !important;
    object-fit: contain !important;
 }
 
@@ -6779,14 +6792,21 @@ body {
 
    .product-layout {
       padding: 10px 0;
+      gap: 15px;
    }
 
    .product-detail-title {
-      font-size: 16px !important;
+      font-size: 18px !important;
+      margin-bottom: 8px;
    }
 
    .product-detail-price {
-      font-size: 15px !important;
+      font-size: 18px !important;
+      margin-bottom: 15px;
+   }
+   
+   .logo-img {
+      height: 45px !important;
    }
 
 }
@@ -6824,4 +6844,903 @@ body {
 img {
    max-width: 100%;
    height: auto;
+}/* =============================================================
+   MDBoutiquee — SURGICAL FIX PATCH  (fixes.css)
+   الإضافة: <link rel="stylesheet" href="fixes.css"> آخر حاجة في <head>
+   ============================================================= */
+
+
+/* ─────────────────────────────────────────────
+   1. GLOBAL OVERFLOW & BOX MODEL
+   السبب: مفيش box-sizing + عناصر بـ width ثابتة بتتجاوز الشاشة
+   ───────────────────────────────────────────── */
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  /* لا نحط object-fit هنا — بنحددها بالسياق */
+}
+
+
+/* ─────────────────────────────────────────────
+   2. HEADER FIX
+   السبب: .header-inner محتاج flex صح + اللوجو يبقى في المنتصف
+   ───────────────────────────────────────────── */
+.header {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* اللوجو في المنتصف الحرفي */
+.header-logo {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.header-logo .logo-img {
+  height: 36px;
+  width: auto;
+}
+
+/* الـ nav اليسار والأيقونات تاخد مسافة متساوية على جنبين اللوجو */
+.header-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: flex-start;
+}
+
+.header-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 2;
+}
+
+/* موبايل: أخفي الـ nav وظهر الهامبرجر */
+@media (max-width: 768px) {
+  .header-nav-left,
+  .header-nav-right {
+    display: none;
+  }
+
+  .header-inner {
+    justify-content: space-between;
+    padding: 0 12px;
+    height: 56px;
+  }
+
+  .header-logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .header-logo .logo-img {
+    height: 30px;
+  }
+
+  .hamburger {
+    flex-shrink: 0;
+    z-index: 2;
+    position: relative;
+  }
+
+  .header-icons {
+    flex-shrink: 0;
+    z-index: 2;
+    position: relative;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   3. PRODUCT PAGE LAYOUT
+   السبب: .product-layout محتاج 2-column على desktop و1-column على mobile
+   ───────────────────────────────────────────── */
+.product-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  width: 100%;
+  max-width: 100%;
+  padding-top: 24px;
+  padding-bottom: 40px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .product-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding-top: 16px;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   4. PRODUCT MAIN IMAGE — object-fit: contain (لا تقص الصورة)
+   السبب: الصور بتتقص أو مش بتظهر صح على المنتج
+   ───────────────────────────────────────────── */
+.product-gallery {
+  width: 100%;
+  position: sticky;
+  top: 80px;
+}
+
+@media (max-width: 768px) {
+  .product-gallery {
+    position: static;
+  }
+}
+
+.product-main-image {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: #f8f8f8;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.product-main-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* contain مهم هنا — ما نقطعش صورة المنتج */
+}
+
+/* Thumbnails */
+.gallery-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.gallery-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  background: #f8f8f8;
+  flex-shrink: 0;
+}
+
+.gallery-thumb.active {
+  border-color: #222;
+}
+
+.gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+
+/* ─────────────────────────────────────────────
+   5. PRODUCT CARD IMAGES — object-fit: cover (تملا الكارد)
+   السبب: الكروت بيها فراغات رمادية لأن الصورة ما بتملأش
+   ───────────────────────────────────────────── */
+.product-card .card-image,
+.product-card .product-image,
+.product-card figure {
+  width: 100%;
+  height: 250px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f8f8;
+}
+
+.product-card .card-image img,
+.product-card .product-image img,
+.product-card figure img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* cover للكروت — عشان تملأ المساحة */
+}
+
+
+/* ─────────────────────────────────────────────
+   6. COLOR / VARIANT OPTIONS
+   السبب: الـ label بيتكرر لو عندك أكتر من جروب
+   الحل: الـ label اتعمل مرة واحدة في الـ JS template
+   ───────────────────────────────────────────── */
+.option-group {
+  margin-bottom: 16px;
+}
+
+.option-group > p {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #333;
+}
+
+.option-group .options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.option-group .option {
+  padding: 6px 14px;
+  border: 1.5px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 13px;
+  transition: border-color 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+
+.option-group .option.active,
+.option-group .option:hover {
+  border-color: #222;
+  background: #222;
+  color: #fff;
+}
+
+
+/* ─────────────────────────────────────────────
+   7. QUANTITY SELECTOR
+   السبب: الأزرار بتتمد أو بتتقص على موبايل
+   ───────────────────────────────────────────── */
+.variant-selector {
+  margin-bottom: 20px;
+}
+
+.variant-selector label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: fit-content;
+  border: 1.5px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.qty-btn {
+  width: 40px;
+  height: 40px;
+  background: #f5f5f5;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.qty-btn:hover {
+  background: #e5e5e5;
+}
+
+.qty-input {
+  width: 50px;
+  height: 40px;
+  text-align: center;
+  border: none;
+  border-left: 1.5px solid #ddd;
+  border-right: 1.5px solid #ddd;
+  font-size: 14px;
+  -moz-appearance: textfield;
+}
+
+.qty-input::-webkit-outer-spin-button,
+.qty-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+
+
+/* ─────────────────────────────────────────────
+   8. PRODUCT ACTIONS / BUTTONS
+   السبب: الأزرار بتكون أكبر من الشاشة على موبايل
+   ───────────────────────────────────────────── */
+.product-actions {
+  width: 100%;
+}
+
+.product-actions .btn,
+.product-actions button.btn {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.btn-whatsapp {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.product-wishlist-btn {
+  width: 100%;
+  padding: 10px 16px;
+  font-size: 13px;
+  margin-top: 10px;
+  background: transparent;
+  border: 1.5px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: border-color 0.2s;
+}
+
+.product-wishlist-btn:hover {
+  border-color: #222;
+}
+
+
+/* ─────────────────────────────────────────────
+   9. DELIVERY INFO BOX
+   ───────────────────────────────────────────── */
+.delivery-info {
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 14px;
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.info-item .icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+.info-item .title {
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 2px 0;
+}
+
+.info-item .desc {
+  font-size: 12px;
+  color: #777;
+  margin: 0;
+}
+
+
+/* ─────────────────────────────────────────────
+   10. ACCORDIONS
+   ───────────────────────────────────────────── */
+.accordion-toggle {
+  width: 100%;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #eee;
+  padding: 14px 0;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.accordion-body {
+  display: none;
+  padding: 12px 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #555;
+}
+
+.accordion-body.open {
+  display: block;
+}
+
+
+/* ─────────────────────────────────────────────
+   11. PRODUCT DETAIL INFO — لا يتجاوز الشاشة
+   ───────────────────────────────────────────── */
+.product-detail-info {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.product-detail-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.product-detail-rating .stars {
+  color: #f59e0b;
+  font-size: 14px;
+}
+
+.product-detail-rating .count {
+  font-size: 12px;
+  color: #888;
+}
+
+.product-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #555;
+}
+
+
+/* ─────────────────────────────────────────────
+   12. CART PAGE — لو عندك cart.html
+   السبب: Layout بيتكسر على موبايل
+   ───────────────────────────────────────────── */
+.cart-container,
+.cart-layout {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 16px;
+}
+
+.cart-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.cart-item-image {
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.cart-item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cart-item-details {
+  flex: 1;
+  min-width: 0; /* منع overflow في flex */
+}
+
+.cart-totals,
+.cart-summary {
+  width: 100%;
+}
+
+.cart-totals button,
+.cart-summary button,
+.checkout-btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 15px;
+}
+
+@media (max-width: 768px) {
+  .cart-layout {
+    flex-direction: column;
+  }
+
+  .cart-sidebar {
+    width: 100%;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   13. LOGIN / ACCOUNT PAGE
+   السبب: الفورم مش centered وبيتجاوز الشاشة على موبايل
+   ───────────────────────────────────────────── */
+.login-page,
+.account-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 40px 16px;
+}
+
+.login-container,
+.account-container,
+.auth-box {
+  width: 100%;
+  max-width: 420px;
+  padding: 32px 24px;
+  margin: 0 auto;
+}
+
+.login-container input,
+.account-container input,
+.auth-box input,
+.login-form input[type="text"],
+.login-form input[type="email"],
+.login-form input[type="password"] {
+  width: 100%;
+  max-width: 100%;
+  padding: 10px 14px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.login-container button,
+.account-container button,
+.auth-box button {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+}
+
+@media (max-width: 480px) {
+  .login-container,
+  .account-container,
+  .auth-box {
+    padding: 20px 16px;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   14. PAYMENT METHODS (3 options only)
+   ───────────────────────────────────────────── */
+.payment-methods-section {
+  margin: 20px 0;
+}
+
+.payment-methods-section .payment-method-option {
+  display: flex;
+  flex-direction: column;
+  border: 1.5px solid #e5e5e5;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.payment-methods-section .payment-method-option:has(input:checked) {
+  border-color: #222;
+}
+
+.payment-method-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.payment-method-label input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  accent-color: #222;
+}
+
+.payment-method-label .pm-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.payment-method-instructions {
+  display: none;
+  padding: 12px 16px 14px;
+  background: #f9f9f9;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #444;
+  border-top: 1px solid #eee;
+}
+
+.payment-method-instructions.visible {
+  display: block;
+}
+
+.payment-method-instructions strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #222;
+}
+
+
+/* ─────────────────────────────────────────────
+   15. ANNOUNCEMENT BAR
+   ───────────────────────────────────────────── */
+.announcement-bar {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 8px 40px;
+  text-align: center;
+}
+
+.announcement-content {
+  flex: 1;
+  text-align: center;
+}
+
+.announcement-text {
+  font-size: 13px;
+}
+
+.announcement-close {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 4px;
+}
+
+
+/* ─────────────────────────────────────────────
+   16. MOBILE NAV
+   ───────────────────────────────────────────── */
+.mobile-nav {
+  max-width: 320px;
+  width: 85vw;
+  overflow-x: hidden;
+}
+
+
+/* ─────────────────────────────────────────────
+   17. CONTAINER SAFETY
+   ───────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   18. BREADCRUMB
+   ───────────────────────────────────────────── */
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #888;
+  padding: 12px 0;
+}
+
+.breadcrumb a {
+  color: #888;
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: #222;
+}
+
+.breadcrumb-sep {
+  color: #ccc;
+}
+
+
+/* ─────────────────────────────────────────────
+   19. FOOTER PAYMENT BADGES
+   ───────────────────────────────────────────── */
+.footer-payment {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.payment-text {
+  font-size: 11px;
+  padding: 4px 10px;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #aaa;
+}
+
+.footer-bottom {
+  border-top: 1px solid #2a2a2a;
+  padding: 16px 0;
+}
+
+.footer-bottom .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.footer-copyright {
+  font-size: 12px;
+  color: #888;
+  margin: 0;
+}
+
+
+/* ─────────────────────────────────────────────
+   20. REVIEWS SECTION
+   ───────────────────────────────────────────── */
+.product-reviews-list {
+  margin-top: 40px;
+}
+
+.reviews-write h3 {
+  font-size: 18px;
+  margin-bottom: 14px;
+}
+
+.review-textarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 10px 14px;
+  font-size: 13px;
+  border: 1.5px solid #ddd;
+  border-radius: 6px;
+  resize: vertical;
+  margin-top: 10px;
+  box-sizing: border-box;
+}
+
+.review-submit {
+  margin-top: 10px;
+  padding: 10px 24px;
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.star-rating-input {
+  font-size: 24px;
+  color: #ddd;
+  cursor: pointer;
+  display: flex;
+  gap: 4px;
+}
+
+.star-rating-input .fa-star,
+.star-rating-input .fa-solid {
+  color: #f59e0b;
+}
+
+.review-item {
+  padding: 14px 0;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+}
+
+.review-item strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+
+/* ─────────────────────────────────────────────
+   21. PRODUCTS GRID (related products)
+   ───────────────────────────────────────────── */
+.products-grid {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+}
+
+.products-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 900px) {
+  .products-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .products-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
 }
