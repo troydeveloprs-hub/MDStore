@@ -523,9 +523,28 @@
       const ingredients = Array.isArray(p.ingredients) ? p.ingredients.filter(Boolean) : [];
       const productImages = Array.isArray(p.images) && p.images.length ? p.images : [p.image].filter(Boolean);
       const primaryImage = productImages[0] || p.image || 'img/logo.svg';
-      const variantGroups = Array.isArray(p.variantGroups) && p.variantGroups.length
+      // Consolidate variant groups - merge all color/shade options into single COLOR group
+      let variantGroups = Array.isArray(p.variantGroups) && p.variantGroups.length
         ? p.variantGroups
         : (Array.isArray(p.variants) && p.variants.length ? [{ name: 'option', options: p.variants }] : []);
+      
+      // If multiple color/shade groups exist, merge them
+      const colorGroups = variantGroups.filter(g => 
+        g.name && (g.name.toLowerCase().includes('color') || g.name.toLowerCase().includes('shade'))
+      );
+      
+      if (colorGroups.length > 1) {
+        const mergedColorOptions = colorGroups.flatMap(g => g.options || []);
+        const uniqueColorOptions = [...new Set(mergedColorOptions)];
+        
+        // Remove individual color groups
+        variantGroups = variantGroups.filter(g => 
+          !g.name || (!g.name.toLowerCase().includes('color') && !g.name.toLowerCase().includes('shade'))
+        );
+        
+        // Add single merged color group
+        variantGroups.unshift({ name: 'color', options: uniqueColorOptions });
+      }
 
       document.title = p.name + ' — MDBoutiquee';
       document.querySelector('.product-detail-brand').textContent = p.brand;
