@@ -396,7 +396,7 @@ h6 {
    width: 100vw;
    margin-left: calc(-50vw + 50%);
    background: var(--color-bg);
-   padding: 48px 0;
+   padding: 24px 0;
    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
    border-top: 1px solid var(--color-border);
    opacity: 0;
@@ -422,7 +422,7 @@ h6 {
 .mega-menu-inner {
    display: grid;
    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-   gap: 32px;
+   gap: 20px;
    width: 100%;
    max-width: var(--container-max);
    padding: 0 var(--container-padding)
@@ -899,8 +899,8 @@ h6 {
 
    .hero-slider,
    .hero-media {
-      aspect-ratio: 4/3;
-      min-height: 200px;
+      aspect-ratio: 3/2;
+      min-height: 150px;
       background: #fff
    }
 
@@ -4172,11 +4172,6 @@ h6 {
       height: 50px;
       font-size: 14px !important
    }
-}
-
-min-width: 100%;
-height: 100%;
-object-fit: cover;
 }
 
 .qv-dots {
