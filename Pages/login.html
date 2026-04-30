@@ -974,7 +974,7 @@
   <script src="../js/app.js"></script>
   <script src="../js/features.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
 
       // Auto-redirect if already logged in
       const currentUser = MDB.Auth.getUser();
@@ -1135,7 +1135,8 @@
       try {
         const cartCount = await MDB.Cart.count();
         if (cartCount > 0) {
-          document.getElementById('guest-checkout-section').style.display = 'block';
+          const guestSec = document.getElementById('guest-checkout-section');
+          if (guestSec) guestSec.style.display = 'block';
         }
       } catch (e) {
         console.warn('Failed to check cart count for guest section:', e);

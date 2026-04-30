@@ -36,6 +36,7 @@ const MDB = (() => {
   const SUPABASE_SCRIPT_URL = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.99.0/dist/umd/supabase.min.js';
   const SUPABASE_CONFIG_PATHS = [
     'js/supabase-config.js',
+    '/js/supabase-config.js',
     '../js/supabase-config.js',
     '../../js/supabase-config.js'
   ];

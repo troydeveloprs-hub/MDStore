@@ -866,8 +866,8 @@
         window.open(`https://wa.me/201001234567?text=${encodeURIComponent(msg)}`, '_blank');
       };
 
-      renderReviews(pid);
-      renderRelated(pid);
+      await renderReviews(pid);
+      await renderRelated(pid);
 
       // Handle Gallery Clicks
       if (galleryThumbs) {
@@ -883,10 +883,24 @@
     });
 
 
-    function renderReviews(pid) {
-      const reviews = MDB.Reviews.getForProduct(pid);
+    async function renderReviews(pid) {
+      const reviews = await MDB.Reviews.getForProduct(pid);
       const list = document.getElementById('reviews-list');
-      list.innerHTML = reviews.map(r => `<div class="review-item"><strong>${r.authorName}</strong> (${r.rating}â­)<p>${r.text}</p></div>`).join('');
+      if (!list) return;
+      if (!reviews || !reviews.length) {
+        list.innerHTML = '<p style="color:#888;margin-top:20px;">No reviews yet for this product.</p>';
+        return;
+      }
+      list.innerHTML = reviews.map(r => `
+        <div class="review-item" style="border-bottom:1px solid #eee;padding:15px 0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong>${r.authorName || 'Anonymous'}</strong>
+            <span style="color:var(--color-accent);">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</span>
+          </div>
+          <p style="margin-top:8px;font-size:0.9rem;color:#555;">${r.review_text || r.text || ''}</p>
+          <small style="color:#999;">${new Date(r.createdAt).toLocaleDateString()}</small>
+        </div>
+      `).join('');
     }
 
     async function renderRelated(pid) {

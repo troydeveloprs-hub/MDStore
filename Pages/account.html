@@ -648,7 +648,7 @@
 
   <script src="../js/store.js"></script>
   <script src="../js/app.js"></script><script src="../js/features.js"></script>
-  <script>
+<script>
   function resolveAccountImage(image) {
     if (!image) return '../img/logo.svg';
     if (/^(https?:)?\/\//.test(image) || image.startsWith('data:') || image.startsWith('/')) return image;
@@ -656,7 +656,7 @@
     return `../${image}`;
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
+  document.addEventListener('DOMContentLoaded', async () => {
     if (!MDB.Auth.isLoggedIn()) { window.location.href = 'login.html'; return; }
     const user = MDB.Auth.getUser();
     
@@ -688,12 +688,12 @@
 
     // Sidebar buttons
     document.querySelectorAll('.account-sidebar-btn[data-panel]').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         const panel = btn.dataset.panel;
         document.querySelectorAll('.account-sidebar-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === panel));
         document.querySelectorAll('.account-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + panel));
-        if (panel === 'orders') renderOrders();
-        if (panel === 'wishlist') renderWishlist();
+        if (panel === 'orders') await renderOrders();
+        if (panel === 'wishlist') await renderWishlist();
       });
     });
 
@@ -748,10 +748,13 @@
     }
 
     // Render Orders
-    function renderOrders() {
+    async function renderOrders() {
       const el = document.getElementById('orders-list');
-      const orders = MDB.Orders.getAll();
-      if (!orders.length) {
+      if (!el) return;
+      el.innerHTML = '<div style="text-align:center;padding:20px;">Loading orders...</div>';
+      
+      const orders = await MDB.Orders.getAll();
+      if (!orders || !orders.length) {
         el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders yet</p><a href="../collections/makeup.html" class="btn btn-primary">Start Shopping</a></div>';
         return;
       }
@@ -774,15 +777,17 @@
     }
 
     // Render Wishlist
-    function renderWishlist() {
+    async function renderWishlist() {
       const el = document.getElementById('wishlist-grid');
-      const items = MDB.Wishlist.getAll();
-      if (!items.length) {
+      if (!el) return;
+      el.innerHTML = '<div style="text-align:center;padding:20px;grid-column:1/-1;">Loading wishlist...</div>';
+      
+      const items = await MDB.Wishlist.getAll();
+      if (!items || !items.length) {
         el.innerHTML = '<div class="empty-state" style="grid-column:1/-1"><i class="fa-regular fa-heart"></i><p>Your wishlist is empty</p><a href="../collections/makeup.html" class="btn btn-primary">Explore Products</a></div>';
         return;
       }
-      el.innerHTML = items.map(i => `<div class="wishlist-item"><img src="${resolveAccountImage(i.image)}" alt="${i.name}"><div class="wishlist-item-info"><div class="wishlist-item-brand">${i.brand}</div><div class="wishlist-item-name">${i.name}</div><div class="wishlist-item-price">${MDB.UI.formatPrice(i.price)}</div><div class="wishlist-item-actions"><button class="wishlist-atc" onclick="MDB.Cart.add({id:'${i.id}',name:'${i.name}',brand:'${i.brand}',price:${i.price},image:'${i.image}',variant:'Default',qty:1});MDB.UI.toast('Added to cart!','success')">Add to Cart</button><button class="wishlist-remove" onclick="MDB.Wishlist.remove('${i.id}');renderWishlist();MDB.UI.toast('Removed','info')"><i class="fa-solid fa-xmark"></i></button></div></div></div>`).join('');
-      window.renderWishlist = renderWishlist;
+      el.innerHTML = items.map(i => `<div class="wishlist-item"><img src="${resolveAccountImage(i.image)}" alt="${i.name}"><div class="wishlist-item-info"><div class="wishlist-item-brand">${i.brand}</div><div class="wishlist-item-name">${i.name}</div><div class="wishlist-item-price">${MDB.UI.formatPrice(i.price)}</div><div class="wishlist-item-actions"><button class="wishlist-atc" onclick="MDB.Cart.add({id:'${i.id}',name:'${i.name}',brand:'${i.brand}',price:${i.price},image:'${i.image}',variant:'Default',qty:1});MDB.UI.toast('Added to cart!','success')">Add to Cart</button><button class="wishlist-remove" onclick="MDB.Wishlist.remove('${i.id}').then(() => renderWishlist());MDB.UI.toast('Removed','info')"><i class="fa-solid fa-xmark"></i></button></div></div></div>`).join('');
     }
     window.renderWishlist = renderWishlist;
 
@@ -791,10 +796,8 @@
     if (hash && document.getElementById('panel-' + hash)) {
       document.querySelectorAll('.account-sidebar-btn').forEach(b => b.classList.toggle('active', b.dataset.panel === hash));
       document.querySelectorAll('.account-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + hash));
-      if (hash === 'orders') renderOrders();
-      if (hash === 'wishlist') renderWishlist();
+      if (hash === 'orders') await renderOrders();
+      if (hash === 'wishlist') await renderWishlist();
     }
   });
   </script>
-</body>
-</html>
