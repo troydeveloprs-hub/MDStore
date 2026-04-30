@@ -95,10 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
      ============================================ */
   const Cart = {
     get() { return window.MDB?.Cart?.get() || []; },
-    set(items) { window.MDB?.Cart?._save(items); },
-    add(id, variant, qty) { window.MDB?.Cart?.add({ id, variant, qty }); },
-    remove(id, variant) { window.MDB?.Cart?.remove(id, variant); },
-    updateQty(id, variant, qty) { window.MDB?.Cart?.updateQty(id, variant, qty); },
+    set(items) { return window.MDB?.Cart?._save(items); },
+    add(product) { return window.MDB?.Cart?.add(product); },
+    remove(id, variant) { return window.MDB?.Cart?.remove(id, variant); },
+    updateQty(id, variant, qty) { return window.MDB?.Cart?.updateQty(id, variant, qty); },
     count() { return window.MDB?.Cart?.count() || 0; },
     total() { return window.MDB?.Cart?.total() || 0; },
     updateBadge() { window.MDB?.UI?.updateCartBadges(); }
@@ -658,23 +658,23 @@ document.addEventListener('DOMContentLoaded', () => {
     $$('.mini-cart-item', body).forEach(el => {
       const id = el.dataset.id;
       const variant = el.dataset.variant;
-      on($('.mini-qty-minus', el), 'click', () => {
+      on($('.mini-qty-minus', el), 'click', async () => {
         const input = $('.mini-qty-input', el);
         const newQty = Math.max(1, parseInt(input.value) - 1);
         input.value = newQty;
-        Cart.updateQty(id, variant, newQty);
-        renderMiniCart();
+        await Cart.updateQty(id, variant, newQty);
+        await renderMiniCart();
       });
-      on($('.mini-qty-plus', el), 'click', () => {
+      on($('.mini-qty-plus', el), 'click', async () => {
         const input = $('.mini-qty-input', el);
         const newQty = parseInt(input.value) + 1;
         input.value = newQty;
-        Cart.updateQty(id, variant, newQty);
-        renderMiniCart();
+        await Cart.updateQty(id, variant, newQty);
+        await renderMiniCart();
       });
-      on($('.mini-cart-remove', el), 'click', () => {
-        Cart.remove(id, variant);
-        renderMiniCart();
+      on($('.mini-cart-remove', el), 'click', async () => {
+        await Cart.remove(id, variant);
+        await renderMiniCart();
       });
     });
   }
@@ -718,10 +718,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   const getSelectedVariantSummary = (ctx = document) => {
-    const groups = $$('[data-variant-group]', ctx);
+    if (window.selectedVariants && Object.keys(window.selectedVariants).length > 0) {
+      return Object.entries(window.selectedVariants)
+        .map(([type, value]) => `${type.charAt(0).toUpperCase() + type.slice(1)}: ${value}`)
+        .join(' / ');
+    }
+    const groups = $$('[data-variant-group], [data-option]', ctx);
     const selections = groups.map(group => {
-      const active = $('.variant-btn.active', group);
-      const groupName = group.dataset.variantGroup || 'option';
+      const active = $('.variant-btn.active, .option.active', group);
+      const groupName = group.dataset.variantGroup || group.dataset.option || 'option';
       if (!active) return '';
       return `${groupName.charAt(0).toUpperCase() + groupName.slice(1)}: ${active.textContent.trim()}`;
     }).filter(Boolean);
@@ -772,16 +777,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
     productAtc.classList.add('loading');
     productAtc.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding...';
-    setTimeout(() => {
-      Cart.add({ id: productId || name, name, brand, price, image, variant, qty });
+    
+    setTimeout(async () => {
+      await Cart.add({ id: productId || name, name, brand, price, image, variant, qty });
+      
       productAtc.classList.remove('loading');
       productAtc.classList.add('added');
       productAtc.innerHTML = '<i class="fa-solid fa-check"></i> Added to Cart';
+      
+      // Update UI
+      updateCartBadgesDirect();
+      openCartDrawer();
+      
       setTimeout(() => {
         productAtc.classList.remove('added');
         productAtc.innerHTML = '<i class="fa-solid fa-bag-shopping"></i> Add to Cart';
       }, 2000);
-      openCartDrawer();
     }, 500);
   });
 

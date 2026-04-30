@@ -562,7 +562,7 @@ const MDB = (() => {
       // Fallback to localStorage for guest or admin users
       if (!user || user.role === 'admin' || user.id === 'admin') {
         _set(KEYS.CART, items);
-        this._notify();
+        await this._notify();
         return;
       }
 
@@ -610,7 +610,7 @@ const MDB = (() => {
         });
       }
       await this._save(items);
-      this._notify();
+      await this._notify();
       return items;
     },
 
@@ -691,8 +691,10 @@ const MDB = (() => {
 
     getAppliedPromo() { return _get(KEYS.PROMO); },
 
-    _notify() {
-      document.dispatchEvent(new CustomEvent('mdb:cart:updated', { detail: { count: this.count(), total: this.total() } }));
+    async _notify() {
+      const count = await this.count();
+      const total = await this.total();
+      document.dispatchEvent(new CustomEvent('mdb:cart:updated', { detail: { count, total } }));
     }
   };
 
@@ -759,7 +761,7 @@ const MDB = (() => {
       const user = Auth.getUser();
       if (!user) {
         _set(KEYS.WISHLIST, items);
-        this._notify();
+        await this._notify();
         return;
       }
 
@@ -830,8 +832,9 @@ const MDB = (() => {
 
     async clear() { await this._save([]); },
 
-    _notify() {
-      document.dispatchEvent(new CustomEvent('mdb:wishlist:updated', { detail: { count: this.count() } }));
+    async _notify() {
+      const count = await this.count();
+      document.dispatchEvent(new CustomEvent('mdb:wishlist:updated', { detail: { count } }));
     }
   };
 
@@ -913,13 +916,13 @@ const MDB = (() => {
               merged.push(lo);
             }
           } else {
-             // If it exists in DB but local status is different (maybe updated recently)
-             // We can sync local status if needed, but DB is source of truth.
-             // We will update local storage with DB status to keep it clean.
+             // If it exists in DB, update local storage with DB status to stay in sync
+             const dbOrder = mappedDbOrders.find(o => o.id === lo.id);
              const idx = localOrders.findIndex(o => o.id === lo.id);
-             const dbStatus = mappedDbOrders.find(o => o.id === lo.id).status;
-             if (idx > -1 && localOrders[idx].status !== dbStatus) {
-                localOrders[idx].status = dbStatus;
+             if (idx > -1 && dbOrder) {
+                localOrders[idx].status = dbOrder.status;
+                localOrders[idx].paymentStatus = dbOrder.paymentStatus;
+                localOrders[idx].updatedAt = dbOrder.updatedAt;
              }
           }
         }
@@ -1139,7 +1142,7 @@ const MDB = (() => {
         _set(KEYS.ORDERS, localOrders);
       }
 
-      return this._run('updatePaymentStatus', async () => {
+      const res = await this._run('updatePaymentStatus', async () => {
         const client = await this._ensureClient();
         const { data, error } = await client
           .from(this._table)
@@ -1147,6 +1150,50 @@ const MDB = (() => {
           .eq('id', id)
           .select()
           .single();
+        if (error) throw error;
+        this._cache = null;
+        return data;
+      }, null);
+      
+      return res;
+    },
+
+    async update(id, updateData) {
+      // 1. Update Local
+      const localOrders = _get(KEYS.ORDERS) || [];
+      const idx = localOrders.findIndex(o => o.id === id);
+      if (idx > -1) {
+        localOrders[idx] = { ...localOrders[idx], ...updateData, updatedAt: _dateNow() };
+        _set(KEYS.ORDERS, localOrders);
+      }
+
+      // 2. Update DB
+      return this._run('update', async () => {
+        const client = await this._ensureClient();
+        
+        // Map camelCase to snake_case for DB
+        const dbUpdate = { updated_at: _dateNow() };
+        if (updateData.status) dbUpdate.status = updateData.status;
+        if (updateData.paymentStatus) dbUpdate.payment_status = updateData.paymentStatus;
+        if (updateData.paymentMethod) dbUpdate.payment_method = updateData.paymentMethod;
+        if (updateData.total !== undefined) dbUpdate.total = updateData.total;
+        if (updateData.notes !== undefined) dbUpdate.notes = updateData.notes;
+        
+        if (updateData.customer) {
+          if (updateData.customer.name) dbUpdate.customer_name = updateData.customer.name;
+          if (updateData.customer.email) dbUpdate.customer_email = updateData.customer.email;
+          if (updateData.customer.phone) dbUpdate.customer_phone = updateData.customer.phone;
+          if (updateData.customer.address) dbUpdate.customer_address = updateData.customer.address;
+          if (updateData.customer.city) dbUpdate.customer_city = updateData.customer.city;
+        }
+
+        const { data, error } = await client
+          .from(this._table)
+          .update(dbUpdate)
+          .eq('id', id)
+          .select()
+          .single();
+        
         if (error) throw error;
         this._cache = null;
         return data;
