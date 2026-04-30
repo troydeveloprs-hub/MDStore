@@ -2014,31 +2014,47 @@
         <h2 style="font-family:'Inter', 'Cairo', sans-serif; font-size:24px; font-weight:600; color:var(--text);">Order Details <span id="om-id" style="font-size:16px; color:var(--text2); margin-left:10px;"></span></h2>
         <button onclick="document.getElementById('order-modal-overlay').style.display='none'" style="background:transparent; border:none; font-size:20px; color:var(--text2); cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
       </div>
-      <div style="padding:24px; display:flex; flex-direction:column; gap:24px;">
+      <div id="order-edit-form" style="padding:24px; display:flex; flex-direction:column; gap:24px;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
           <div style="background:var(--surface2); padding:16px; border-radius:12px;">
-            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:8px;">Customer</p>
-            <p style="font-weight:600; color:var(--text);" id="om-name"></p>
-            <p style="font-size:13px; color:var(--text2); margin-top:4px;" id="om-email"></p>
-            <p style="font-size:13px; color:var(--text2); margin-top:4px;"><i class="fa-solid fa-phone" style="font-size:10px; margin-right:4px;"></i> <span id="om-phone"></span></p>
+            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:12px;">Customer Info</p>
+            <input type="text" id="om-edit-name" class="search-input" style="margin-bottom:8px; padding-left:12px;" placeholder="Name">
+            <input type="email" id="om-edit-email" class="search-input" style="margin-bottom:8px; padding-left:12px;" placeholder="Email">
+            <input type="tel" id="om-edit-phone" class="search-input" style="padding-left:12px;" placeholder="Phone">
           </div>
           <div style="background:var(--surface2); padding:16px; border-radius:12px;">
-            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:8px;">Shipping Address</p>
-            <p style="font-size:14px; color:var(--text);" id="om-address"></p>
-            <p style="font-size:13px; color:var(--text2); margin-top:4px;" id="om-city"></p>
+            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:12px;">Shipping Address</p>
+            <input type="text" id="om-edit-address" class="search-input" style="margin-bottom:8px; padding-left:12px;" placeholder="Address">
+            <input type="text" id="om-edit-city" class="search-input" style="padding-left:12px;" placeholder="City">
           </div>
           <div style="background:var(--surface2); padding:16px; border-radius:12px;">
-            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:8px;">Payment & Status</p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-              <span style="font-size:13px; color:var(--text2);">Method:</span>
-              <strong style="color:var(--text);" id="om-payment"></strong>
+            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:12px;">Payment & Status</p>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <select id="om-edit-method" class="status-select" style="width:100%">
+                <option value="cash">Cash on Delivery</option>
+                <option value="card">Credit Card</option>
+                <option value="wallet">Wallet</option>
+              </select>
+              <select id="om-edit-status" class="status-select" style="width:100%">
+                <option value="pending">Pending</option>
+                <option value="processing">Processing</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <select id="om-edit-payment" class="status-select" style="width:100%">
+                <option value="pending">Unpaid</option>
+                <option value="paid">Paid</option>
+                <option value="failed">Failed</option>
+                <option value="refunded">Refunded</option>
+              </select>
             </div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <span style="font-size:13px; color:var(--text2);">Status:</span>
-              <span id="om-status-badge"></span>
-            </div>
-            <div style="margin-top:12px; font-size:12px; color:var(--danger); white-space:pre-wrap;" id="om-notes"></div>
           </div>
+        </div>
+
+        <div>
+          <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:8px;">Notes</p>
+          <textarea id="om-edit-notes" class="search-input" style="width:100%; min-height:80px; padding-left:12px;" placeholder="Order notes..."></textarea>
         </div>
         
         <div>
@@ -2047,8 +2063,13 @@
         </div>
 
         <div style="background:var(--surface2); padding:16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
-          <span style="font-size:16px; font-weight:600; color:var(--text2);">Total Amount</span>
-          <span style="font-family:'Inter', 'Cairo', sans-serif; font-size:28px; font-weight:700; color:var(--gold);" id="om-total">0 LE</span>
+          <div style="display:flex; flex-direction:column;">
+             <span style="font-size:13px; color:var(--text3);">Total Amount (LE)</span>
+             <input type="number" id="om-edit-total" class="search-input" style="width:120px; font-size:18px; font-weight:700; color:var(--gold); padding-left:12px;">
+          </div>
+          <button id="save-order-btn" class="btn btn-primary" style="padding:12px 32px; border-radius:12px;">
+             <i class="fa-solid fa-save"></i> Save Changes
+          </button>
         </div>
       </div>
     </div>
@@ -2319,12 +2340,22 @@
         if (stockBtn) { adjustStock(decodeURIComponent(stockBtn.dataset.adjustStock), parseInt(stockBtn.dataset.delta || '0', 10)); return; }
       });
 
-      dash.addEventListener('change', e => {
+      dash.addEventListener('change', async e => {
         const statusSel = e.target.closest('[data-order-status]');
-        if (statusSel) updateStatus(decodeURIComponent(statusSel.dataset.orderStatus), statusSel.value);
+        if (statusSel) {
+          const btn = e.target;
+          btn.style.opacity = '0.5';
+          await updateStatus(decodeURIComponent(statusSel.dataset.orderStatus), statusSel.value);
+          btn.style.opacity = '1';
+        }
         
         const paySel = e.target.closest('[data-payment-status]');
-        if (paySel) updatePaymentStatus(decodeURIComponent(paySel.dataset.paymentStatus), paySel.value);
+        if (paySel) {
+          const btn = e.target;
+          btn.style.opacity = '0.5';
+          await updatePaymentStatus(decodeURIComponent(paySel.dataset.paymentStatus), paySel.value);
+          btn.style.opacity = '1';
+        }
       });
     }
 
@@ -2582,12 +2613,40 @@
             <select class="status-select" data-order-status="${encodeURIComponent(safeText(o.id, ''))}">
               ${['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${st === s ? 'selected' : ''}>${s}</option>`).join('')}
             </select>
-            <button class="act-btn danger" type="button" data-delete-order="${encodeURIComponent(safeText(o.id, ''))}"><i class="fa-solid fa-trash"></i></button>
+            <button class="act-btn danger" type="button" onclick="deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
           </div>
         </td>
       </tr>`;
       }).join('');
       renderOrderPagination(totalItems);
+    }
+
+    async function updateStatus(id, s) { 
+      try {
+        const res = await MDB.Orders.updateStatus(id, s);
+        if (res) {
+          MDB.UI.toast('Order Status updated'); 
+        } else {
+          MDB.UI.toast('Failed to update status on server', 'warning');
+        }
+      } catch (err) {
+        showErr(err, 'Could not update status');
+      }
+      await refreshAll();
+    }
+    
+    async function updatePaymentStatus(id, s) { 
+      try {
+        const res = await MDB.Orders.updatePaymentStatus(id, s);
+        if (res) {
+          MDB.UI.toast('Payment Status updated'); 
+        } else {
+          MDB.UI.toast('Failed to update payment status on server', 'warning');
+        }
+      } catch (err) {
+        showErr(err, 'Could not update payment status');
+      }
+      await refreshAll();
     }
 
     function renderOrderPagination(totalItems) {
@@ -2641,36 +2700,29 @@
       }
     }
 
+    let currentEditingOrderId = null;
+
     async function viewOrder(id) {
       const orders = await MDB.Orders.get();
       const order = orders.find(o => o.id === id);
       if (!order) return;
+      currentEditingOrderId = id;
 
       const c = getOrderCustomer(order);
       document.getElementById('om-id').textContent = '#' + safeText(order.id, '-');
-      document.getElementById('om-name').textContent = c.name;
-      document.getElementById('om-email').textContent = c.email;
-      document.getElementById('om-phone').textContent = c.phone;
-      document.getElementById('om-address').textContent = c.address || safeText(order.customer?.address, '-');
-      document.getElementById('om-city').textContent = c.city || safeText(order.customer?.city, '-');
       
-      let pm = String(order.paymentMethod || order.payment_method || 'Cash on Delivery').toUpperCase();
-      document.getElementById('om-payment').textContent = pm;
-      document.getElementById('om-status-badge').innerHTML = `<span class="badge badge-${safeText(order.status, 'pending')}">${safeText(order.status, 'pending')}</span>`;
-      
-      const notes = safeText(order.notes || order.customer?.notes, '');
-      if (notes) {
-        document.getElementById('om-notes').innerHTML = `
-          <div style="margin-top:10px; padding:12px; background:var(--gold-dim); border:1px solid var(--gold-border); border-radius:8px;">
-            <strong style="color:var(--gold); display:block; margin-bottom:4px;"><i class="fa-solid fa-note-sticky"></i> Customer Notes:</strong>
-            <span style="font-size:14px; color:var(--text); white-space:pre-wrap;">${escapeHtml(notes)}</span>
-          </div>`;
-      } else {
-        document.getElementById('om-notes').textContent = '';
-      }
+      // Populate inputs
+      document.getElementById('om-edit-name').value = c.name || '';
+      document.getElementById('om-edit-email').value = c.email || '';
+      document.getElementById('om-edit-phone').value = c.phone || '';
+      document.getElementById('om-edit-address').value = c.address || safeText(order.customer?.address, '');
+      document.getElementById('om-edit-city').value = c.city || safeText(order.customer?.city, '');
+      document.getElementById('om-edit-method').value = order.paymentMethod || order.payment_method || 'cash';
+      document.getElementById('om-edit-status').value = order.status || 'pending';
+      document.getElementById('om-edit-payment').value = order.paymentStatus || order.payment_status || 'pending';
+      document.getElementById('om-edit-notes').value = safeText(order.notes || order.customer?.notes, '');
+      document.getElementById('om-edit-total').value = Number(order.total || 0);
 
-      document.getElementById('om-total').textContent = MDB.UI.formatPrice(Number(order.total || 0));
-      
       const items = Array.isArray(order.items) ? order.items : [];
       document.getElementById('om-items-count').textContent = items.length;
       document.getElementById('om-items').innerHTML = items.map(i => `
@@ -2688,6 +2740,44 @@
       `).join('');
 
       document.getElementById('order-modal-overlay').style.display = 'flex';
+      
+      // Bind save button once
+      const saveBtn = document.getElementById('save-order-btn');
+      saveBtn.onclick = async () => {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+        
+        try {
+          const updateData = {
+            customer: {
+              name: document.getElementById('om-edit-name').value,
+              email: document.getElementById('om-edit-email').value,
+              phone: document.getElementById('om-edit-phone').value,
+              address: document.getElementById('om-edit-address').value,
+              city: document.getElementById('om-edit-city').value
+            },
+            paymentMethod: document.getElementById('om-edit-method').value,
+            status: document.getElementById('om-edit-status').value,
+            paymentStatus: document.getElementById('om-edit-payment').value,
+            notes: document.getElementById('om-edit-notes').value,
+            total: parseFloat(document.getElementById('om-edit-total').value)
+          };
+          
+          const res = await MDB.Orders.update(currentEditingOrderId, updateData);
+          if (res) {
+            MDB.UI.toast('Order details updated successfully');
+            document.getElementById('order-modal-overlay').style.display = 'none';
+            await refreshAll();
+          } else {
+            MDB.UI.toast('Failed to update order on server', 'warning');
+          }
+        } catch (err) {
+          showErr(err, 'Could not save order details');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = '<i class="fa-solid fa-save"></i> Save Changes';
+        }
+      };
     }
 
     /* ─ PRODUCTS ─ */
