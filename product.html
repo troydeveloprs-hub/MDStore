@@ -340,21 +340,37 @@
         <button class="btn btn-primary btn-lg btn-full" data-product-atc><i class="fa-solid fa-bag-shopping"></i> Add to Cart</button>
         <button class="btn btn-whatsapp btn-lg btn-full" id="wa-order-btn" style="background:#25d366; color:#fff; border:none; margin-top:10px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:10px;"><i class="fa-brands fa-whatsapp"></i> Order via WhatsApp</button>
         <div class="payment-section">
-          <button class="buy-now-btn">
-            Buy it now
-          </button>
+          <p class="payment-label">Payment Method</p>
+          <div class="payment-options">
+            <label class="payment-radio">
+              <input type="radio" name="payment_method" value="cod" checked>
+              <span class="payment-radio-custom"></span>
+              <span class="payment-radio-text">Cash on Delivery</span>
+            </label>
+            <div class="payment-instructions" data-method="cod">
+              <p>Pay with cash when your order is delivered to your door.</p>
+            </div>
 
-          <button class="apple-pay-btn">
-             Pay
-          </button>
+            <label class="payment-radio">
+              <input type="radio" name="payment_method" value="instapay">
+              <span class="payment-radio-custom"></span>
+              <span class="payment-radio-text">InstaPay</span>
+            </label>
+            <div class="payment-instructions" data-method="instapay">
+              <p>Send payment to: <strong>01037070888</strong></p>
+              <p>Use InstaPay app to transfer the order total.</p>
+            </div>
 
-          <p class="payment-methods">
-            Pay with Visa, Vodafone Cash, InstaPay
-          </p>
-
-          <a href="#" class="more-options">
-            More payment options
-          </a>
+            <label class="payment-radio">
+              <input type="radio" name="payment_method" value="vodafone">
+              <span class="payment-radio-custom"></span>
+              <span class="payment-radio-text">Vodafone Cash</span>
+            </label>
+            <div class="payment-instructions" data-method="vodafone">
+              <p>Send payment to: <strong>01037070888</strong></p>
+              <p>Use Vodafone Cash to transfer the order total.</p>
+            </div>
+          </div>
         </div>
 
         <div class="delivery-info">
@@ -370,7 +386,7 @@
             <span class="icon">💳</span>
             <div>
               <p class="title">Secure payment</p>
-              <p class="desc">Visa, Apple Pay, Vodafone Cash, InstaPay</p>
+              <p class="desc">Vodafone Cash, InstaPay, Cash on Delivery</p>
             </div>
           </div>
 
@@ -464,11 +480,9 @@
       <div class="container">
         <p class="footer-copyright">&copy; 2025 <a href="index.html">MDBoutiquee</a>. All rights reserved.</p>
         <div class="footer-payment">
-          <i class="fa-brands fa-cc-visa payment-icon"></i>
-          <i class="fa-brands fa-cc-mastercard payment-icon"></i>
-          <i class="fa-brands fa-cc-amex payment-icon"></i>
+          <span class="payment-text">Cash on Delivery</span>
           <span class="payment-text">Vodafone Cash</span>
-          <span class="payment-text">Insta Pay</span>
+          <span class="payment-text">InstaPay</span>
         </div>
       </div>
     </div>
@@ -695,43 +709,19 @@
       renderReviews(pid);
       renderRelated(pid);
 
-      // Payment Section Logic
-      const buyNowBtn = document.querySelector('.buy-now-btn');
-      if (buyNowBtn) {
-        buyNowBtn.onclick = () => {
-          const variant = getSelectedVariantSummary(document);
-          const qty = parseInt(document.querySelector('.qty-input')?.value || 1, 10);
-          MDB.Cart.add({
-            id: p.id,
-            name: p.name,
-            brand: p.brand,
-            price: p.price,
-            image: primaryImage,
-            variant,
-            qty
-          });
-          window.location.href = 'checkout.html';
-        };
+      // Payment Section Logic - Radio toggle for instructions
+      const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+      const paymentInstructions = document.querySelectorAll('.payment-instructions');
+      function updatePaymentInstructions() {
+        const selected = document.querySelector('input[name="payment_method"]:checked');
+        paymentInstructions.forEach(el => {
+          el.classList.toggle('active', el.dataset.method === (selected ? selected.value : 'cod'));
+        });
       }
-
-      const applePayBtn = document.querySelector('.apple-pay-btn');
-      if (applePayBtn) {
-        applePayBtn.onclick = () => {
-          if (window.ApplePaySession) {
-            MDB.UI.toast('Apple Pay is available on this device.', 'success');
-          } else {
-            MDB.UI.toast('Apple Pay is not supported on this device.', 'warning');
-          }
-        };
-      }
-
-      const moreOptions = document.querySelector('.more-options');
-      if (moreOptions) {
-        moreOptions.onclick = (e) => {
-          e.preventDefault();
-          MDB.UI.toast('Choose your preferred payment method at checkout.', 'info');
-        };
-      }
+      paymentRadios.forEach(radio => {
+        radio.addEventListener('change', updatePaymentInstructions);
+      });
+      updatePaymentInstructions();
 
       // Handle Gallery Clicks
       if (galleryThumbs) {
