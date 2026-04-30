@@ -1376,6 +1376,8 @@ const MDB = (() => {
               announcement: 'Free shipping on orders over 3500 LE',
               shippingThreshold: 3500,
               contactEmail: 'hello@mdboutiquee2.com',
+              contactPhone: '+201037070888',
+              vodafoneNumber: '01037070888',
               currency: 'LE'
             };
           }
@@ -1386,6 +1388,8 @@ const MDB = (() => {
           shippingThreshold: 3500,
           codFee: 50,
           contactEmail: 'hello@mdboutiquee2.com',
+          contactPhone: '+201037070888',
+          vodafoneNumber: '01037070888',
           currency: 'LE'
         };
       }, _get(KEYS.SETTINGS) || {
@@ -1393,6 +1397,8 @@ const MDB = (() => {
         shippingThreshold: 3500,
         codFee: 50,
         contactEmail: 'hello@mdboutiquee2.com',
+        contactPhone: '+201037070888',
+        vodafoneNumber: '01037070888',
         currency: 'LE'
       });
     },

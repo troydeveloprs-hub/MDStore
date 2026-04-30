@@ -1965,6 +1965,14 @@
                 <label class="f-label">Contact Email</label>
                 <input class="f-input" id="sf-email">
               </div>
+              <div class="form-group">
+                <label class="f-label">Contact Phone Number</label>
+                <input class="f-input" id="sf-phone">
+              </div>
+              <div class="form-group">
+                <label class="f-label">Vodafone Cash Number</label>
+                <input class="f-input" id="sf-vodafone">
+              </div>
               <button type="submit" class="btn btn-gold" style="align-self:flex-start">
                 <i class="fa-solid fa-floppy-disk"></i> Save Settings
               </button>
@@ -2372,7 +2380,10 @@
         MDB.Settings.save({
           announcement: document.getElementById('sf-ann').value,
           shippingThreshold: parseInt(document.getElementById('sf-ship').value),
-          contactEmail: document.getElementById('sf-email').value
+          contactEmail: document.getElementById('sf-email').value,
+          contactPhone: document.getElementById('sf-phone').value,
+          vodafoneNumber: document.getElementById('sf-vodafone').value,
+          codFee: parseInt(document.getElementById('sf-cod-fee').value)
         });
         MDB.UI.toast('Settings saved');
       };
@@ -3002,6 +3013,8 @@
       document.getElementById('sf-ship').value = s.shippingThreshold || 3500;
       document.getElementById('sf-cod-fee').value = s.codFee || 50;
       document.getElementById('sf-email').value = s.contactEmail || '';
+      document.getElementById('sf-phone').value = s.contactPhone || '';
+      document.getElementById('sf-vodafone').value = s.vodafoneNumber || '';
     }
 
     /* ─ EXPORT ─ */
