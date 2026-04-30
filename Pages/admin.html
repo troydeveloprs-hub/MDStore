@@ -1573,6 +1573,13 @@
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
+                <select class="f-input" id="order-payment-filter" style="width:auto;padding:8px 12px;font-size:13px;border-radius:8px">
+                  <option value="">All Payment</option>
+                  <option value="pending">Unpaid</option>
+                  <option value="paid">Paid</option>
+                  <option value="failed">Failed</option>
+                  <option value="refunded">Refunded</option>
+                </select>
                 <button class="btn btn-gold" id="_export-orders-btn" style="padding:8px 16px">
                   <i class="fa-solid fa-download"></i> Export CSV
                 </button>
@@ -1587,6 +1594,7 @@
                     <th>Items</th>
                     <th>Total</th>
                     <th>Status</th>
+                    <th>Payment</th>
                     <th>Date</th>
                     <th>Actions</th>
                   </tr>
@@ -2312,8 +2320,11 @@
       });
 
       dash.addEventListener('change', e => {
-        const sel = e.target.closest('[data-order-status]');
-        if (sel) updateStatus(decodeURIComponent(sel.dataset.orderStatus), sel.value);
+        const statusSel = e.target.closest('[data-order-status]');
+        if (statusSel) updateStatus(decodeURIComponent(statusSel.dataset.orderStatus), statusSel.value);
+        
+        const paySel = e.target.closest('[data-payment-status]');
+        if (paySel) updatePaymentStatus(decodeURIComponent(paySel.dataset.paymentStatus), paySel.value);
       });
     }
 
@@ -2324,8 +2335,9 @@
       document.getElementById('toggle-product-form-btn')?.addEventListener('click', () => toggleProductForm(true));
       document.getElementById('cancel-product-form-btn')?.addEventListener('click', () => toggleProductForm(false));
       document.getElementById('toggle-coupon-form-btn')?.addEventListener('click', toggleCouponForm);
-            document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value, document.getElementById('order-status-filter').value));
-      document.getElementById('order-status-filter')?.addEventListener('change', async e => await renderOrders(document.getElementById('order-search').value, e.target.value));
+            document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value, document.getElementById('order-status-filter').value, document.getElementById('order-payment-filter').value));
+      document.getElementById('order-status-filter')?.addEventListener('change', async e => await renderOrders(document.getElementById('order-search').value, e.target.value, document.getElementById('order-payment-filter').value));
+      document.getElementById('order-payment-filter')?.addEventListener('change', async e => await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value, e.target.value));
       document.getElementById('product-search')?.addEventListener('input', async e => await renderProducts(e.target.value, document.getElementById('product-category-filter').value));
       document.getElementById('product-category-filter')?.addEventListener('change', async e => await renderProducts(document.getElementById('product-search').value, e.target.value));
       document.getElementById('inventory-search')?.addEventListener('input', e => renderInventory(e.target.value));
@@ -2533,10 +2545,11 @@
     }
 
     /* ─ ORDERS ─ */
-    async function renderOrders(q = '', statusFilter = '') {
+    async function renderOrders(q = '', statusFilter = '', paymentFilter = '') {
       let orders = await MDB.Orders.get();
       if (!Array.isArray(orders)) orders = [];
       if (statusFilter) orders = orders.filter(o => safeText(o.status) === statusFilter);
+      if (paymentFilter) orders = orders.filter(o => safeText(o.paymentStatus || o.payment_status) === paymentFilter);
       if (q) { const ql = q.toLowerCase(); orders = orders.filter(o => safeText(o.id).toLowerCase().includes(ql) || getOrderCustomer(o).name.toLowerCase().includes(ql)); }
       
       const totalItems = orders.length;
@@ -2557,6 +2570,11 @@
         <td>${Array.isArray(o.items) ? o.items.length : 0}</td>
         <td><strong>${MDB.UI.formatPrice(Number(o.total || 0))}</strong></td>
         <td><span class="badge badge-${st}">${st}</span></td>
+        <td>
+          <select class="status-select" data-payment-status="${encodeURIComponent(safeText(o.id, ''))}" style="border-color:var(--gold-dim)">
+            ${['pending', 'paid', 'failed', 'refunded'].map(s => `<option value="${s}" ${(o.paymentStatus || o.payment_status) === s ? 'selected' : ''}>${s.toUpperCase()}</option>`).join('')}
+          </select>
+        </td>
         <td>${formatAdminDate(o.createdAt)}</td>
         <td>
           <div style="display:flex;gap:6px;align-items:center">
@@ -2606,7 +2624,7 @@
 
     async function changeOrderPage(p) {
       orderCurrentPage = p;
-      await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value);
+      await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value, document.getElementById('order-payment-filter').value);
     }
 
     async function changeProductPage(p) {
@@ -2614,7 +2632,8 @@
       await renderProducts(document.getElementById('product-search').value, document.getElementById('product-category-filter').value);
     }
 
-    async function updateStatus(id, s) { await MDB.Orders.updateStatus(id, s); MDB.UI.toast('Status updated'); await renderOrders(); await renderStats(); }
+    async function updateStatus(id, s) { await MDB.Orders.updateStatus(id, s); MDB.UI.toast('Order Status updated'); await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value, document.getElementById('order-payment-filter').value); await renderStats(); }
+    async function updatePaymentStatus(id, s) { await MDB.Orders.updatePaymentStatus(id, s); MDB.UI.toast('Payment Status updated'); await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value, document.getElementById('order-payment-filter').value); await renderStats(); }
     async function deleteOrder(id) {
       if (confirm('Delete this order?')) {
         await MDB.Orders.delete(id);

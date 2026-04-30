@@ -955,6 +955,9 @@ const MDB = (() => {
         customer_city: orderData.city || '',
         notes: orderData.notes || '',
         items: cartItems,
+        subtotal: await Cart.subtotal(),
+        shipping: await Cart.shipping(),
+        discount: await Cart.discount(),
         total: await Cart.total(),
         status: 'pending',
         payment_method: orderData.paymentMethod || 'cash',
@@ -965,23 +968,53 @@ const MDB = (() => {
 
       // ALWAYS attempt to save to Supabase first
       const client = await this._ensureClient();
-      const { data, error } = await client.from(this._table).insert(order).select().single();
-      
-      if (error) {
-        console.error('[MDB Orders] Supabase Insert Error:', error);
-        // If it's a foreign key error with 'admin', try again without user_id
-        if (error.code === '22P02' && order.user_id === 'admin') {
-          console.warn('[MDB Orders] Retrying without admin user_id...');
-          delete order.user_id;
-          const retry = await client.from(this._table).insert(order).select().single();
-          if (retry.error) throw retry.error;
-          return retry.data;
+      let currentOrderPayload = { ...order };
+      let resData = null;
+      let lastError = null;
+      let attempts = 0;
+      const maxRetries = 5; // Prevent infinite loops
+
+      while (attempts < maxRetries) {
+        const { data, error } = await client.from(this._table).insert(currentOrderPayload).select().single();
+        
+        if (!error) {
+          resData = data;
+          lastError = null;
+          break; 
         }
-        throw error;
+
+        console.error(`[MDB Orders] Supabase Insert Attempt ${attempts + 1} failed:`, error);
+        lastError = error;
+
+        // Pattern 1: Missing column error (e.g. "Could not find the 'notes' column...")
+        const missingColumnMatch = error.message && error.message.match(/Could not find the '([^']+)' column/);
+        if (missingColumnMatch) {
+          const colName = missingColumnMatch[1];
+          console.warn(`[MDB Orders] Column "${colName}" is missing in DB. Removing and retrying...`);
+          delete currentOrderPayload[colName];
+          attempts++;
+          continue;
+        }
+
+        // Pattern 2: Foreign key error with 'admin' (UUID vs String)
+        if (error.code === '22P02' && currentOrderPayload.user_id === 'admin') {
+          console.warn('[MDB Orders] Invalid user_id "admin" (UUID expected). Removing and retrying...');
+          delete currentOrderPayload.user_id;
+          attempts++;
+          continue;
+        }
+
+        // If it's a different error, stop retrying
+        break;
+      }
+
+      if (lastError) {
+        console.error('[MDB Orders] All Supabase insertion attempts failed.', lastError);
+        throw lastError;
       }
       
-      console.log('[MDB Orders] Supabase Success:', data);
-      const res = data;
+      console.log('[MDB Orders] Supabase Success:', resData);
+      const res = resData;
       
       console.log('[MDB Orders] Result from Supabase:', res);
 
@@ -1060,9 +1093,61 @@ const MDB = (() => {
       }, null);
     },
 
+    async updatePaymentStatus(id, newStatus) {
+      // Update local storage fallback as well
+      const localOrders = _get(KEYS.ORDERS) || [];
+      const idx = localOrders.findIndex(o => o.id === id);
+      if (idx > -1) {
+        localOrders[idx].paymentStatus = newStatus;
+        localOrders[idx].updatedAt = _dateNow();
+        _set(KEYS.ORDERS, localOrders);
+      }
+
+      return this._run('updatePaymentStatus', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .update({ payment_status: newStatus, updated_at: _dateNow() })
+          .eq('id', id)
+          .select()
+          .single();
+        if (error) throw error;
+        this._cache = null;
+        return data;
+      }, null);
+    },
+
     async count() { 
       const orders = await this.get();
       return orders.length;
+    },
+
+    async delete(id) {
+      // Remove from local storage
+      const localOrders = _get(KEYS.ORDERS) || [];
+      const filtered = localOrders.filter(o => o.id !== id);
+      _set(KEYS.ORDERS, filtered);
+
+      return this._run('delete', async () => {
+        const client = await this._ensureClient();
+        const { error } = await client
+          .from(this._table)
+          .delete()
+          .eq('id', id);
+        
+        // If it's an RLS error, we still return true because it was removed from local storage
+        if (error) {
+          console.error('[MDB Orders] Delete error from Supabase:', error);
+          if (error.code === '42501') {
+            console.warn('[MDB Orders] RLS policy prevents deletion from Supabase. It has been removed from local view only.');
+          } else {
+            throw error;
+          }
+        }
+        
+        this._cache = null;
+        return true;
+      }, true);
     }
   };
 

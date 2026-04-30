@@ -601,51 +601,60 @@
 
     document.getElementById('track-input').addEventListener('keydown', e => { if (e.key === 'Enter') trackOrder(); });
 
-    function trackOrder() {
+    async function trackOrder() {
       const id = document.getElementById('track-input').value.trim();
       const errEl = document.getElementById('track-error');
       const resultEl = document.getElementById('track-result');
 
       if (!id) { errEl.textContent = 'Please enter an order ID'; errEl.style.display = 'block'; resultEl.style.display = 'none'; return; }
 
-      const order = MDB.Orders.getById(id);
-      if (!order) { errEl.textContent = 'Order not found. Please check the ID and try again.'; errEl.style.display = 'block'; resultEl.style.display = 'none'; return; }
+      try {
+        const order = await MDB.Orders.getById(id);
+        if (!order) { errEl.textContent = 'Order not found. Please check the ID and try again.'; errEl.style.display = 'block'; resultEl.style.display = 'none'; return; }
 
-      errEl.style.display = 'none';
-      const statuses = ['pending', 'processing', 'shipped', 'delivered'];
-      const statusLabels = { pending: 'Order Placed', processing: 'Processing', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled' };
-      const statusIcons = { pending: 'fa-clock', processing: 'fa-spinner', shipped: 'fa-truck', delivered: 'fa-check', cancelled: 'fa-xmark' };
-      const currentIdx = statuses.indexOf(order.status);
+        errEl.style.display = 'none';
+        const statuses = ['pending', 'processing', 'shipped', 'delivered'];
+        const statusLabels = { pending: 'Order Placed', processing: 'Processing', shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled' };
+        const statusIcons = { pending: 'fa-clock', processing: 'fa-spinner', shipped: 'fa-truck', delivered: 'fa-check', cancelled: 'fa-xmark' };
+        
+        // Settings for WhatsApp
+        const settings = await MDB.Settings.get();
+        const waNum = (settings.contactPhone || '201037070888').replace(/\+/g, '').replace(/\s/g, '');
 
-      resultEl.innerHTML = `<div class="track-card">
-      <div class="track-header">
-        <span class="track-order-id">${order.id}</span>
-        <span class="order-status-badge ${order.status}" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;text-transform:uppercase;
-          ${order.status === 'pending' ? 'background:#fef3c7;color:#d97706' : ''}
-          ${order.status === 'processing' ? 'background:#dbeafe;color:#2563eb' : ''}
-          ${order.status === 'shipped' ? 'background:#e0e7ff;color:#4f46e5' : ''}
-          ${order.status === 'delivered' ? 'background:#d1fae5;color:#059669' : ''}
-          ${order.status === 'cancelled' ? 'background:#fef2f2;color:#e74c3c' : ''}
-        ">${statusLabels[order.status]}</span>
-      </div>
-      <div class="track-timeline">
-        ${order.statusHistory.map((h, i) => {
-        const isLast = i === order.statusHistory.length - 1;
-        return `<div class="track-step ${isLast ? 'active' : 'completed'}">
-            <div class="track-dot"><i class="fa-solid ${statusIcons[h.status] || 'fa-circle'}"></i></div>
-            <div class="track-step-title">${statusLabels[h.status] || h.status}</div>
-            <div class="track-step-date">${new Date(h.date).toLocaleString()}</div>
-            ${h.note ? `<div class="track-step-note">${h.note}</div>` : ''}
-          </div>`;
-      }).join('')}
-      </div>
-      <div class="track-items">
-        ${order.items.map(i => `<div class="track-item"><img src="${resolveTrackImage(i.image)}" alt="${i.name}"><span class="track-item-name">${i.name}</span><span class="track-item-qty">x${i.qty}</span></div>`).join('')}
-      </div>
-      <div class="track-total"><span>Total</span><span>${MDB.UI.formatPrice(order.total)}</span></div>
-      <div class="track-wa"><a href="https://wa.me/201001234567?text=${encodeURIComponent('Hi! I want to check on my order: ' + order.id)}" target="_blank"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a></div>
-    </div>`;
-      resultEl.style.display = 'block';
+        resultEl.innerHTML = `<div class="track-card">
+        <div class="track-header">
+          <span class="track-order-id">${order.id}</span>
+          <span class="order-status-badge ${order.status}" style="padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600;text-transform:uppercase;
+            ${order.status === 'pending' ? 'background:#fef3c7;color:#d97706' : ''}
+            ${order.status === 'processing' ? 'background:#dbeafe;color:#2563eb' : ''}
+            ${order.status === 'shipped' ? 'background:#e0e7ff;color:#4f46e5' : ''}
+            ${order.status === 'delivered' ? 'background:#d1fae5;color:#059669' : ''}
+            ${order.status === 'cancelled' ? 'background:#fef2f2;color:#e74c3c' : ''}
+          ">${statusLabels[order.status]}</span>
+        </div>
+        <div class="track-timeline">
+          ${(order.statusHistory || [{status: order.status, date: order.createdAt}]).map((h, i) => {
+          const isLast = i === (order.statusHistory ? order.statusHistory.length - 1 : 0);
+          return `<div class="track-step ${isLast ? 'active' : 'completed'}">
+              <div class="track-dot"><i class="fa-solid ${statusIcons[h.status] || 'fa-circle'}"></i></div>
+              <div class="track-step-title">${statusLabels[h.status] || h.status}</div>
+              <div class="track-step-date">${new Date(h.date).toLocaleString()}</div>
+              ${h.note ? `<div class="track-step-note">${h.note}</div>` : ''}
+            </div>`;
+        }).join('')}
+        </div>
+        <div class="track-items">
+          ${order.items.map(i => `<div class="track-item"><img src="${resolveTrackImage(i.image)}" alt="${i.name}"><span class="track-item-name">${i.name}</span><span class="track-item-qty">x${i.qty}</span></div>`).join('')}
+        </div>
+        <div class="track-total"><span>Total</span><span>${MDB.UI.formatPrice(order.total)}</span></div>
+        <div class="track-wa"><a href="https://wa.me/${waNum}?text=${encodeURIComponent('Hi! I want to check on my order: ' + order.id)}" target="_blank"><i class="fa-brands fa-whatsapp"></i> Contact via WhatsApp</a></div>
+      </div>`;
+        resultEl.style.display = 'block';
+      } catch (e) {
+        console.error('Tracking Error:', e);
+        errEl.textContent = 'An error occurred while fetching order details.';
+        errEl.style.display = 'block';
+      }
     }
 
     // Auto-track from URL
