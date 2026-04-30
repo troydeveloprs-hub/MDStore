@@ -13,19 +13,19 @@
   <link rel="stylesheet" href="../css/sofie.css">
   <style>
     :root {
-      --gold: #c9a962;
-      --gold-light: #e2c97e;
-      --gold-dim: rgba(201, 169, 98, 0.12);
-      --gold-border: rgba(201, 169, 98, 0.25);
-      --bg: #0b0b0d;
-      --bg2: #111114;
-      --surface: #17171b;
-      --surface2: #1e1e24;
-      --border: rgba(255, 255, 255, 0.07);
-      --border2: rgba(255, 255, 255, 0.04);
-      --text: #f0ede8;
-      --text2: #8b8790;
-      --text3: #4e4c54;
+      --gold: #c9a96e;
+      --gold-light: #a8884f;
+      --gold-dim: rgba(201, 169, 110, 0.12);
+      --gold-border: rgba(201, 169, 110, 0.25);
+      --bg: #faf9f7;
+      --bg2: #ffffff;
+      --surface: #ffffff;
+      --surface2: #f4f4f4;
+      --border: #e8e8e8;
+      --border2: #f0f0f0;
+      --text: #1a1a1a;
+      --text2: #666666;
+      --text3: #999999;
       --success: #2dba8c;
       --warning: #f0a93a;
       --danger: #e85555;
@@ -74,8 +74,7 @@
       justify-content: center;
       background: var(--bg);
       background-image:
-        radial-gradient(ellipse 60% 50% at 50% -20%, rgba(201, 169, 98, 0.08) 0%, transparent 70%),
-        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        radial-gradient(ellipse 60% 50% at 50% -20%, rgba(201, 169, 110, 0.08) 0%, transparent 70%);
     }
 
     .login-card {
@@ -118,7 +117,7 @@
       font-family: 'Cormorant Garamond', serif;
       font-size: 22px;
       font-weight: 700;
-      color: #0b0b0d;
+      color: #ffffff;
     }
 
     .login-logo-text {
@@ -183,7 +182,7 @@
       width: 100%;
       padding: 15px;
       background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
-      color: #0b0b0d;
+      color: #ffffff;
       border: none;
       border-radius: 12px;
       font-size: 14px;
@@ -249,7 +248,7 @@
       font-family: 'Cormorant Garamond', serif;
       font-size: 18px;
       font-weight: 700;
-      color: #0b0b0d;
+      color: #ffffff;
       flex-shrink: 0;
     }
 
@@ -365,7 +364,7 @@
       justify-content: center;
       font-size: 12px;
       font-weight: 700;
-      color: #0b0b0d;
+      color: #ffffff;
       flex-shrink: 0;
     }
 
@@ -451,14 +450,14 @@
 
     .tb-btn-gold {
       background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
-      color: #0b0b0d;
+      color: #ffffff;
       border: none;
       font-weight: 600;
     }
 
     .tb-btn-gold:hover {
       opacity: 0.9;
-      color: #0b0b0d;
+      color: #ffffff;
       background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
     }
 
@@ -1908,6 +1907,53 @@
     </div><!-- /main -->
   </div><!-- /admin-dashboard -->
 
+  <!-- Order Details Modal -->
+  <div id="order-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center; padding:20px;">
+    <div id="order-modal-content" style="background:var(--surface); width:100%; max-width:800px; max-height:90vh; overflow-y:auto; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); animation: fadeUp 0.3s ease;">
+      <div style="padding:24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:var(--surface); z-index:10;">
+        <h2 style="font-family:'Cormorant Garamond', serif; font-size:24px; font-weight:600; color:var(--text);">Order Details <span id="om-id" style="font-size:16px; color:var(--text2); margin-left:10px;"></span></h2>
+        <button onclick="document.getElementById('order-modal-overlay').style.display='none'" style="background:transparent; border:none; font-size:20px; color:var(--text2); cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div style="padding:24px; display:flex; flex-direction:column; gap:24px;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+          <div style="background:var(--surface2); padding:16px; border-radius:12px;">
+            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:8px;">Customer</p>
+            <p style="font-weight:600; color:var(--text);" id="om-name"></p>
+            <p style="font-size:13px; color:var(--text2); margin-top:4px;" id="om-email"></p>
+            <p style="font-size:13px; color:var(--text2); margin-top:4px;"><i class="fa-solid fa-phone" style="font-size:10px; margin-right:4px;"></i> <span id="om-phone"></span></p>
+          </div>
+          <div style="background:var(--surface2); padding:16px; border-radius:12px;">
+            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:8px;">Shipping Address</p>
+            <p style="font-size:14px; color:var(--text);" id="om-address"></p>
+            <p style="font-size:13px; color:var(--text2); margin-top:4px;" id="om-city"></p>
+          </div>
+          <div style="background:var(--surface2); padding:16px; border-radius:12px;">
+            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:8px;">Payment & Status</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <span style="font-size:13px; color:var(--text2);">Method:</span>
+              <strong style="color:var(--text);" id="om-payment"></strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:13px; color:var(--text2);">Status:</span>
+              <span id="om-status-badge"></span>
+            </div>
+            <div style="margin-top:12px; font-size:12px; color:var(--danger); white-space:pre-wrap;" id="om-notes"></div>
+          </div>
+        </div>
+        
+        <div>
+          <h3 style="font-size:16px; font-weight:600; color:var(--text); margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">Items (<span id="om-items-count">0</span>)</h3>
+          <div id="om-items" style="display:flex; flex-direction:column; gap:12px;"></div>
+        </div>
+
+        <div style="background:var(--surface2); padding:16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:16px; font-weight:600; color:var(--text2);">Total Amount</span>
+          <span style="font-family:'Cormorant Garamond', serif; font-size:28px; font-weight:700; color:var(--gold);" id="om-total">0 LE</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="../js/store.js"></script>
   <script>
     /* ═══════════════════════════════════════════
@@ -2162,6 +2208,7 @@
       dash.addEventListener('click', e => {
         if (e.target.closest('[data-edit-product]')) { editProduct(decodeURIComponent(e.target.closest('[data-edit-product]').dataset.editProduct)); return; }
         if (e.target.closest('[data-delete-product]')) { deleteProduct(decodeURIComponent(e.target.closest('[data-delete-product]').dataset.deleteProduct)); return; }
+        if (e.target.closest('[data-view-order]')) { viewOrder(decodeURIComponent(e.target.closest('[data-view-order]').dataset.viewOrder)); return; }
         if (e.target.closest('[data-delete-order]')) { deleteOrder(decodeURIComponent(e.target.closest('[data-delete-order]').dataset.deleteOrder)); return; }
         if (e.target.closest('[data-delete-review]')) { deleteReview(decodeURIComponent(e.target.closest('[data-delete-review]').dataset.deleteReview)); return; }
         if (e.target.closest('[data-delete-coupon]')) { deleteCoupon(decodeURIComponent(e.target.closest('[data-delete-coupon]').dataset.deleteCoupon)); return; }
@@ -2387,6 +2434,7 @@
         <td>${formatAdminDate(o.createdAt)}</td>
         <td>
           <div style="display:flex;gap:6px;align-items:center">
+            <button class="act-btn" type="button" data-view-order="${encodeURIComponent(safeText(o.id, ''))}" style="color:var(--info); background:rgba(100,136,245,0.1);"><i class="fa-solid fa-eye"></i></button>
             <select class="status-select" data-order-status="${encodeURIComponent(safeText(o.id, ''))}">
               ${['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${st === s ? 'selected' : ''}>${s}</option>`).join('')}
             </select>
@@ -2403,6 +2451,47 @@
       let os = (await MDB.Orders.get()).filter(o => o.id !== id);
       localStorage.setItem('mdb_orders', JSON.stringify(os));
       await renderOrders(); await renderStats();
+    }
+
+    async function viewOrder(id) {
+      const orders = await MDB.Orders.get();
+      const order = orders.find(o => o.id === id);
+      if (!order) return;
+
+      const c = getOrderCustomer(order);
+      document.getElementById('om-id').textContent = '#' + safeText(order.id, '-');
+      document.getElementById('om-name').textContent = c.name;
+      document.getElementById('om-email').textContent = c.email;
+      document.getElementById('om-phone').textContent = c.phone;
+      document.getElementById('om-address').textContent = c.address || safeText(order.customer?.address, '-');
+      document.getElementById('om-city').textContent = c.city || safeText(order.customer?.city, '-');
+      
+      let pm = String(order.paymentMethod || order.payment_method || 'Cash on Delivery').toUpperCase();
+      document.getElementById('om-payment').textContent = pm;
+      document.getElementById('om-status-badge').innerHTML = `<span class="badge badge-${safeText(order.status, 'pending')}">${safeText(order.status, 'pending')}</span>`;
+      
+      const notes = safeText(order.customer?.notes, '');
+      document.getElementById('om-notes').textContent = notes ? 'Notes:\n' + notes : '';
+
+      document.getElementById('om-total').textContent = MDB.UI.formatPrice(Number(order.total || 0));
+      
+      const items = Array.isArray(order.items) ? order.items : [];
+      document.getElementById('om-items-count').textContent = items.length;
+      document.getElementById('om-items').innerHTML = items.map(i => `
+        <div style="display:flex; align-items:center; gap:16px; padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:10px;">
+          <img src="${adminImageSrc(i.image)}" style="width:50px; height:50px; object-fit:cover; border-radius:8px; border:1px solid var(--border);">
+          <div style="flex:1;">
+            <p style="font-weight:600; font-size:14px; color:var(--text);">${safeText(i.name)}</p>
+            <p style="font-size:12px; color:var(--text2);">${safeText(i.variant, 'Default')}</p>
+          </div>
+          <div style="text-align:right;">
+            <p style="font-weight:600; color:var(--text);">${MDB.UI.formatPrice(Number(i.price || 0))}</p>
+            <p style="font-size:12px; color:var(--text2);">Qty: ${i.qty || 1}</p>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('order-modal-overlay').style.display = 'flex';
     }
 
     /* ─ PRODUCTS ─ */

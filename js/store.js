@@ -862,17 +862,20 @@ const MDB = (() => {
 
     async get() {
       const user = Auth.getUser();
-      if (!user || user.role === 'admin') {
-        return _get(KEYS.ORDERS) || []; // Fallback to localStorage for guest users or admin
-      }
 
       return this._run('get', async () => {
         const client = await this._ensureClient();
-        const { data, error } = await client
-          .from(this._table)
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+        let query = client.from(this._table).select('*').order('created_at', { ascending: false });
+        
+        if (!user || user.role !== 'admin') {
+          // If not admin, only fetch their own orders (if logged in), or none if guest.
+          // Wait, if guest, they shouldn't see all orders. They should see local orders.
+          // But for now, we only restrict to user.id if logged in and not admin.
+          if (user) query = query.eq('user_id', user.id);
+          else return _get(KEYS.ORDERS) || []; // Guest users only see their local orders
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
@@ -919,51 +922,47 @@ const MDB = (() => {
         payment_status: 'pending'
       };
 
-      if (user) {
-        return this._run('create', async () => {
-          const client = await this._ensureClient();
-          const { data, error } = await client.from(this._table).insert(order).select().single();
-          if (error) throw error;
-          this._cache = null;
-          // Clear cart & promo after order
-          await Cart.clear();
-          Cart.removePromo();
-          return data;
-        }, null);
-      } else {
-        // Fallback to localStorage for guest users
-        const localOrders = await this.get();
-        const localOrder = {
-          id: _uid(),
-          items: cartItems,
-          subtotal: await Cart.subtotal(),
-          shipping: await Cart.shipping(),
-          discount: await Cart.discount(),
-          promoCode: Cart.getAppliedPromo()?.code || null,
-          total: await Cart.total(),
-          customer: {
-            name: orderData.name || '',
-            email: orderData.email || '',
-            phone: orderData.phone || '',
-            address: orderData.address || '',
-            city: orderData.city || '',
-            notes: orderData.notes || ''
-          },
-          paymentMethod: orderData.paymentMethod || 'cash',
-          status: 'pending',
-          statusHistory: [
-            { status: 'pending', date: _dateNow(), note: 'Order placed' }
-          ],
-          createdAt: _dateNow(),
-          updatedAt: _dateNow()
-        };
-        localOrders.unshift(localOrder);
-        _set(KEYS.ORDERS, localOrders);
-        // Clear cart & promo after order
-        await Cart.clear();
-        Cart.removePromo();
-        return localOrder;
-      }
+      // ALWAYS attempt to save to Supabase first
+      const res = await this._run('create', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).insert(order).select().single();
+        if (error) throw error;
+        return data;
+      }, null);
+
+      // ALWAYS save to localStorage as a fallback/guest history
+      const localOrders = _get(KEYS.ORDERS) || [];
+      const localOrder = {
+        id: res ? res.id : _uid(),
+        items: cartItems,
+        subtotal: await Cart.subtotal(),
+        shipping: await Cart.shipping(),
+        discount: await Cart.discount(),
+        promoCode: Cart.getAppliedPromo()?.code || null,
+        total: await Cart.total(),
+        customer: {
+          name: orderData.name || '',
+          email: orderData.email || '',
+          phone: orderData.phone || '',
+          address: orderData.address || '',
+          city: orderData.city || '',
+          notes: orderData.notes || ''
+        },
+        paymentMethod: orderData.paymentMethod || 'cash',
+        status: 'pending',
+        statusHistory: [{ status: 'pending', date: _dateNow(), note: 'Order placed' }],
+        createdAt: _dateNow(),
+        updatedAt: _dateNow()
+      };
+      
+      localOrders.unshift(localOrder);
+      _set(KEYS.ORDERS, localOrders);
+      
+      this._cache = null;
+      await Cart.clear();
+      Cart.removePromo();
+      
+      return res || localOrder;
     },
 
     async getById(id) {
@@ -983,6 +982,15 @@ const MDB = (() => {
     },
 
     async updateStatus(id, newStatus, note) {
+      // Update local storage fallback as well
+      const localOrders = _get(KEYS.ORDERS) || [];
+      const idx = localOrders.findIndex(o => o.id === id);
+      if (idx > -1) {
+        localOrders[idx].status = newStatus;
+        localOrders[idx].updatedAt = _dateNow();
+        _set(KEYS.ORDERS, localOrders);
+      }
+
       return this._run('updateStatus', async () => {
         const client = await this._ensureClient();
         const { data, error } = await client
