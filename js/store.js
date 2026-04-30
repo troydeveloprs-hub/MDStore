@@ -558,13 +558,14 @@ const MDB = (() => {
 
     async _save(items) {
       const user = Auth.getUser();
-      if (!user) {
+      // Fallback to localStorage for guest or admin users
+      if (!user || user.role === 'admin' || user.id === 'admin') {
         _set(KEYS.CART, items);
         this._notify();
         return;
       }
 
-      this._run('save', async () => {
+      await this._run('save', async () => {
         const client = await this._ensureClient();
         
         // Delete existing cart items for user

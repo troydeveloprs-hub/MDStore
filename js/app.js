@@ -105,14 +105,18 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Simple direct cart badge update function
-  function updateCartBadgesDirect() {
-    // Try to get count from localStorage directly
+  async function updateCartBadgesDirect() {
+    // Try to get count from localStorage or Supabase
     try {
-      const cartData = localStorage.getItem('mdb_cart');
       let count = 0;
-      if (cartData) {
-        const items = JSON.parse(cartData);
-        count = items.reduce((sum, item) => sum + (item.qty || 1), 0);
+      if (window.MDB && window.MDB.Cart) {
+        count = await window.MDB.Cart.count();
+      } else {
+        const cartData = localStorage.getItem('mdb_cart');
+        if (cartData) {
+          const items = JSON.parse(cartData);
+          count = items.reduce((sum, item) => sum + (item.qty || 1), 0);
+        }
       }
       
       document.querySelectorAll('.cart-badge').forEach(b => {
