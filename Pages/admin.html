@@ -490,14 +490,22 @@
     }
 
     /* ── PANELS ── */
-    .admin-panel {
-      display: none;
-    }
+    .admin-panel { display: none; padding: 0 32px 40px; }
+    .admin-panel.active { display: block; animation: fadeIn 0.3s ease; }
 
-    .admin-panel.active {
-      display: block;
-      animation: fadeUp 0.3s ease;
+    /* PAGINATION */
+    .pagination-wrap {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+      border-radius: 0 0 12px 12px;
     }
+    .pagination-info { font-size: 13px; color: var(--text2); }
+    .pagination-btns { display: flex; align-items: center; gap: 12px; }
+    .page-num { font-size: 13px; font-weight: 600; min-width: 50px; text-align: center; }
 
     /* ══════════════════════════════════════
        STAT CARDS
@@ -507,6 +515,18 @@
       grid-template-columns: repeat(4, 1fr);
       gap: 16px;
       margin-bottom: 28px;
+    }
+
+    @media (max-width: 1200px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 600px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
     }
 
     .stat-card {
@@ -1428,8 +1448,13 @@
       </div>
 
       <nav class="sidebar-nav" id="admin-tabs">
+        <div class="nav-section-label">General</div>
+        <button class="nav-item active" data-tab="dashboard">
+          <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span> Dashboard
+        </button>
+        
         <div class="nav-section-label">Store</div>
-        <button class="nav-item active" data-tab="orders">
+        <button class="nav-item" data-tab="orders">
           <span class="nav-icon"><i class="fa-solid fa-box"></i></span> Orders
           <span class="nav-badge" id="pending-badge" style="display:none">0</span>
         </button>
@@ -1489,31 +1514,63 @@
           </div>
         </div>
         <div class="topbar-actions">
+          <button class="tb-btn" onclick="refreshAll()" title="Refresh Dashboard">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+          </button>
           <button class="tb-btn" id="export-orders-btn" style="display:none">
             <i class="fa-solid fa-download"></i> Export CSV
           </button>
         </div>
       </header>
 
-      <!-- STATS (shown on all tabs) -->
-      <div style="padding:24px 32px 0" id="stats-container">
-        <div class="stats-grid" id="admin-stats"></div>
-      </div>
-
       <!-- PAGE CONTENT -->
       <div class="page-content">
+        <!-- ── DASHBOARD ── -->
+        <div class="admin-panel active" id="panel-dashboard">
+          <div style="padding-bottom:20px">
+            <div class="stats-grid" id="admin-stats"></div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-card" style="flex:2">
+              <h4>Recent Activity</h4>
+              <p>Your store's latest events will appear here.</p>
+              <div id="recent-activity-list" style="margin-top:15px">
+                <div class="empty-state" style="padding:20px"><i class="fa-solid fa-bolt"></i><p>Monitoring live events...</p></div>
+              </div>
+            </div>
+            <div class="form-card" style="flex:1">
+              <h4>Quick Actions</h4>
+              <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+                <button class="btn btn-primary" onclick="document.querySelector('[data-tab=products]').click(); toggleProductForm(true)"><i class="fa-solid fa-plus"></i> New Product</button>
+                <button class="btn btn-gold" onclick="document.querySelector('[data-tab=coupons]').click(); toggleCouponForm()"><i class="fa-solid fa-ticket"></i> New Coupon</button>
+                <button class="btn" onclick="refreshAll()"><i class="fa-solid fa-arrows-rotate"></i> Sync Data</button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- ── ORDERS ── -->
-        <div class="admin-panel active" id="panel-orders">
+        <div class="admin-panel" id="panel-orders">
           <div class="table-shell">
             <div class="table-toolbar">
               <div class="search-wrap">
                 <i class="fa-solid fa-search"></i>
                 <input type="text" class="search-input" id="order-search" placeholder="Search orders…">
               </div>
-              <button class="btn btn-gold" id="_export-orders-btn">
-                <i class="fa-solid fa-download"></i> Export CSV
-              </button>
+              <div class="filter-wrap" style="display:flex;gap:10px">
+                <select class="f-input" id="order-status-filter" style="width:auto;padding:8px 12px;font-size:13px;border-radius:8px">
+                  <option value="">All Statuses</option>
+                  <option value="pending">Pending</option>
+                  <option value="processing">Processing</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+                <button class="btn btn-gold" id="_export-orders-btn" style="padding:8px 16px">
+                  <i class="fa-solid fa-download"></i> Export CSV
+                </button>
+              </div>
             </div>
             <div style="overflow-x:auto">
               <table class="admin-table" id="orders-table">
@@ -1530,6 +1587,7 @@
                 </thead>
                 <tbody></tbody>
               </table>
+              <div class="pagination-wrap" id="order-pagination"></div>
             </div>
           </div>
         </div>
@@ -1725,6 +1783,17 @@
                 <i class="fa-solid fa-search"></i>
                 <input type="text" class="search-input" id="product-search" placeholder="Search products…">
               </div>
+              <div class="filter-wrap">
+                <select class="f-input" id="product-category-filter" style="width:auto;padding:8px 12px;font-size:13px;border-radius:8px">
+                  <option value="">All Categories</option>
+                  <option value="makeup">Makeup</option>
+                  <option value="skincare">Skincare</option>
+                  <option value="hair">Hair</option>
+                  <option value="fragrance">Fragrance</option>
+                  <option value="tools">Tools</option>
+                  <option value="bath-body">Bath & Body</option>
+                </select>
+              </div>
             </div>
             <div style="overflow-x:auto">
               <table class="admin-table" id="products-table">
@@ -1741,6 +1810,7 @@
                 </thead>
                 <tbody></tbody>
               </table>
+              <div class="pagination-wrap" id="product-pagination"></div>
             </div>
           </div>
         </div>
@@ -1968,6 +2038,7 @@
     const ADMIN_PASS = 'admin123';
 
     const PAGE_TITLES = {
+      dashboard: ['Dashboard', 'Overview of your store performance'],
       orders: ['Orders', 'Manage and track customer orders'],
       products: ['Products', 'Manage your product catalog'],
       customers: ['Customers', 'View registered customer accounts'],
@@ -2118,6 +2189,8 @@
     const VARIANT_TYPES = [['color', 'Color'], ['size', 'Size'], ['shade', 'Shade'], ['volume', 'Volume'], ['scent', 'Scent'], ['style', 'Style'], ['material', 'Material'], ['finish', 'Finish']];
 
     let productImageState = [], pendingImageFiles = [], editingPid = null;
+    let orderCurrentPage = 1, productCurrentPage = 1;
+    const ITEMS_PER_PAGE = 10;
 
     function uniqueList(items) { return [...new Set(items.filter(Boolean))]; }
     function normalizeImagePath(v) {
@@ -2230,8 +2303,10 @@
       document.getElementById('cancel-product-form-btn')?.addEventListener('click', () => toggleProductForm(false));
       document.getElementById('toggle-coupon-form-btn')?.addEventListener('click', toggleCouponForm);
       document.getElementById('clear-products-btn')?.addEventListener('click', clearAllProducts);
-      document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value));
-      document.getElementById('product-search')?.addEventListener('input', async e => await renderProducts(e.target.value));
+      document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value, document.getElementById('order-status-filter').value));
+      document.getElementById('order-status-filter')?.addEventListener('change', async e => await renderOrders(document.getElementById('order-search').value, e.target.value));
+      document.getElementById('product-search')?.addEventListener('input', async e => await renderProducts(e.target.value, document.getElementById('product-category-filter').value));
+      document.getElementById('product-category-filter')?.addEventListener('change', async e => await renderProducts(document.getElementById('product-search').value, e.target.value));
       document.getElementById('pf-cat')?.addEventListener('change', e => populateSubcategoryOptions(e.target.value));
       document.getElementById('pf-image')?.addEventListener('input', renderProductImagePreview);
 
@@ -2372,57 +2447,75 @@
 
     /* ─ STATS ─ */
     async function renderStats() {
-      let orders = await MDB.Orders.get();
-      if (!Array.isArray(orders)) orders = [];
-      const revenue = orders.reduce((s, o) => s + (Number(o.total) || 0), 0);
+      const orders = await MDB.Orders.get() || [];
+      const products = await MDB.Products.getAll() || [];
       const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
+      const coupons = MDB.Coupons ? MDB.Coupons.get() : [];
+      
+      const revenue = orders.reduce((s, o) => s + (Number(o.total) || 0), 0);
       const pending = orders.filter(o => o.status === 'pending').length;
+      const lowStock = products.filter(p => (Number(p.stock) || 0) < 10).length;
+      const avgOrder = orders.length > 0 ? (revenue / orders.length) : 0;
+
       const badge = document.getElementById('pending-badge');
       if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? 'inline' : 'none'; }
+      
       document.getElementById('admin-stats').innerHTML = `
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon gold"><i class="fa-solid fa-box"></i></div>
-          <span class="stat-trend up">All time</span>
-        </div>
-        <div class="stat-value">${orders.length}</div>
-        <div class="stat-label">Total Orders</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon success"><i class="fa-solid fa-coins"></i></div>
-          <span class="stat-trend up">Revenue</span>
+          <div class="stat-icon gold"><i class="fa-solid fa-coins"></i></div>
+          <span class="stat-trend up">Total Sales</span>
         </div>
         <div class="stat-value">${MDB.UI ? MDB.UI.formatPrice(revenue) : revenue + ' LE'}</div>
         <div class="stat-label">Total Revenue</div>
       </div>
+      
       <div class="stat-card">
         <div class="stat-top">
-          <div class="stat-icon info"><i class="fa-solid fa-users"></i></div>
-          <span class="stat-trend up">Registered</span>
+          <div class="stat-icon info"><i class="fa-solid fa-box"></i></div>
+          <span class="stat-trend up">Lifetime</span>
+        </div>
+        <div class="stat-value">${orders.length}</div>
+        <div class="stat-label">Total Orders</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-top">
+          <div class="stat-icon success"><i class="fa-solid fa-users"></i></div>
+          <span class="stat-trend up">Growth</span>
         </div>
         <div class="stat-value">${users.length}</div>
-        <div class="stat-label">Customers</div>
+        <div class="stat-label">Total Customers</div>
       </div>
+
       <div class="stat-card">
         <div class="stat-top">
           <div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div>
           ${pending > 0 ? '<span class="stat-trend down">Action needed</span>' : '<span class="stat-trend up">All clear</span>'}
         </div>
-        <div class="stat-value" style="color:${pending > 0 ? 'var(--warning)' : 'var(--success)'}">${pending}</div>
+        <div class="stat-value" style="color:${pending > 0 ? 'var(--warning)' : 'var(--text)'}">${pending}</div>
         <div class="stat-label">Pending Orders</div>
       </div>
     `;
     }
 
     /* ─ ORDERS ─ */
-    async function renderOrders(q = '') {
+    async function renderOrders(q = '', statusFilter = '') {
       let orders = await MDB.Orders.get();
       if (!Array.isArray(orders)) orders = [];
+      if (statusFilter) orders = orders.filter(o => safeText(o.status) === statusFilter);
       if (q) { const ql = q.toLowerCase(); orders = orders.filter(o => safeText(o.id).toLowerCase().includes(ql) || getOrderCustomer(o).name.toLowerCase().includes(ql)); }
+      
+      const totalItems = orders.length;
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      if (orderCurrentPage > totalPages) orderCurrentPage = Math.max(1, totalPages);
+      const start = (orderCurrentPage - 1) * ITEMS_PER_PAGE;
+      const paginatedOrders = orders.slice(start, start + ITEMS_PER_PAGE);
+
       const tbody = document.querySelector('#orders-table tbody');
-      if (!orders.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders found</p></div></td></tr>`; return; }
-      tbody.innerHTML = orders.map(o => {
+      if (!orders.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders found</p></div></td></tr>`; renderOrderPagination(0); return; }
+      
+      tbody.innerHTML = paginatedOrders.map(o => {
         const c = getOrderCustomer(o);
         const st = safeText(o.status, 'pending');
         return `<tr>
@@ -2443,14 +2536,36 @@
         </td>
       </tr>`;
       }).join('');
+      renderOrderPagination(totalItems);
+    }
+
+    function renderOrderPagination(totalItems) {
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      const container = document.getElementById('order-pagination');
+      if (!container) return;
+      if (totalPages <= 1) { container.innerHTML = ''; return; }
+      
+      container.innerHTML = `
+        <div class="pagination-info">Showing ${Math.min(totalItems, (orderCurrentPage-1)*ITEMS_PER_PAGE+1)}-${Math.min(totalItems, orderCurrentPage*ITEMS_PER_PAGE)} of ${totalItems}</div>
+        <div class="pagination-btns">
+          <button class="btn btn-sm" ${orderCurrentPage === 1 ? 'disabled' : ''} onclick="changeOrderPage(${orderCurrentPage - 1})"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+          <span class="page-num">${orderCurrentPage} / ${totalPages}</span>
+          <button class="btn btn-sm" ${orderCurrentPage === totalPages ? 'disabled' : ''} onclick="changeOrderPage(${orderCurrentPage + 1})">Next <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      `;
+    }
+
+    async function changeOrderPage(p) {
+      orderCurrentPage = p;
+      await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value);
     }
 
     async function updateStatus(id, s) { await MDB.Orders.updateStatus(id, s); MDB.UI.toast('Status updated'); await renderOrders(); await renderStats(); }
     async function deleteOrder(id) {
-      if (!confirm('Delete this order?')) return;
-      let os = (await MDB.Orders.get()).filter(o => o.id !== id);
-      localStorage.setItem('mdb_orders', JSON.stringify(os));
-      await renderOrders(); await renderStats();
+      if (confirm('Delete this order?')) {
+        await MDB.Orders.delete(id);
+        await refreshAll();
+      }
     }
 
     async function viewOrder(id) {
@@ -2512,16 +2627,26 @@
       } catch (e) { showErr(e); }
     }
 
-    async function renderProducts(q = '') {
+    async function renderProducts(q = '', catFilter = '') {
       const products = await MDB.Products.getAll();
       const low = products.filter(p => p.stock < 10);
       let filtered = products;
-      if (q) { const ql = q.toLowerCase(); filtered = products.filter(p => safeText(p.name).toLowerCase().includes(ql) || safeText(p.brand).toLowerCase().includes(ql) || safeText(p.id).toLowerCase().includes(ql)); }
+      if (catFilter) filtered = filtered.filter(p => safeText(p.category) === catFilter);
+      if (q) { const ql = q.toLowerCase(); filtered = filtered.filter(p => safeText(p.name).toLowerCase().includes(ql) || safeText(p.brand).toLowerCase().includes(ql) || safeText(p.id).toLowerCase().includes(ql)); }
+      
+      const totalItems = filtered.length;
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      if (productCurrentPage > totalPages) productCurrentPage = Math.max(1, totalPages);
+      const start = (productCurrentPage - 1) * ITEMS_PER_PAGE;
+      const paginated = filtered.slice(start, start + ITEMS_PER_PAGE);
+
       document.getElementById('low-stock-alert').style.display = low.length ? 'flex' : 'none';
-      document.getElementById('products-summary').textContent = `Showing ${filtered.length} of ${products.length} products`;
+      document.getElementById('products-summary').textContent = `Showing ${filtered.length} products`;
+      
       const tbody = document.querySelector('#products-table tbody');
-      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-bag-shopping"></i><p>No products found</p></div></td></tr>'; return; }
-      tbody.innerHTML = filtered.map(p => `<tr>
+      if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box"></i><p>No products found</p></div></td></tr>`; renderProductPagination(0); return; }
+      
+      tbody.innerHTML = paginated.map(p => `<tr>
       <td><img src="${adminImageSrc(p.image)}" class="product-thumb"></td>
       <td><strong>${escapeHtml(p.name)}</strong><div class="cell-sub">${escapeHtml(p.id)}</div></td>
       <td>${escapeHtml(p.brand)}</td>

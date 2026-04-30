@@ -855,7 +855,8 @@ const MDB = (() => {
       try {
         return await asyncFn();
       } catch (err) {
-        console.warn(`MDB Orders ${opName} error:`, err);
+        console.error(`[MDB Orders] Error during ${opName}:`, err);
+        if (err.code) console.error(`[MDB Orders] Supabase Error Code: ${err.code} - ${err.message}`);
         return fallback;
       }
     },
@@ -956,11 +957,17 @@ const MDB = (() => {
         payment_status: 'pending'
       };
 
+      console.log('[MDB Orders] Attempting to save order to Supabase:', order);
+
       // ALWAYS attempt to save to Supabase first
       const res = await this._run('create', async () => {
         const client = await this._ensureClient();
         const { data, error } = await client.from(this._table).insert(order).select().single();
-        if (error) throw error;
+        if (error) {
+          console.error('[MDB Orders] Supabase Insert Error:', error);
+          throw error;
+        }
+        console.log('[MDB Orders] Supabase Success:', data);
         return data;
       }, null);
 
