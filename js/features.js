@@ -418,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
     getUsed() { try { return JSON.parse(localStorage.getItem(this.KEY)) || []; } catch { return []; } },
     _saveUsed(codes) { localStorage.setItem(this.KEY, JSON.stringify(codes)); },
 
-    validate(code) {
+    async validate(code) {
       const allCoupons = {
         'MDB10':    { type: 'percent', value: 10, label: '10% Off', minOrder: 0, maxUses: 99, expiry: '2027-12-31' },
         'MDB20':    { type: 'percent', value: 20, label: '20% Off', minOrder: 500, maxUses: 5, expiry: '2027-06-30' },
@@ -437,8 +437,8 @@ document.addEventListener('DOMContentLoaded', () => {
       // Check expiry
       if (new Date(coupon.expiry) < new Date()) return { success: false, message: 'This coupon has expired' };
 
-      // Check min order
-      const subtotal = MDB.Cart.subtotal();
+      // Check min order — await the async subtotal
+      const subtotal = await MDB.Cart.subtotal();
       if (subtotal < coupon.minOrder) return { success: false, message: `Minimum order ${MDB.UI.formatPrice(coupon.minOrder)} required` };
 
       // Check usage
@@ -449,8 +449,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return { success: true, coupon: { code: upper, ...coupon } };
     },
 
-    apply(code) {
-      const result = this.validate(code);
+    async apply(code) {
+      const result = await this.validate(code);
       if (!result.success) return result;
       localStorage.setItem('mdb_applied_promo', JSON.stringify(result.coupon));
       return result;

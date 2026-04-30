@@ -379,6 +379,13 @@ h6 {
    position: relative
 }
 
+/* على الديسكتوب: المرساة تكون header-inner لا nav-item */
+@media (min-width: 1024px) {
+   .nav-item {
+      position: static;
+   }
+}
+
 .nav-link {
    display: flex;
    align-items: center;
