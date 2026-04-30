@@ -1608,7 +1608,7 @@ const MDB = (() => {
             
             <div class="product-card-new__actions">
               <button class="product-card-new__action-btn" data-quick-view="${p.id}" title="Quick View" aria-label="Quick view ${p.name}"><i class="fa-regular fa-eye"></i></button>
-              <button class="product-card-new__action-btn" data-id="${p.id}" ${stock === 0 ? "disabled" : ""} title="Add to Cart" aria-label="Add ${p.name} to cart"><i class="fa-solid fa-cart-shopping"></i></button>
+              <button class="product-card-new__action-btn btn-atc" data-id="${p.id}" ${stock === 0 ? "disabled" : ""} title="Add to Cart" aria-label="Add ${p.name} to cart"><i class="fa-solid fa-cart-shopping"></i></button>
             </div>
           </div>
           

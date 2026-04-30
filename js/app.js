@@ -257,10 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const product = {
       id: card.dataset.id || Math.random().toString(36).slice(2),
-      name: card.dataset.name || $('.product-card-name, .product-card-title a', card)?.textContent?.trim() || 'Product',
-      brand: card.dataset.brand || $('.product-card-brand', card)?.textContent?.trim() || '',
-      price: parseFloat(card.dataset.price || $('.price-current', card)?.textContent?.replace(/[^0-9.]/g, '') || 0),
-      image: resolveImagePath(card.dataset.image || $('.product-card-img, .product-card-img-primary', card)?.getAttribute('src') || ''),
+      name: card.dataset.name || $('.product-card-name, .product-card-title a, .product-card-new__title a', card)?.textContent?.trim() || 'Product',
+      brand: card.dataset.brand || $('.product-card-brand, .product-card-new__brand', card)?.textContent?.trim() || '',
+      price: parseFloat(card.dataset.price || $('.price-current, .product-card-new__price', card)?.textContent?.replace(/[^0-9.]/g, '') || 0),
+      image: resolveImagePath(card.dataset.image || $('.product-card-img, .product-card-img-primary, .product-card-new__image', card)?.getAttribute('src') || ''),
       variant: card.dataset.variant || 'Default',
       qty: 1
     };
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     if (!product.image) {
-      const imgEl = $('.product-card-img, .product-card-img-primary', card);
+      const imgEl = $('.product-card-img, .product-card-img-primary, .product-card-new__image', card);
       if (imgEl) product.image = imgEl.getAttribute('src') || '';
     }
     
@@ -533,7 +533,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     e.preventDefault();
     e.stopPropagation();
-    const card = btn.closest('.product-card');
+    const card = btn.closest('.product-card, .product-card-new');
     if (!card) return;
     addCardItemToCart(btn, card);
   });
@@ -575,12 +575,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = $('.cart-drawer-body');
     const subtotal = $('.cart-subtotal-value');
     
-    // Get items directly from localStorage to avoid async issues
+    // Get items using the unified MDB.Cart system (supports Supabase/localStorage)
     let items = [];
     try {
-      const cartData = localStorage.getItem('mdb_cart');
-      if (cartData) {
-        items = JSON.parse(cartData);
+      if (window.MDB && window.MDB.Cart) {
+        items = await window.MDB.Cart.get() || [];
+      } else {
+        items = JSON.parse(localStorage.getItem('mdb_cart') || '[]');
       }
     } catch (e) {
       console.error('Error reading cart:', e);
@@ -624,9 +625,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Shipping Progress Bar
     const threshold = (window.MDB && window.MDB.Settings && window.MDB.Settings.get().shippingThreshold) || 3500;
-    const currentTotal = Cart.total();
-    const progressPercent = Math.min(100, (currentTotal / threshold) * 100);
-    const remaining = threshold - currentTotal;
+    const progressPercent = Math.min(100, (total / threshold) * 100);
+    const remaining = threshold - total;
 
     const progressHTML = `
       <div class="shipping-progress-container" style="padding:15px; background:#f9f9f9; border-radius:10px; margin-bottom:15px;">
