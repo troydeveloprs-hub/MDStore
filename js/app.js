@@ -1117,4 +1117,76 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof MDB !== 'undefined' && MDB.UI && MDB.UI.initProductCardThumbnails) {
     MDB.UI.initProductCardThumbnails();
   }
+
+  /* ============================================
+     GLOBAL SETTINGS SYNC
+     ============================================ */
+  const syncGlobalSettings = async () => {
+    if (!window.MDB || !MDB.Settings) return;
+    try {
+      const s = await MDB.Settings.get();
+      if (!s) return;
+
+      // Update Announcement
+      const annTexts = document.querySelectorAll('.announcement-text');
+      if (annTexts.length && s.announcement) {
+        annTexts.forEach(el => {
+          el.innerHTML = `${s.announcement} — <a href="${getBasePath()}collections/makeup.html">Shop Now</a>`;
+        });
+      }
+
+      // Update Shipping Notes
+      const shippingNotes = document.querySelectorAll('.cart-shipping-note');
+      if (shippingNotes.length && s.shippingThreshold) {
+        shippingNotes.forEach(n => {
+           n.innerHTML = `<i class="fa-solid fa-truck-fast"></i> Free shipping on orders over ${s.shippingThreshold} LE`;
+        });
+      }
+
+      // Update Contact Info
+      const phones = document.querySelectorAll('a[href^="tel:"], .footer-contact-info p:nth-child(2), .contact-info-item a[href^="tel:"]');
+      if (phones.length && s.contactPhone) {
+        phones.forEach(p => {
+          if (p.tagName === 'A') {
+            p.href = `tel:${s.contactPhone}`;
+            if (!p.querySelector('i')) p.textContent = s.contactPhone;
+            else {
+              const icon = p.querySelector('i').outerHTML;
+              p.innerHTML = `${icon} ${s.contactPhone}`;
+            }
+          } else {
+            // Probably a <p> in footer
+            if (!p.querySelector('i')) p.textContent = s.contactPhone;
+            else {
+              const icon = p.querySelector('i').outerHTML;
+              p.innerHTML = `${icon} ${s.contactPhone}`;
+            }
+          }
+        });
+      }
+      
+      const emails = document.querySelectorAll('a[href^="mailto:"], .footer-contact-info p:nth-child(1), .contact-info-item a[href^="mailto:"]');
+      if (emails.length && s.contactEmail) {
+        emails.forEach(e => {
+          if (e.tagName === 'A') {
+            e.href = `mailto:${s.contactEmail}`;
+            if (!e.querySelector('i')) e.textContent = s.contactEmail;
+            else {
+               const icon = e.querySelector('i').outerHTML;
+               e.innerHTML = `${icon} ${s.contactEmail}`;
+            }
+          } else {
+            if (!e.querySelector('i')) e.textContent = s.contactEmail;
+            else {
+               const icon = e.querySelector('i').outerHTML;
+               e.innerHTML = `${icon} ${s.contactEmail}`;
+            }
+          }
+        });
+      }
+    } catch (e) {
+      console.warn('Failed to sync settings:', e);
+    }
+  };
+  syncGlobalSettings();
 });

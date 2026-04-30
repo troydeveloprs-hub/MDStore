@@ -964,17 +964,24 @@ const MDB = (() => {
       console.log('[MDB Orders] Attempting to save order to Supabase:', order);
 
       // ALWAYS attempt to save to Supabase first
-      const res = await this._run('create', async () => {
-        const client = await this._ensureClient();
-        console.log('[MDB Orders] Supabase Client:', client);
-        const { data, error } = await client.from(this._table).insert(order).select().single();
-        if (error) {
-          console.error('[MDB Orders] Supabase Insert Error:', error);
-          throw error;
+      const client = await this._ensureClient();
+      const { data, error } = await client.from(this._table).insert(order).select().single();
+      
+      if (error) {
+        console.error('[MDB Orders] Supabase Insert Error:', error);
+        // If it's a foreign key error with 'admin', try again without user_id
+        if (error.code === '22P02' && order.user_id === 'admin') {
+          console.warn('[MDB Orders] Retrying without admin user_id...');
+          delete order.user_id;
+          const retry = await client.from(this._table).insert(order).select().single();
+          if (retry.error) throw retry.error;
+          return retry.data;
         }
-        console.log('[MDB Orders] Supabase Success:', data);
-        return data;
-      }, null);
+        throw error;
+      }
+      
+      console.log('[MDB Orders] Supabase Success:', data);
+      const res = data;
       
       console.log('[MDB Orders] Result from Supabase:', res);
 

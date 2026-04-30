@@ -868,7 +868,13 @@
             <li><i class="fa-solid fa-tag"></i> Exclusive member discounts</li>
             <li><i class="fa-solid fa-bell"></i> Early access to sales</li>
           </ul>
-        </div>
+      </div>
+
+      <!-- GUEST CHECKOUT (Optional) -->
+      <div id="guest-checkout-section" style="display:none; margin-top: 30px; border-top: 1px solid #f0f0f0; padding-top: 25px; text-align: center;">
+        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px;">New Customer?</h3>
+        <p style="font-size: 0.85rem; color: #888; margin-bottom: 20px;">You can place your order as a guest without creating an account.</p>
+        <a href="../checkout.html" class="auth-submit" style="display: inline-block; width: auto; min-width: 220px; padding: 14px 30px; text-decoration: none;">Continue as Guest</a>
       </div>
     </div>
   </main>
@@ -1121,6 +1127,16 @@
           }
         }, 600);
       });
+
+      // Show Guest Checkout if cart not empty
+      try {
+        const cartCount = await MDB.Cart.count();
+        if (cartCount > 0) {
+          document.getElementById('guest-checkout-section').style.display = 'block';
+        }
+      } catch (e) {
+        console.warn('Failed to check cart count for guest section:', e);
+      }
     });
   </script>
 </body>

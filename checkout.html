@@ -998,26 +998,40 @@
         const btn = document.getElementById('place-order-btn');
         btn.disabled = true; btn.textContent = 'Processing...';
 
-        setTimeout(() => {
-          // Create order directly for all payment methods now
-          MDB.Orders.create({
-            ...formData,
-            paymentMethod: paymentMethod
-          }).then(order => {
+        setTimeout(async () => {
+          try {
+            console.log('[Checkout] Creating order with data:', formData);
+            const order = await MDB.Orders.create({
+              ...formData,
+              paymentMethod: paymentMethod
+            });
+            
+            console.log('[Checkout] Order created successfully:', order);
+
             if (window.MDB && window.MDB.Analytics) {
               window.MDB.Analytics.trackOrder(order.total);
             }
             if (window.MDB && window.MDB.Notifications) {
               window.MDB.Notifications.add('New order received', `Order ${order.id} was placed successfully.`, 'success');
             }
+            
+            // Clear cart locally just in case
+            if (MDB.Cart && MDB.Cart.clear) await MDB.Cart.clear();
+            
             window.location.href = 'order-confirmation.html?id=' + order.id;
-          }).catch(err => {
-            console.error('Order creation failed:', err);
+          } catch (err) {
+            console.error('[Checkout] Order creation failed:', err);
             btn.disabled = false;
             btn.textContent = 'Place Order';
-            alert('Failed to create order. Please try again.');
-          });
-        }, 1200);
+            
+            let errMsg = 'Failed to create order. ';
+            if (err.message) errMsg += '\nError: ' + err.message;
+            if (err.details) errMsg += '\nDetails: ' + err.details;
+            if (err.hint) errMsg += '\nHint: ' + err.hint;
+            
+            alert(errMsg + '\nPlease contact support or try again.');
+          }
+        }, 800);
       });
     });
   </script>
