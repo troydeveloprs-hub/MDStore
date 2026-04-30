@@ -867,19 +867,20 @@ const MDB = (() => {
         const client = await this._ensureClient();
         let query = client.from(this._table).select('*').order('created_at', { ascending: false });
         
+        let dbOrders = [];
         if (!user || user.role !== 'admin') {
-          // If not admin, only fetch their own orders (if logged in), or none if guest.
-          // Wait, if guest, they shouldn't see all orders. They should see local orders.
-          // But for now, we only restrict to user.id if logged in and not admin.
-          if (user) query = query.eq('user_id', user.id);
-          else return _get(KEYS.ORDERS) || []; // Guest users only see their local orders
+          if (user) {
+            query = query.eq('user_id', user.id);
+            const { data, error } = await query;
+            if (!error) dbOrders = data || [];
+          }
+        } else {
+          // Admin fetches all
+          const { data, error } = await query;
+          if (!error) dbOrders = data || [];
         }
 
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        this._cache = (data || []).map(row => ({
+        const mappedDbOrders = dbOrders.map(row => ({
           id: row.id,
           items: row.items,
           total: Number(row.total) || 0,
@@ -888,7 +889,8 @@ const MDB = (() => {
             email: row.customer_email,
             phone: row.customer_phone,
             address: row.customer_address,
-            city: row.customer_city
+            city: row.customer_city,
+            notes: row.notes || ''
           },
           status: row.status,
           paymentMethod: row.payment_method,
@@ -896,6 +898,37 @@ const MDB = (() => {
           createdAt: row.created_at,
           updatedAt: row.updated_at
         }));
+
+        // Merge with local storage orders
+        const localOrders = _get(KEYS.ORDERS) || [];
+        const merged = [...mappedDbOrders];
+        const dbIds = new Set(mappedDbOrders.map(o => o.id));
+        
+        for (const lo of localOrders) {
+          if (!dbIds.has(lo.id)) {
+            // Ensure the local order belongs to the user if not admin
+            if (!user || user.role === 'admin' || (user && lo.user_id === user.id) || !lo.user_id) {
+              merged.push(lo);
+            }
+          } else {
+             // If it exists in DB but local status is different (maybe updated recently)
+             // We can sync local status if needed, but DB is source of truth.
+             // We will update local storage with DB status to keep it clean.
+             const idx = localOrders.findIndex(o => o.id === lo.id);
+             const dbStatus = mappedDbOrders.find(o => o.id === lo.id).status;
+             if (idx > -1 && localOrders[idx].status !== dbStatus) {
+                localOrders[idx].status = dbStatus;
+             }
+          }
+        }
+        
+        // Sort by date descending
+        merged.sort((a, b) => new Date(b.createdAt || 0).getTime() < new Date(a.createdAt || 0).getTime() ? 1 : -1);
+
+        // Update local storage to fix any discrepancies silently
+        _set(KEYS.ORDERS, localOrders);
+
+        this._cache = merged;
         return this._cache;
       }, _get(KEYS.ORDERS) || []);
     },
@@ -915,6 +948,7 @@ const MDB = (() => {
         customer_phone: orderData.phone || '',
         customer_address: orderData.address || '',
         customer_city: orderData.city || '',
+        notes: orderData.notes || '',
         items: cartItems,
         total: await Cart.total(),
         status: 'pending',

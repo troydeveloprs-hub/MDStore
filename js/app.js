@@ -740,20 +740,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const brand = $('.product-detail-brand', info)?.textContent || '';
     const priceText = $('.price-current', info)?.textContent || '0';
     const price = parseFloat(priceText.replace(/[^0-9.]/g, '') || 0);
-    const image = mainImage?.src || '';
+    const image = $('.product-main-image img')?.src || '';
     const variant = getSelectedVariantSummary(info);
     const qty = parseInt($('.qty-input', info)?.value || 1);
 
     // Check if all required variants are selected
     if (window.selectedVariants && Object.keys(window.selectedVariants).length > 0) {
       const variantWrap = $('#variant-selectors-wrap');
-      const requiredOptions = variantWrap ? variantWrap.querySelectorAll('.product-option-group').length : 0;
+      const requiredOptions = variantWrap ? variantWrap.querySelectorAll('.option-group').length : 0;
       const selectedOptions = Object.keys(window.selectedVariants).length;
       
       if (requiredOptions > 0 && selectedOptions < requiredOptions) {
         const missingOptions = [];
-        variantWrap.querySelectorAll('.product-option-group').forEach(group => {
-          const type = group.dataset.optionType;
+        variantWrap.querySelectorAll('.option-group').forEach(group => {
+          const type = group.dataset.option;
           if (!window.selectedVariants[type]) {
             missingOptions.push(group.querySelector('.option-name')?.textContent || type);
           }
