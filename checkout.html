@@ -918,18 +918,23 @@
 
           if (paymentMethod === 'cod') {
             // Cash on Delivery - create order directly
-            const order = MDB.Orders.create({
+            MDB.Orders.create({
               ...formData,
               paymentMethod: paymentMethod
+            }).then(order => {
+              if (window.MDB && window.MDB.Analytics) {
+                window.MDB.Analytics.trackOrder(order.total);
+              }
+              if (window.MDB && window.MDB.Notifications) {
+                window.MDB.Notifications.add('New order received', `Order ${order.id} was placed for ${MDB.UI.formatPrice(order.total)}.`, 'success');
+              }
+              window.location.href = 'order-confirmation.html?id=' + order.id;
+            }).catch(err => {
+              console.error('Order creation failed:', err);
+              btn.disabled = false;
+              btn.textContent = 'Place Order';
+              alert('Failed to create order. Please try again.');
             });
-            if (window.MDB && window.MDB.Analytics) {
-              window.MDB.Analytics.trackOrder(order.total);
-            }
-            if (window.MDB && window.MDB.Notifications) {
-              window.MDB.Notifications.add('New order received', `Order ${order.id} was placed for ${MDB.UI.formatPrice(order.total)}.`, 'success');
-            }
-            MDB.Cart.clear();
-            window.location.href = 'order-confirmation.html?id=' + order.id;
           } else {
             // InstaPay or Vodafone Cash - go to payment confirmation page
             const params = new URLSearchParams({

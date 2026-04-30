@@ -1042,9 +1042,9 @@
           btn.textContent = 'Verifying...';
 
           // Simulate slight delay for premium feel
-          setTimeout(() => {
+          setTimeout(async () => {
             try {
-              const result = MDB.Auth.login(email, password);
+              const result = await MDB.Auth.login(email, password);
               console.log('Auth Result:', result);
 
               if (result.success) {

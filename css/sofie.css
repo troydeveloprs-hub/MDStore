@@ -540,11 +540,12 @@ h6 {
    display: none;
    align-items: center;
    justify-content: center;
-   font-family: var(--font-body)
+   font-family: var(--font-body);
+   z-index: 10
 }
 
 .cart-badge.visible {
-   display: flex
+   display: flex !important
 }
 
 .hamburger {

@@ -781,7 +781,6 @@
           </div>
           <div class="qv-payment-buttons">
             <button type="button" class="btn btn-black qv-buy-now">Buy it now</button>
-            <button type="button" class="btn qv-apple-pay"><i class="fa-brands fa-apple"></i> Pay</button>
           </div>
         </div>
         <a href="product.html" class="quickview-link">View Full Details <i class="fa-solid fa-arrow-right"></i></a>
@@ -808,6 +807,11 @@
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
       if (!window.MDB || !MDB.Products || !MDB.UI) return;
+      
+      // Update cart badges on page load
+      if (window.MDB && window.MDB.UI && window.MDB.UI.updateCartBadges) {
+        await window.MDB.UI.updateCartBadges();
+      }
       const newGrid = document.getElementById('home-new-grid');
       const skincareGrid = document.getElementById('home-skincare-grid');
       try {

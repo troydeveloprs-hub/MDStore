@@ -408,12 +408,12 @@
         paymentIcon = '<i class="fa-solid fa-mobile-screen-button"></i>';
         paymentTitle = 'InstaPay';
         paymentNumber = '01037070888';
-        paymentDesc = 'Open InstaPay app and transfer the order total to this number.';
+        paymentDesc = 'افتح تطبيق InstaPay وقم بتحويل المبلغ الإجمالي للطلب إلى هذا الرقم.';
       } else if (paymentMethod === 'vodafone') {
         paymentIcon = '<i class="fa-solid fa-mobile-screen-button"></i>';
         paymentTitle = 'Vodafone Cash';
         paymentNumber = '01037070888';
-        paymentDesc = 'Open Vodafone Cash and transfer the order total to this number.';
+        paymentDesc = 'افتح تطبيق Vodafone Cash وقم بتحويل المبلغ الإجمالي للطلب إلى هذا الرقم.';
       } else {
         paymentIcon = '<i class="fa-solid fa-money-bill-wave"></i>';
         paymentTitle = 'Cash on Delivery';
@@ -433,6 +433,18 @@
           <div class="payment-info-desc">${paymentDesc}</div>
         </div>
 
+        <div class="payment-steps" style="background:#f8f9fa;padding:16px;border-radius:8px;margin:16px 0">
+          <h4 style="font-size:0.9rem;margin-bottom:12px;color:#333">خطوات الدفع:</h4>
+          <ol style="margin:0;padding-left:20px;font-size:0.8rem;color:#666;line-height:1.6">
+            <li>افتح تطبيق ${paymentTitle}</li>
+            <li>اختر "تحويل الأموال" أو "Send Money"</li>
+            <li>أدخل الرقم: ${paymentNumber}</li>
+            <li>أدخل المبلغ: ${MDB.UI.formatPrice(total)}</li>
+            <li>تأكد من إرسال التحويل بنجاح</li>
+            <li>اضغط على زر "تم التحويل" بالأسفل</li>
+          </ol>
+        </div>
+
         <div class="order-summary">
           <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px">Order Summary</h3>
           <div class="summary-row"><span class="label">Subtotal</span><span class="value">${MDB.UI.formatPrice(subtotal)}</span></div>
@@ -440,8 +452,15 @@
           <div class="summary-total"><span>Total</span><span>${MDB.UI.formatPrice(total)}</span></div>
         </div>
 
-        <button class="confirm-btn" id="confirm-payment-btn">I Have Transferred the Payment</button>
-        <a href="checkout.html" class="back-btn">← Back to Checkout</a>
+        <div class="payment-warning" style="background:#fff3cd;border:1px solid #ffeaa7;padding:12px;border-radius:8px;margin:16px 0">
+          <p style="margin:0;font-size:0.8rem;color:#856404">
+            <i class="fa-solid fa-exclamation-triangle" style="margin-left:4px"></i>
+           يرجى التأكد من إرسال المبلغ الصحيح (${MDB.UI.formatPrice(total)}) إلى الرقم المذكور أعلاه.
+          </p>
+        </div>
+
+        <button class="confirm-btn" id="confirm-payment-btn">لقد قمت بتحويل المبلغ</button>
+        <a href="checkout.html" class="back-btn">← العودة إلى الدفع</a>
       `;
 
       document.getElementById('confirm-payment-btn').addEventListener('click', () => {

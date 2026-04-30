@@ -96,14 +96,40 @@ document.addEventListener('DOMContentLoaded', () => {
   const Cart = {
     get() { return window.MDB?.Cart?.get() || []; },
     set(items) { window.MDB?.Cart?._save(items); },
-    add(item) { window.MDB?.Cart?.add(item); },
+    add(id, variant, qty) { window.MDB?.Cart?.add({ id, variant, qty }); },
     remove(id, variant) { window.MDB?.Cart?.remove(id, variant); },
     updateQty(id, variant, qty) { window.MDB?.Cart?.updateQty(id, variant, qty); },
     count() { return window.MDB?.Cart?.count() || 0; },
     total() { return window.MDB?.Cart?.total() || 0; },
     updateBadge() { window.MDB?.UI?.updateCartBadges(); }
   };
+
+  // Simple direct cart badge update function
+  function updateCartBadgesDirect() {
+    // Try to get count from localStorage directly
+    try {
+      const cartData = localStorage.getItem('mdb_cart');
+      let count = 0;
+      if (cartData) {
+        const items = JSON.parse(cartData);
+        count = items.reduce((sum, item) => sum + (item.qty || 1), 0);
+      }
+      
+      document.querySelectorAll('.cart-badge').forEach(b => {
+        b.textContent = count;
+        b.style.display = count > 0 ? 'flex' : 'none';
+      });
+      document.querySelectorAll('.mob-cart-badge').forEach(b => {
+        b.textContent = count;
+        b.style.display = count > 0 ? 'flex' : 'none';
+      });
+    } catch (e) {
+      console.error('Error updating cart badges:', e);
+    }
+  }
+
   Cart.updateBadge();
+  updateCartBadgesDirect();
 
   /* ============================================
      ANNOUNCEMENT BAR
@@ -228,15 +254,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function getCardProductData(card) {
     if (!card) return null;
-    return {
+    
+    const product = {
       id: card.dataset.id || Math.random().toString(36).slice(2),
-      name: card.dataset.name || $('.product-card-name, .product-card-title a', card)?.textContent?.trim() || '',
+      name: card.dataset.name || $('.product-card-name, .product-card-title a', card)?.textContent?.trim() || 'Product',
       brand: card.dataset.brand || $('.product-card-brand', card)?.textContent?.trim() || '',
       price: parseFloat(card.dataset.price || $('.price-current', card)?.textContent?.replace(/[^0-9.]/g, '') || 0),
       image: resolveImagePath(card.dataset.image || $('.product-card-img, .product-card-img-primary', card)?.getAttribute('src') || ''),
       variant: card.dataset.variant || 'Default',
       qty: 1
     };
+    
+    console.log('Product data:', product);
+    
+    // Ensure all required fields have values
+    if (!product.name || product.name === 'Product') {
+      const nameEl = $('.product-card-name, .product-card-title a, h3', card);
+      if (nameEl) product.name = nameEl.textContent.trim() || 'Product';
+    }
+    
+    if (!product.price || product.price === 0) {
+      const priceEl = $('.price-current, .product-card-price', card);
+      if (priceEl) {
+        const priceText = priceEl.textContent.replace(/[^0-9.]/g, '');
+        product.price = parseFloat(priceText) || 0;
+      }
+    }
+    
+    if (!product.image) {
+      const imgEl = $('.product-card-img, .product-card-img-primary', card);
+      if (imgEl) product.image = imgEl.getAttribute('src') || '';
+    }
+    
+    return product;
   }
 
   function addCardItemToCart(btn, card) {
@@ -248,16 +298,33 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.classList.add('loading');
     btn.innerHTML = 'Adding...';
 
-    setTimeout(() => {
-      Cart.add(product);
-      btn.classList.remove('loading');
-      btn.classList.add('added');
-      btn.innerHTML = '✓ Added';
-      openCartDrawer();
-      setTimeout(() => {
-        btn.classList.remove('added');
-        btn.innerHTML = btn.dataset.originalLabel || originalLabel;
-      }, 1500);
+    setTimeout(async () => {
+      // Check if MDB.Cart is available
+      if (window.MDB && window.MDB.Cart) {
+        await window.MDB.Cart.add(product);
+        btn.classList.remove('loading');
+        btn.classList.add('added');
+        btn.innerHTML = '✓ Added';
+        
+        // Update cart badges using direct function
+        updateCartBadgesDirect();
+        
+        // Open and refresh cart drawer
+        openCartDrawer();
+        await renderMiniCart();
+        
+        setTimeout(() => {
+          btn.classList.remove('added');
+          btn.innerHTML = btn.dataset.originalLabel || originalLabel;
+        }, 1500);
+      } else {
+        console.error('MDB.Cart not available');
+        btn.classList.remove('loading');
+        btn.innerHTML = 'Error';
+        setTimeout(() => {
+          btn.innerHTML = btn.dataset.originalLabel || originalLabel;
+        }, 2000);
+      }
     }, 250);
   }
 
@@ -419,7 +486,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Quick view actions (ATC, Buy Now)
-  on(quickviewModal, 'click', (e) => {
+  on(quickviewModal, 'click', async (e) => {
     const atcBtn = e.target.closest('.quickview-atc');
     const buyNowBtn = e.target.closest('.qv-buy-now');
     
@@ -436,11 +503,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const payload = { id, name, brand, price, image, variant, qty: 1 };
     
     if (atcBtn) {
-      Cart.add(payload);
+      await window.MDB.Cart.add(payload);
+      updateCartBadgesDirect();
       closeQuickView();
       openCartDrawer();
+      await renderMiniCart();
     } else if (buyNowBtn) {
-      Cart.add(payload);
+      await window.MDB.Cart.add(payload);
+      updateCartBadgesDirect();
       const basePath = window.location.pathname.includes('/collections/') || window.location.pathname.includes('/Pages/') ? '../' : '';
       window.location.href = basePath + 'checkout.html';
     }
@@ -466,6 +536,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = btn.closest('.product-card');
     if (!card) return;
     addCardItemToCart(btn, card);
+  });
+
+  // Cart toggle buttons
+  document.addEventListener('click', (e) => {
+    const cartToggle = e.target.closest('[data-cart-toggle]');
+    if (cartToggle) {
+      e.preventDefault();
+      e.stopPropagation();
+      openCartDrawer();
+    }
   });
 
   /* ============================================
@@ -494,7 +574,18 @@ document.addEventListener('DOMContentLoaded', () => {
   async function renderMiniCart() {
     const body = $('.cart-drawer-body');
     const subtotal = $('.cart-subtotal-value');
-    const items = await Cart.get();
+    
+    // Get items directly from localStorage to avoid async issues
+    let items = [];
+    try {
+      const cartData = localStorage.getItem('mdb_cart');
+      if (cartData) {
+        items = JSON.parse(cartData);
+      }
+    } catch (e) {
+      console.error('Error reading cart:', e);
+    }
+    
     if (!body) return;
 
     if (items.length === 0) {
@@ -527,7 +618,9 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `).join('');
 
-    if (subtotal) subtotal.textContent = Cart.total().toLocaleString('en-US', {minimumFractionDigits: 0}) + ' LE';
+    // Calculate total directly
+    const total = items.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    if (subtotal) subtotal.textContent = total.toLocaleString('en-US', {minimumFractionDigits: 0}) + ' LE';
 
     // Shipping Progress Bar
     const threshold = (window.MDB && window.MDB.Settings && window.MDB.Settings.get().shippingThreshold) || 3500;

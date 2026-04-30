@@ -608,6 +608,7 @@ const MDB = (() => {
         });
       }
       await this._save(items);
+      this._notify();
       return items;
     },
 
@@ -1687,11 +1688,11 @@ const MDB = (() => {
     },
 
     /** Update all cart badges in the DOM */
-    updateCartBadges() {
-      const c = Cart.count();
+    async updateCartBadges() {
+      const c = await Cart.count();
       document.querySelectorAll('.cart-badge').forEach(b => {
         b.textContent = c;
-        b.classList.toggle('visible', c > 0);
+        b.style.display = c > 0 ? 'flex' : 'none';
       });
       document.querySelectorAll('.mob-cart-badge').forEach(b => {
         b.textContent = c;
