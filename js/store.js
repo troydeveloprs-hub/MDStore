@@ -17,6 +17,8 @@ const MDB = (() => {
     PROMO:     'mdb_applied_promo',
     CUSTOM_COUPONS: 'mdb_custom_coupons',
     SETTINGS:  'mdb_settings',
+    CATEGORIES: 'mdb_categories',
+    BRANDS:    'mdb_brands',
   };
 
   /* â”€â”€â”€ Helpers â”€â”€â”€ */
@@ -1384,12 +1386,14 @@ const MDB = (() => {
         return data.value || {
           announcement: 'Free shipping on orders over 3500 LE',
           shippingThreshold: 3500,
+          codFee: 50,
           contactEmail: 'hello@mdboutiquee2.com',
           currency: 'LE'
         };
       }, _get(KEYS.SETTINGS) || {
         announcement: 'Free shipping on orders over 3500 LE',
         shippingThreshold: 3500,
+        codFee: 50,
         contactEmail: 'hello@mdboutiquee2.com',
         currency: 'LE'
       });
@@ -1775,6 +1779,180 @@ const MDB = (() => {
     }
   };
 
+  /* ===================================================================
+     CATEGORIES — Supabase-backed
+     =================================================================== */
+  const Categories = {
+    _cache: null,
+    _table: 'categories',
+    _client: null,
+
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
+      }
+      return await Products._ensureClient();
+    },
+
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.error(`[MDB Categories] Error during ${opName}:`, err);
+        if (err.code) console.error(`[MDB Categories] Supabase Error Code: ${err.code} - ${err.message}`);
+        return fallback;
+      }
+    },
+
+    async get() {
+      return this._run('get', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        
+        // Map from Supabase format to app format
+        const mapped = data.map(row => ({
+          id: row.id,
+          name: row.name,
+          subcategories: row.subcategories || [],
+          createdAt: row.created_at,
+          updatedAt: row.updated_at
+        }));
+        
+        this._cache = mapped;
+        return mapped;
+      }, _get(KEYS.CATEGORIES) || [
+        { id: 'makeup', name: 'Makeup', subcategories: ['Blush', 'Highlighter', 'Lip Liner', 'Lip Oil', 'Lip Plumper', 'Lip Sets', 'Lipstick', 'Mascara', 'Setting Spray & Powder'] },
+        { id: 'skincare', name: 'Skincare', subcategories: ['Cleanser', 'Moisturizer', 'Serum', 'Sunscreen'] },
+        { id: 'haircare', name: 'Haircare', subcategories: ['Shampoo', 'Conditioner', 'Hair Mask'] }
+      ]);
+    },
+
+    async add(category) {
+      return this._run('add', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).insert({
+          name: category.name,
+          subcategories: category.subcategories || []
+        }).select().single();
+        if (error) throw error;
+        this._cache = null;
+        return data;
+      }, null);
+    },
+
+    async update(id, category) {
+      return this._run('update', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).update({
+          name: category.name,
+          subcategories: category.subcategories || []
+        }).eq('id', id).select().single();
+        if (error) throw error;
+        this._cache = null;
+        return data;
+      }, null);
+    },
+
+    async delete(id) {
+      return this._run('delete', async () => {
+        const client = await this._ensureClient();
+        const { error } = await client.from(this._table).delete().eq('id', id);
+        if (error) throw error;
+        this._cache = null;
+        return true;
+      }, false);
+    }
+  };
+
+  /* ===================================================================
+     BRANDS — Supabase-backed
+     =================================================================== */
+  const Brands = {
+    _cache: null,
+    _table: 'brands',
+    _client: null,
+
+    async _ensureClient() {
+      if (this._client) return this._client;
+      if (Products._client) {
+        this._client = await Products._ensureClient();
+        return this._client;
+      }
+      return await Products._ensureClient();
+    },
+
+    async _run(opName, asyncFn, fallback) {
+      try {
+        return await asyncFn();
+      } catch (err) {
+        console.error(`[MDB Brands] Error during ${opName}:`, err);
+        if (err.code) console.error(`[MDB Brands] Supabase Error Code: ${err.code} - ${err.message}`);
+        return fallback;
+      }
+    },
+
+    async get() {
+      return this._run('get', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        
+        // Map from Supabase format to app format
+        const mapped = data.map(row => ({
+          id: row.id,
+          name: row.name,
+          createdAt: row.created_at,
+          updatedAt: row.updated_at
+        }));
+        
+        this._cache = mapped;
+        return mapped;
+      }, _get(KEYS.BRANDS) || [
+        { id: 'brand1', name: 'MAC' },
+        { id: 'brand2', name: 'Maybelline' },
+        { id: 'brand3', name: 'L\'Oreal' },
+        { id: 'brand4', name: 'NYX' }
+      ]);
+    },
+
+    async add(brand) {
+      return this._run('add', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).insert({
+          name: brand.name
+        }).select().single();
+        if (error) throw error;
+        this._cache = null;
+        return data;
+      }, null);
+    },
+
+    async update(id, brand) {
+      return this._run('update', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client.from(this._table).update({
+          name: brand.name
+        }).eq('id', id).select().single();
+        if (error) throw error;
+        this._cache = null;
+        return data;
+      }, null);
+    },
+
+    async delete(id) {
+      return this._run('delete', async () => {
+        const client = await this._ensureClient();
+        const { error } = await client.from(this._table).delete().eq('id', id);
+        if (error) throw error;
+        this._cache = null;
+        return true;
+      }, false);
+    }
+  };
+
   /* ─── Auto-update badges on cart change ─── */
   document.addEventListener('mdb:cart:updated', () => UI.updateCartBadges());
   document.addEventListener('mdb:auth:changed', () => UI.updateAuthUI());
@@ -1786,7 +1964,7 @@ const MDB = (() => {
   });
 
   /* ─── Public API ─── */
-  return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, Settings, Coupons, UI, KEYS };
+  return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, Settings, Coupons, UI, Categories, Brands, KEYS };
 })();
 
 /* Make globally accessible */
