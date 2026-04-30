@@ -941,7 +941,11 @@ const MDB = (() => {
 
     async create(orderData) {
       const user = Auth.getUser();
+      console.log('[MDB Orders] User:', user);
+      
       const cartItems = await Cart.get();
+      console.log('[MDB Orders] Cart Items:', cartItems);
+      
       const order = {
         user_id: user?.id || null,
         customer_name: orderData.name || '',
@@ -962,6 +966,7 @@ const MDB = (() => {
       // ALWAYS attempt to save to Supabase first
       const res = await this._run('create', async () => {
         const client = await this._ensureClient();
+        console.log('[MDB Orders] Supabase Client:', client);
         const { data, error } = await client.from(this._table).insert(order).select().single();
         if (error) {
           console.error('[MDB Orders] Supabase Insert Error:', error);
@@ -970,6 +975,8 @@ const MDB = (() => {
         console.log('[MDB Orders] Supabase Success:', data);
         return data;
       }, null);
+      
+      console.log('[MDB Orders] Result from Supabase:', res);
 
       // ALWAYS save to localStorage as a fallback/guest history
       const localOrders = _get(KEYS.ORDERS) || [];

@@ -1613,8 +1613,6 @@
               <div id="products-summary" style="font-size:12.5px;color:var(--text2);margin-top:4px">Loading…</div>
             </div>
             <div class="section-actions">
-              <button class="btn btn-danger" type="button" id="clear-products-btn"><i class="fa-solid fa-trash"></i>
-                Clear All</button>
               <button class="btn btn-gold" type="button" id="toggle-product-form-btn"><i class="fa-solid fa-plus"></i>
                 Add Product</button>
             </div>
@@ -2321,8 +2319,7 @@
       document.getElementById('toggle-product-form-btn')?.addEventListener('click', () => toggleProductForm(true));
       document.getElementById('cancel-product-form-btn')?.addEventListener('click', () => toggleProductForm(false));
       document.getElementById('toggle-coupon-form-btn')?.addEventListener('click', toggleCouponForm);
-      document.getElementById('clear-products-btn')?.addEventListener('click', clearAllProducts);
-      document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value, document.getElementById('order-status-filter').value));
+            document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value, document.getElementById('order-status-filter').value));
       document.getElementById('order-status-filter')?.addEventListener('change', async e => await renderOrders(document.getElementById('order-search').value, e.target.value));
       document.getElementById('product-search')?.addEventListener('input', async e => await renderProducts(e.target.value, document.getElementById('product-category-filter').value));
       document.getElementById('product-category-filter')?.addEventListener('change', async e => await renderProducts(document.getElementById('product-search').value, e.target.value));
@@ -2583,9 +2580,30 @@
       `;
     }
 
+    function renderProductPagination(totalItems) {
+      const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+      const container = document.getElementById('product-pagination');
+      if (!container) return;
+      if (totalPages <= 1) { container.innerHTML = ''; return; }
+      
+      container.innerHTML = `
+        <div class="pagination-info">Showing ${Math.min(totalItems, (productCurrentPage-1)*ITEMS_PER_PAGE+1)}-${Math.min(totalItems, productCurrentPage*ITEMS_PER_PAGE)} of ${totalItems}</div>
+        <div class="pagination-btns">
+          <button class="btn btn-sm" ${productCurrentPage === 1 ? 'disabled' : ''} onclick="changeProductPage(${productCurrentPage - 1})"><i class="fa-solid fa-chevron-left"></i> Prev</button>
+          <span class="page-num">${productCurrentPage} / ${totalPages}</span>
+          <button class="btn btn-sm" ${productCurrentPage === totalPages ? 'disabled' : ''} onclick="changeProductPage(${productCurrentPage + 1})">Next <i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      `;
+    }
+
     async function changeOrderPage(p) {
       orderCurrentPage = p;
       await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value);
+    }
+
+    async function changeProductPage(p) {
+      productCurrentPage = p;
+      await renderProducts(document.getElementById('product-search').value, document.getElementById('product-category-filter').value);
     }
 
     async function updateStatus(id, s) { await MDB.Orders.updateStatus(id, s); MDB.UI.toast('Status updated'); await renderOrders(); await renderStats(); }
@@ -2654,15 +2672,7 @@
       MDB.UI ? MDB.UI.toast(m, 'error') : alert(m);
     }
 
-    async function clearAllProducts() {
-      if (!confirm('Delete ALL products? This cannot be undone.')) return;
-      try {
-        const ps = await MDB.Products.getAll();
-        for (const p of ps) await MDB.Products.delete(p.id);
-        await refreshAll(); MDB.UI.toast('All products cleared');
-      } catch (e) { showErr(e); }
-    }
-
+    
     async function renderProducts(q = '', catFilter = '') {
       const products = await MDB.Products.getAll();
       const low = products.filter(p => p.stock < 10);
@@ -2696,6 +2706,8 @@
         </div>
       </td>
     </tr>`).join('');
+      
+      renderProductPagination(filtered.length);
     }
 
     async function editProduct(id) {
