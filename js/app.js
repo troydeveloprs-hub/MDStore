@@ -820,7 +820,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Load more
   const loadMoreBtn = $('[data-load-more]');
   if (loadMoreBtn) on(loadMoreBtn, 'click', () => {
-    loadMoreBtn.textContent = 'Loading...';
+    loadMoreBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
     setTimeout(() => {
       // In a real app, fetch more products. Here we just hide the button
       loadMoreBtn.style.display = 'none';

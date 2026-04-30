@@ -455,11 +455,11 @@ const MDB = (() => {
 
       if (!container) return [];
 
-      container.innerHTML = '<p class="products-loading">Loading products...</p>';
+      container.innerHTML = '<div class="products-loading">Loading products...</div>';
 
       const items = Array.isArray(products) ? products : await this.getAll();
       if (!items.length) {
-        container.innerHTML = '<p class="products-empty">No products found.</p>';
+        container.innerHTML = '<div class="products-empty">No products found.</div>';
         return [];
       }
 
