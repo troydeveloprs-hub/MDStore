@@ -532,11 +532,24 @@
     .stat-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 22px 24px;
+      border-radius: 14px;
+      padding: 16px 18px;
       position: relative;
       overflow: hidden;
       transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 8px 0 2px;
+    }
+
+    .stat-label {
+      font-size: 11.5px;
+      color: var(--text2);
+      font-weight: 500;
     }
 
     .stat-card:hover {
@@ -1911,13 +1924,19 @@
           </div>
         </div>
 
-        <!-- ── INVENTORY ── -->
         <div class="admin-panel" id="panel-inventory">
           <div class="table-shell">
+            <div class="table-toolbar">
+              <div class="search-wrap">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" class="search-input" id="inventory-search" placeholder="Search inventory…">
+              </div>
+            </div>
             <div style="overflow-x:auto">
               <table class="admin-table" id="inventory-table">
                 <thead>
                   <tr>
+                    <th>Img</th>
                     <th>Product</th>
                     <th>SKU / ID</th>
                     <th>Stock</th>
@@ -2307,6 +2326,8 @@
       document.getElementById('order-status-filter')?.addEventListener('change', async e => await renderOrders(document.getElementById('order-search').value, e.target.value));
       document.getElementById('product-search')?.addEventListener('input', async e => await renderProducts(e.target.value, document.getElementById('product-category-filter').value));
       document.getElementById('product-category-filter')?.addEventListener('change', async e => await renderProducts(document.getElementById('product-search').value, e.target.value));
+      document.getElementById('inventory-search')?.addEventListener('input', e => renderInventory(e.target.value));
+      document.getElementById('coupon-search')?.addEventListener('input', e => renderCoupons(e.target.value));
       document.getElementById('pf-cat')?.addEventListener('change', e => populateSubcategoryOptions(e.target.value));
       document.getElementById('pf-image')?.addEventListener('input', renderProductImagePreview);
 
@@ -2449,52 +2470,59 @@
     async function renderStats() {
       const orders = await MDB.Orders.get() || [];
       const products = await MDB.Products.getAll() || [];
+      const reviews = await MDB.Reviews.get() || [];
       const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
-      const coupons = MDB.Coupons ? MDB.Coupons.get() : [];
       
       const revenue = orders.reduce((s, o) => s + (Number(o.total) || 0), 0);
-      const pending = orders.filter(o => o.status === 'pending').length;
-      const lowStock = products.filter(p => (Number(p.stock) || 0) < 10).length;
-      const avgOrder = orders.length > 0 ? (revenue / orders.length) : 0;
+      const pending = orders.filter(o => (o.status || 'pending') === 'pending').length;
+      const shipped = orders.filter(o => o.status === 'shipped').length;
+      const delivered = orders.filter(o => o.status === 'delivered').length;
+      const outOfStock = products.filter(p => (Number(p.stock) || 0) <= 0).length;
+      const lowStock = products.filter(p => (Number(p.stock) || 0) > 0 && (Number(p.stock) || 0) < 10).length;
 
       const badge = document.getElementById('pending-badge');
       if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? 'inline' : 'none'; }
       
       document.getElementById('admin-stats').innerHTML = `
       <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon gold"><i class="fa-solid fa-coins"></i></div>
-          <span class="stat-trend up">Total Sales</span>
-        </div>
+        <div class="stat-top"><div class="stat-icon gold"><i class="fa-solid fa-coins"></i></div><span class="stat-trend up">Sales</span></div>
         <div class="stat-value">${MDB.UI ? MDB.UI.formatPrice(revenue) : revenue + ' LE'}</div>
         <div class="stat-label">Total Revenue</div>
       </div>
-      
       <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon info"><i class="fa-solid fa-box"></i></div>
-          <span class="stat-trend up">Lifetime</span>
-        </div>
+        <div class="stat-top"><div class="stat-icon info"><i class="fa-solid fa-box"></i></div><span class="stat-trend up">Total</span></div>
         <div class="stat-value">${orders.length}</div>
-        <div class="stat-label">Total Orders</div>
+        <div class="stat-label">Orders</div>
       </div>
-
       <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon success"><i class="fa-solid fa-users"></i></div>
-          <span class="stat-trend up">Growth</span>
-        </div>
-        <div class="stat-value">${users.length}</div>
-        <div class="stat-label">Total Customers</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-top">
-          <div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div>
-          ${pending > 0 ? '<span class="stat-trend down">Action needed</span>' : '<span class="stat-trend up">All clear</span>'}
-        </div>
-        <div class="stat-value" style="color:${pending > 0 ? 'var(--warning)' : 'var(--text)'}">${pending}</div>
+        <div class="stat-top"><div class="stat-icon warning"><i class="fa-solid fa-clock"></i></div><span class="stat-trend down">Pending</span></div>
+        <div class="stat-value" style="color:var(--warning)">${pending}</div>
         <div class="stat-label">Pending Orders</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon success"><i class="fa-solid fa-truck-fast"></i></div><span class="stat-trend up">Active</span></div>
+        <div class="stat-value" style="color:var(--success)">${shipped}</div>
+        <div class="stat-label">Shipped</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon success"><i class="fa-solid fa-check-double"></i></div><span class="stat-trend up">Done</span></div>
+        <div class="stat-value">${delivered}</div>
+        <div class="stat-label">Delivered</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon danger"><i class="fa-solid fa-ban"></i></div><span class="stat-trend down">Empty</span></div>
+        <div class="stat-value" style="color:var(--danger)">${outOfStock}</div>
+        <div class="stat-label">Out of Stock</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon warning"><i class="fa-solid fa-triangle-exclamation"></i></div><span class="stat-trend down">Restock</span></div>
+        <div class="stat-value">${lowStock}</div>
+        <div class="stat-label">Low Stock</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-top"><div class="stat-icon info"><i class="fa-solid fa-star"></i></div><span class="stat-trend up">Feed</span></div>
+        <div class="stat-value">${reviews.length}</div>
+        <div class="stat-label">Total Reviews</div>
       </div>
     `;
     }
@@ -2585,8 +2613,16 @@
       document.getElementById('om-payment').textContent = pm;
       document.getElementById('om-status-badge').innerHTML = `<span class="badge badge-${safeText(order.status, 'pending')}">${safeText(order.status, 'pending')}</span>`;
       
-      const notes = safeText(order.customer?.notes, '');
-      document.getElementById('om-notes').textContent = notes ? 'Notes:\n' + notes : '';
+      const notes = safeText(order.notes || order.customer?.notes, '');
+      if (notes) {
+        document.getElementById('om-notes').innerHTML = `
+          <div style="margin-top:10px; padding:12px; background:var(--gold-dim); border:1px solid var(--gold-border); border-radius:8px;">
+            <strong style="color:var(--gold); display:block; margin-bottom:4px;"><i class="fa-solid fa-note-sticky"></i> Customer Notes:</strong>
+            <span style="font-size:14px; color:var(--text); white-space:pre-wrap;">${escapeHtml(notes)}</span>
+          </div>`;
+      } else {
+        document.getElementById('om-notes').textContent = '';
+      }
 
       document.getElementById('om-total').textContent = MDB.UI.formatPrice(Number(order.total || 0));
       
@@ -2871,11 +2907,13 @@
       wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
     }
 
-    async function renderCoupons() {
+    async function renderCoupons(q = '') {
       const cs = await MDB.Coupons.get();
       if (!Array.isArray(cs)) return;
+      let filtered = cs;
+      if (q) { const ql = q.toLowerCase(); filtered = cs.filter(c => c.code.toLowerCase().includes(ql)); }
       const tbody = document.querySelector('#coupons-table tbody');
-      tbody.innerHTML = cs.map(c => `<tr>
+      tbody.innerHTML = filtered.map(c => `<tr>
       <td><strong style="font-family:'Cormorant Garamond',serif;font-size:15px;color:var(--gold)">${escapeHtml(c.code)}</strong></td>
       <td><span class="badge badge-processing">${c.type}</span></td>
       <td><strong>${c.value}${c.type === 'percent' ? '%' : ' LE'}</strong></td>
@@ -2887,14 +2925,17 @@
     async function deleteCoupon(code) { if (confirm('Delete coupon?')) { await MDB.Coupons.delete(code); await renderCoupons(); } }
 
     /* ─ INVENTORY ─ */
-    async function renderInventory() {
-      const products = await MDB.Products.getAll();
+    async function renderInventory(q = '') {
+      const ps = await MDB.Products.getAll();
+      let filtered = ps;
+      if (q) { const ql = q.toLowerCase(); filtered = ps.filter(p => safeText(p.name).toLowerCase().includes(ql) || safeText(p.id).toLowerCase().includes(ql)); }
       const tbody = document.querySelector('#inventory-table tbody');
       if (!tbody) return;
-      tbody.innerHTML = products.map(p => {
+      tbody.innerHTML = filtered.map(p => {
         const stock = parseInt(p.stock, 10) || 0;
         const low = stock < 10;
         return `<tr>
+        <td><img src="${adminImageSrc(p.image)}" class="product-thumb" style="width:36px;height:36px;border-radius:4px"></td>
         <td>
           <strong>${escapeHtml(p.name)}</strong>
           <div class="cell-sub">${escapeHtml(p.brand)}</div>
@@ -2919,7 +2960,7 @@
           ${low && stock > 0 ? `<div class="cell-sub" style="color:var(--warning)">Low stock warning</div>` : ''}
         </td>
       </tr>`;
-      }).join('') || '<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-warehouse"></i><p>No products</p></div></td></tr>';
+      }).join('') || '<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-warehouse"></i><p>No products</p></div></td></tr>';
     }
 
     async function adjustStock(pid, delta) {
