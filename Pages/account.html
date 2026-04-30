@@ -758,13 +758,16 @@
         <div class="order-card">
           <div class="order-header">
             <span class="order-id">#${order.id}</span>
-            <span class="order-date">${new Date(order.date).toLocaleDateString()}</span>
+            <span class="order-date">${new Date(order.date || order.createdAt).toLocaleDateString()}</span>
             <span class="order-status ${order.status}">${order.status}</span>
           </div>
           <div class="order-items">
-            ${order.items.map(item => `<img src="${resolveAccountImage(item.image)}" alt="${item.name}" class="order-item-thumb">`).join('')}
+            ${(order.items || []).map(item => `<img src="${resolveAccountImage(item.image)}" alt="${item.name}" class="order-item-thumb">`).join('')}
           </div>
-          <div class="order-total">Total: ${MDB.UI.formatPrice(order.total)}</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
+            <div class="order-total">Total: ${MDB.UI.formatPrice(order.total)}</div>
+            <a href="track-order.html?id=${order.id}" class="btn btn-outline" style="padding:6px 14px; font-size:12px; height:auto; min-width:auto; border-radius:6px;">Track Order</a>
+          </div>
         </div>
       `).join('');
     }

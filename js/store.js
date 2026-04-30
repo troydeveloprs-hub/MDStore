@@ -1054,8 +1054,43 @@ const MDB = (() => {
     },
 
     async getById(id) {
-      const orders = await this.get();
-      return orders.find(o => o.id === id) || null;
+      // 1. Try to find in cache/local
+      const localOrders = await this.get();
+      const local = localOrders.find(o => o.id === id);
+      if (local) return local;
+
+      // 2. Try direct Supabase fetch (for guest tracking)
+      return this._run('getById', async () => {
+        const client = await this._ensureClient();
+        const { data, error } = await client
+          .from(this._table)
+          .select('*')
+          .eq('id', id)
+          .single();
+        
+        if (error || !data) return null;
+        
+        // Map DB row to Order object
+        return {
+          id: data.id,
+          items: data.items,
+          total: Number(data.total) || 0,
+          customer: {
+            name: data.customer_name,
+            email: data.customer_email,
+            phone: data.customer_phone,
+            address: data.customer_address,
+            city: data.customer_city,
+            notes: data.notes || ''
+          },
+          status: data.status,
+          paymentMethod: data.payment_method,
+          paymentStatus: data.payment_status,
+          createdAt: data.created_at,
+          updatedAt: data.updated_at,
+          statusHistory: data.status_history || [{ status: data.status, date: data.created_at, note: 'Order placed' }]
+        };
+      }, null);
     },
 
     async getByEmail(email) {

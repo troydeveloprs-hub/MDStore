@@ -576,7 +576,8 @@
       </div>
 
       <div class="confirm-actions">
-        <a href="Pages/account.html#orders" class="btn btn-primary">View My Orders</a>
+        <a id="track-order-link" href="Pages/track-order.html" class="btn btn-primary">Track Your Order</a>
+        <a href="Pages/account.html#orders" class="btn btn-outline">View My Orders</a>
         <a href="index.html" class="btn btn-outline">Continue Shopping</a>
       </div>
     </div>
@@ -650,6 +651,8 @@
       const orderId = params.get('id');
       const order = orderId ? await MDB.Orders.getById(orderId) : null;
       const el = document.getElementById('order-details');
+      const trackLink = document.getElementById('track-order-link');
+      if (orderId && trackLink) trackLink.href = `Pages/track-order.html?id=${orderId}`;
 
       if (!order) { el.innerHTML = '<p style="text-align:center;color:#e74c3c">Order not found</p>'; return; }
 
