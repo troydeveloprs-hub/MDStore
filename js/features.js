@@ -148,9 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.body.appendChild(waBtn);
 
   // WhatsApp order sharing
-  window.MDB.shareOrderWhatsApp = function(orderId) {
-    const order = MDB.Orders.getById(orderId);
-    if (!order) return;
+  window.MDB.shareOrderWhatsApp = async function(orderId) {
+    const order = await MDB.Orders.getById(orderId);
+    if (!order || !order.items) return;
     const items = order.items.map(i => `• ${i.name} (${i.variant}) x${i.qty} — ${MDB.UI.formatPrice(i.price * i.qty)}`).join('\n');
     const msg = `🛍️ New Order: ${order.id}\n\n${items}\n\n💰 Total: ${MDB.UI.formatPrice(order.total)}\n📍 ${order.customer.address}, ${order.customer.city}\n📞 ${order.customer.phone}`;
     window.open(`https://wa.me/${whatsappNum}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -468,9 +468,10 @@ document.addEventListener('DOMContentLoaded', () => {
      11. DYNAMIC SETTINGS — Sync UI with Admin settings
      =================================================================== */
   const DynamicSettings = {
-    init() {
+    async init() {
       if (!MDB.Settings) return;
-      const s = MDB.Settings.get();
+      const s = await MDB.Settings.get();
+      if (!s) return;
       
       // 1. Announcement Bar
       const annText = document.querySelector('.announcement-text');

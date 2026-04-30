@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   Cart.updateBadge();
-  updateCartBadgesDirect();
+  setTimeout(() => updateCartBadgesDirect(), 500); // Wait for store initialization
 
   /* ============================================
      ANNOUNCEMENT BAR
@@ -364,18 +364,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Wishlist toggle
   $$('.product-card-wishlist').forEach(btn => {
-    on(btn, 'click', (e) => {
+    on(btn, 'click', async (e) => {
       e.stopPropagation();
       const card = btn.closest('.product-card');
-      const active = window.MDB?.Wishlist && card?.dataset?.id
-        ? window.MDB.Wishlist.toggle({
+      if (!card || !card.dataset.id) return;
+      
+      let active = false;
+      if (window.MDB && window.MDB.Wishlist) {
+        active = await window.MDB.Wishlist.toggle({
             id: card.dataset.id,
             name: card.dataset.name || '',
             brand: card.dataset.brand || '',
             price: parseFloat(card.dataset.price || 0),
             image: (card.dataset.image || '').replace(window.location.origin + '/', '')
-          })
-        : !btn.classList.contains('active');
+          });
+      } else {
+        btn.classList.toggle('active');
+        active = btn.classList.contains('active');
+      }
       setWishlistButtonState(btn, active);
     });
   });
