@@ -594,22 +594,22 @@
               <h2 class="checkout-section-title" style="margin-top:20px"><span class="step-num">3</span> Payment Method
               </h2>
               <div class="payment-options">
-                <label class="payment-option selected"><input type="radio" name="payment" value="cash" checked>
+                <label class="payment-option selected"><input type="radio" name="payment" value="cod" checked>
                   <div class="payment-option-info">
                     <div class="payment-option-name">Cash on Delivery</div>
                     <div class="payment-option-desc">Pay when your order arrives</div>
                   </div><i class="fa-solid fa-money-bill-wave"></i>
                 </label>
-                <label class="payment-option"><input type="radio" name="payment" value="card">
+                <label class="payment-option"><input type="radio" name="payment" value="instapay">
                   <div class="payment-option-info">
-                    <div class="payment-option-name">Credit/Debit Card</div>
-                    <div class="payment-option-desc">Visa, Mastercard, Amex</div>
-                  </div><i class="fa-solid fa-credit-card"></i>
+                    <div class="payment-option-name">InstaPay</div>
+                    <div class="payment-option-desc">Transfer via InstaPay app</div>
+                  </div><i class="fa-solid fa-mobile-screen-button"></i>
                 </label>
-                <label class="payment-option"><input type="radio" name="payment" value="wallet">
+                <label class="payment-option"><input type="radio" name="payment" value="vodafone">
                   <div class="payment-option-info">
-                    <div class="payment-option-name">Mobile Wallet</div>
-                    <div class="payment-option-desc">Vodafone Cash, Orange Money, etc.</div>
+                    <div class="payment-option-name">Vodafone Cash</div>
+                    <div class="payment-option-desc">Transfer via Vodafone Cash</div>
                   </div><i class="fa-solid fa-mobile-screen-button"></i>
                 </label>
               </div>
@@ -689,11 +689,9 @@
       <div class="container">
         <p class="footer-copyright">&copy; 2025 <a href="index.html">MDBoutiquee</a>. All rights reserved.</p>
         <div class="footer-payment">
-          <i class="fa-brands fa-cc-visa payment-icon"></i>
-          <i class="fa-brands fa-cc-mastercard payment-icon"></i>
-          <i class="fa-brands fa-cc-amex payment-icon"></i>
+          <span class="payment-text">Cash on Delivery</span>
           <span class="payment-text">Vodafone Cash</span>
-          <span class="payment-text">Insta Pay</span>
+          <span class="payment-text">InstaPay</span>
         </div>
       </div>
     </div>
@@ -777,22 +775,43 @@
         btn.disabled = true; btn.textContent = 'Processing...';
 
         setTimeout(() => {
-          const order = MDB.Orders.create({
+          const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+          const formData = {
             name: document.getElementById('co-first').value.trim() + ' ' + document.getElementById('co-last').value.trim(),
             email: document.getElementById('co-email').value.trim(),
             phone: document.getElementById('co-phone').value.trim(),
             address: document.getElementById('co-address').value.trim(),
             city: document.getElementById('co-city').value.trim(),
-            notes: document.getElementById('co-notes').value.trim(),
-            paymentMethod: document.querySelector('input[name="payment"]:checked').value
-          });
-          if (window.MDB && window.MDB.Analytics) {
-            window.MDB.Analytics.trackOrder(order.total);
+            notes: document.getElementById('co-notes').value.trim()
+          };
+
+          if (paymentMethod === 'cod') {
+            // Cash on Delivery - create order directly
+            const order = MDB.Orders.create({
+              ...formData,
+              paymentMethod: paymentMethod
+            });
+            if (window.MDB && window.MDB.Analytics) {
+              window.MDB.Analytics.trackOrder(order.total);
+            }
+            if (window.MDB && window.MDB.Notifications) {
+              window.MDB.Notifications.add('New order received', `Order ${order.id} was placed for ${MDB.UI.formatPrice(order.total)}.`, 'success');
+            }
+            MDB.Cart.clear();
+            window.location.href = 'order-confirmation.html?id=' + order.id;
+          } else {
+            // InstaPay or Vodafone Cash - go to payment confirmation page
+            const params = new URLSearchParams({
+              payment: paymentMethod,
+              name: formData.name,
+              email: formData.email,
+              phone: formData.phone,
+              address: formData.address,
+              city: formData.city,
+              notes: formData.notes
+            });
+            window.location.href = 'payment-confirmation.html?' + params.toString();
           }
-          if (window.MDB && window.MDB.Notifications) {
-            window.MDB.Notifications.add('New order received', `Order ${order.id} was placed for ${MDB.UI.formatPrice(order.total)}.`, 'success');
-          }
-          window.location.href = 'order-confirmation.html?id=' + order.id;
         }, 1200);
       });
     });

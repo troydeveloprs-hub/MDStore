@@ -94,9 +94,9 @@ body {
 }
 
 /* Main content takes available space */
-body > main,
-body > .collection-main,
-body > .page-main {
+body>main,
+body>.collection-main,
+body>.page-main {
    flex: 1
 }
 
@@ -919,7 +919,7 @@ h6 {
 }
 
 @media(max-width:768px) {
-   
+
    /* Base mobile fixes */
    body {
       font-size: 14px;
@@ -4239,7 +4239,7 @@ h6 {
    background: var(--color-text);
    color: #fff;
    transform: translateY(-2px);
-   box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
 .qv-payment-buttons {
@@ -5264,8 +5264,8 @@ h6 {
    .product-main-image {
       aspect-ratio: 1 / 1;
       border-radius: 0;
-      margin-left: calc(var(--container-padding) * -1);
-      margin-right: calc(var(--container-padding) * -1);
+      margin-left: 0;
+      margin-right: 0;
    }
 
    .gallery-thumbs {
@@ -5885,7 +5885,9 @@ h6 {
 }
 
 @keyframes spin {
-   to { transform: rotate(360deg) }
+   to {
+      transform: rotate(360deg)
+   }
 }
 
 .products-empty {
@@ -6638,11 +6640,6 @@ h6 {
    transform: none;
 }
 
-.product-card:hover .product-card-media img {
-   /* transform: scale(1.08); */
-}
-
-
 /* Premium Product Gallery */
 .product-gallery {
    display: flex;
@@ -6696,4 +6693,135 @@ h6 {
 
 .gallery-thumb:hover {
    opacity: 0.8;
+}
+
+/* =========================
+   🔥 GLOBAL FIXES
+========================= */
+html,
+body {
+   overflow-x: hidden !important;
+   max-width: 100% !important;
+}
+
+/* =========================
+   🔥 HEADER FIX
+========================= */
+.header-inner {
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+}
+
+.header-logo {
+   position: static !important;
+   transform: none !important;
+}
+
+/* =========================
+   🔥 MEGA MENU FIX (MOBILE)
+========================= */
+@media(max-width:768px) {
+   .mega-menu {
+      display: none !important;
+   }
+}
+
+/* =========================
+   🔥 PRODUCT CARD FIX
+========================= */
+.product-card-image-wrap {
+   height: auto !important;
+   aspect-ratio: unset !important;
+   overflow: hidden;
+}
+
+.product-card-img {
+   width: 100% !important;
+   height: 100% !important;
+   object-fit: cover !important;
+}
+
+/* =========================
+   🔥 PRODUCT PAGE IMAGE FIX
+========================= */
+.product-main-image {
+   max-height: none !important;
+   aspect-ratio: unset !important;
+}
+
+.product-main-image img {
+   width: 100% !important;
+   height: auto !important;
+   object-fit: contain !important;
+}
+
+/* =========================
+   🔥 BUTTON FIX (MOBILE)
+========================= */
+@media(max-width:768px) {
+
+   .btn,
+   .btn-lg {
+      padding: 10px !important;
+      font-size: 13px !important;
+   }
+
+   .btn-full {
+      width: 100% !important;
+   }
+}
+
+/* =========================
+   🔥 PRODUCT PAGE LAYOUT FIX
+========================= */
+@media(max-width:768px) {
+
+   .product-layout {
+      padding: 10px 0;
+   }
+
+   .product-detail-title {
+      font-size: 16px !important;
+   }
+
+   .product-detail-price {
+      font-size: 15px !important;
+   }
+
+}
+
+/* =========================
+   🔥 LOGIN PAGE FIX
+========================= */
+@media(max-width:768px) {
+
+   .auth-container {
+      padding: 20px !important;
+      margin: 20px !important;
+      max-width: 100% !important;
+   }
+
+   .auth-title {
+      font-size: 18px;
+   }
+
+}
+
+/* =========================
+   🔥 WHATSAPP BUTTON FIX
+========================= */
+.whatsapp-float {
+   position: fixed;
+   bottom: 80px;
+   left: 15px;
+   z-index: 999;
+}
+
+/* =========================
+   🔥 FIX IMAGE OVERFLOW EDGE CASE
+========================= */
+img {
+   max-width: 100%;
+   height: auto;
 }

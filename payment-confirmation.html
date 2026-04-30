@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Payment Confirmation — MDBoutiquee</title>
+  <meta name="description" content="Complete your payment at MDBoutiquee.">
+  <link rel="stylesheet" href="css/sofie.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .payment-confirm-page {
+      min-height: 70vh;
+      padding: 80px 0 60px
+    }
+
+    .confirm-card {
+      max-width: 600px;
+      margin: 0 auto;
+      border: 1.5px solid var(--color-border, #e5e5e5);
+      border-radius: 14px;
+      padding: 32px;
+      background: #fff
+    }
+
+    .confirm-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      text-align: center
+    }
+
+    .confirm-subtitle {
+      color: var(--color-text-light, #888);
+      font-size: .9rem;
+      margin-bottom: 24px;
+      text-align: center
+    }
+
+    .payment-info {
+      background: linear-gradient(135deg, #f5f5f5, #fafafa);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center
+    }
+
+    .payment-info-icon {
+      font-size: 2.5rem;
+      color: var(--color-primary, #1a1a1a);
+      margin-bottom: 12px
+    }
+
+    .payment-info-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px
+    }
+
+    .payment-info-number {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-primary, #1a1a1a);
+      margin-bottom: 8px;
+      letter-spacing: 1px
+    }
+
+    .payment-info-desc {
+      font-size: .85rem;
+      color: var(--color-text-light, #888);
+      line-height: 1.5
+    }
+
+    .order-summary {
+      margin-bottom: 24px
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      font-size: .9rem;
+      border-bottom: 1px solid var(--color-border, #f0f0f0)
+    }
+
+    .summary-row:last-child {
+      border-bottom: none
+    }
+
+    .summary-row .label {
+      color: var(--color-text-light, #888)
+    }
+
+    .summary-row .value {
+      font-weight: 600
+    }
+
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 16px 0 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+      border-top: 2px solid var(--color-border, #e5e5e5);
+      margin-top: 8px
+    }
+
+    .confirm-btn {
+      width: 100%;
+      padding: 16px;
+      background: var(--color-primary, #1a1a1a);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all .3s;
+      margin-top: 20px
+    }
+
+    .confirm-btn:hover {
+      opacity: .88;
+      transform: translateY(-1px)
+    }
+
+    .confirm-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .back-btn {
+      display: block;
+      text-align: center;
+      margin-top: 16px;
+      color: var(--color-text-light, #888);
+      text-decoration: none;
+      font-size: .9rem
+    }
+
+    .back-btn:hover {
+      color: var(--color-primary, #1a1a1a)
+    }
+
+    @media(max-width:768px) {
+      .confirm-card {
+        padding: 20px;
+        margin: 0 16px
+      }
+    }
+  </style>
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mdboutiquee.com/">
+  <meta property="og:title" content="Payment Confirmation — MDBoutiquee">
+  <meta property="og:description" content="Complete your payment at MDBoutiquee.">
+  <meta property="og:image" content="https://mdboutiquee.com/img/og-image.jpg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="Payment Confirmation — MDBoutiquee">
+  <meta property="twitter:description" content="Complete your payment at MDBoutiquee.">
+  <meta property="twitter:image" content="https://mdboutiquee.com/img/og-image.jpg">
+  
+</head>
+
+<body>
+  <div class="announcement-bar" role="banner">
+    <div class="announcement-content">
+      <span class="announcement-text">Free shipping on orders over 3500 LE — <a href="collections/makeup.html">Shop
+          Now</a></span>
+    </div>
+    <button class="announcement-close" aria-label="Close announcement"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+  <header class="header">
+    <div class="header-inner container">
+      <!-- Hamburger (mobile) -->
+      <button class="hamburger" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+
+      <!-- Logo (center) -->
+      <a href="index.html" class="header-logo">
+        <img src="img/logo.svg" alt="MDBoutiquee" class="logo-img">
+      </a>
+
+      <!-- Icons -->
+      <div class="header-icons">
+        <button class="icon-btn" data-search-toggle aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
+        <a href="Pages/login.html" class="icon-btn" aria-label="Account"><i class="fa-regular fa-user"></i></a>
+        <a href="#" class="icon-btn" aria-label="Wishlist"><i class="fa-regular fa-heart"></i></a>
+        <button class="icon-btn" data-cart-toggle aria-label="Cart">
+          <i class="fa-solid fa-bag-shopping"></i>
+          <span class="cart-badge">0</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+      <div class="container">
+        <form class="search-form" action="#" method="get">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input type="text" class="search-input" placeholder="Search products..." name="q">
+          <button type="button" class="search-close" aria-label="Close search"><i
+              class="fa-solid fa-xmark"></i></button>
+        </form>
+      </div>
+    </div>
+  </header>
+
+  <main class="payment-confirm-page">
+    <div class="container">
+      <nav class="breadcrumb" aria-label="Breadcrumb"><a href="index.html">Home</a><span
+          class="breadcrumb-sep">/</span><a href="cart.html">Cart</a><span class="breadcrumb-sep">/</span><a href="checkout.html">Checkout</a><span class="breadcrumb-sep">/</span><span
+          class="breadcrumb-current">Payment</span></nav>
+
+      <div class="confirm-card" id="payment-details">
+        <p style="text-align:center;color:#888">Loading payment details...</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <a href="index.html" class="footer-logo"><img src="img/logo.svg" alt="MDBoutiquee"
+              class="footer-logo-img"></a>
+          <p class="footer-tagline">Premium beauty and skincare products curated for the modern woman. Quality you can
+            trust, elegance you'll love.</p>
+          <div class="footer-social">
+            <a href="https://www.instagram.com/md_boutiquee2" target="_blank" class="social-link"
+              aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://m.facebook.com/story.php?story_fbid=pfbid032VNp41V1RhD8x7NN8dDoCQ75iubzwXnJJANUgQ31bf6UBtRb4s2fjCoyLrYiRESEl&id=100069720326946"
+              target="_blank" class="social-link" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-col-title">Shop</h4>
+          <ul class="footer-links">
+            <li><a href="collections/makeup.html">Makeup</a></li>
+            <li><a href="collections/skincare.html">Skincare</a></li>
+            <li><a href="#">New Arrivals</a></li>
+            <li><a href="#">Sale</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-col-title">Help</h4>
+          <ul class="footer-links">
+            <li><a href="Pages/contact.html">Contact Us</a></li>
+            <li><a href="Pages/shipping-policy.html">Shipping Policy</a></li>
+            <li><a href="#">FAQ</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h4 class="footer-col-title">Company</h4>
+          <ul class="footer-links">
+            <li><a href="Pages/about.html">About Us</a></li>
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+          <div class="footer-contact-info">
+            <p><i class="fa-solid fa-envelope"></i> hello@mdboutiquee2.com</p>
+            <p><i class="fa-solid fa-phone"></i> +201037070888</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p class="footer-copyright">&copy; 2025 <a href="index.html">MDBoutiquee</a>. All rights reserved.</p>
+        <div class="footer-payment">
+          <span class="payment-text">Cash on Delivery</span>
+          <span class="payment-text">Vodafone Cash</span>
+          <span class="payment-text">InstaPay</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/store.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/features.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const paymentMethod = params.get('payment');
+      const items = MDB.Cart.get();
+      
+      if (!items.length) {
+        document.getElementById('payment-details').innerHTML = '<p style="text-align:center;color:#e74c3c">Your cart is empty</p>';
+        return;
+      }
+
+      const total = MDB.Cart.total();
+      const subtotal = MDB.Cart.subtotal();
+      const shipping = MDB.Cart.shipping();
+
+      let paymentInfo = '';
+      let paymentIcon = '';
+      let paymentTitle = '';
+      let paymentNumber = '';
+      let paymentDesc = '';
+
+      if (paymentMethod === 'cod') {
+        paymentIcon = '<i class="fa-solid fa-money-bill-wave"></i>';
+        paymentTitle = 'Cash on Delivery';
+        paymentNumber = 'Pay on Delivery';
+        paymentDesc = 'You will pay with cash when your order is delivered to your address.';
+      } else if (paymentMethod === 'instapay') {
+        paymentIcon = '<i class="fa-solid fa-mobile-screen-button"></i>';
+        paymentTitle = 'InstaPay';
+        paymentNumber = '01037070888';
+        paymentDesc = 'Open InstaPay app and transfer the order total to this number.';
+      } else if (paymentMethod === 'vodafone') {
+        paymentIcon = '<i class="fa-solid fa-mobile-screen-button"></i>';
+        paymentTitle = 'Vodafone Cash';
+        paymentNumber = '01037070888';
+        paymentDesc = 'Open Vodafone Cash and transfer the order total to this number.';
+      } else {
+        paymentIcon = '<i class="fa-solid fa-money-bill-wave"></i>';
+        paymentTitle = 'Cash on Delivery';
+        paymentNumber = 'Pay on Delivery';
+        paymentDesc = 'You will pay with cash when your order is delivered to your address.';
+      }
+
+      const el = document.getElementById('payment-details');
+      el.innerHTML = `
+        <h1 class="confirm-title">Complete Your Payment</h1>
+        <p class="confirm-subtitle">Please complete the payment to confirm your order</p>
+
+        <div class="payment-info">
+          <div class="payment-info-icon">${paymentIcon}</div>
+          <div class="payment-info-title">${paymentTitle}</div>
+          <div class="payment-info-number">${paymentNumber}</div>
+          <div class="payment-info-desc">${paymentDesc}</div>
+        </div>
+
+        <div class="order-summary">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:16px">Order Summary</h3>
+          <div class="summary-row"><span class="label">Subtotal</span><span class="value">${MDB.UI.formatPrice(subtotal)}</span></div>
+          <div class="summary-row"><span class="label">Shipping</span><span class="value">${shipping === 0 ? 'Free' : MDB.UI.formatPrice(shipping)}</span></div>
+          <div class="summary-total"><span>Total</span><span>${MDB.UI.formatPrice(total)}</span></div>
+        </div>
+
+        <button class="confirm-btn" id="confirm-payment-btn">I Have Transferred the Payment</button>
+        <a href="checkout.html" class="back-btn">← Back to Checkout</a>
+      `;
+
+      document.getElementById('confirm-payment-btn').addEventListener('click', () => {
+        const btn = document.getElementById('confirm-payment-btn');
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        setTimeout(() => {
+          const order = MDB.Orders.create({
+            name: params.get('name') || '',
+            email: params.get('email') || '',
+            phone: params.get('phone') || '',
+            address: params.get('address') || '',
+            city: params.get('city') || '',
+            notes: params.get('notes') || '',
+            paymentMethod: paymentMethod
+          });
+          
+          MDB.Cart.clear();
+          window.location.href = 'order-confirmation.html?id=' + order.id;
+        }, 1000);
+      });
+    });
+  </script>
+</body>
+
+</html>

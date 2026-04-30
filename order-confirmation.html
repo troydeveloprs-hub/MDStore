@@ -499,11 +499,9 @@
       <div class="container">
         <p class="footer-copyright">&copy; 2025 <a href="index.html">MDBoutiquee</a>. All rights reserved.</p>
         <div class="footer-payment">
-          <i class="fa-brands fa-cc-visa payment-icon"></i>
-          <i class="fa-brands fa-cc-mastercard payment-icon"></i>
-          <i class="fa-brands fa-cc-amex payment-icon"></i>
+          <span class="payment-text">Cash on Delivery</span>
           <span class="payment-text">Vodafone Cash</span>
-          <span class="payment-text">Insta Pay</span>
+          <span class="payment-text">InstaPay</span>
         </div>
       </div>
     </div>
@@ -521,7 +519,7 @@
 
       if (!order) { el.innerHTML = '<p style="text-align:center;color:#e74c3c">Order not found</p>'; return; }
 
-      const payLabels = { cash: 'Cash on Delivery', card: 'Credit/Debit Card', wallet: 'Mobile Wallet' };
+      const payLabels = { cod: 'Cash on Delivery', instapay: 'InstaPay', vodafone: 'Vodafone Cash' };
       el.innerHTML = `
       <div class="confirm-row"><span class="label">Order ID</span><span class="value">${order.id}</span></div>
       <div class="confirm-row"><span class="label">Date</span><span class="value">${new Date(order.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span></div>
