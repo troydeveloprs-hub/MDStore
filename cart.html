@@ -70,10 +70,8 @@
                   <a href="collections/concealer.html" class="mega-link">Concealer</a>
                   <a href="collections/face-primer.html" class="mega-link">Face Primer</a>
                   <a href="collections/setting-spray.html" class="mega-link">Setting Spray & Powder</a>
-            <a href="highlighter.html">Highlighter</a>
-            <a href="blush.html">Blush</a>
                   <a href="collections/highlighter.html" class="mega-link">Highlighter</a>
-                  <a href="blush.html" class="mega-link">Blush</a>
+                  <a href="collections/blush.html" class="mega-link">Blush</a>
                   <a href="collections/contour.html" class="mega-link">Contour</a>
                 </div>
               </div>
@@ -86,14 +84,10 @@
                   <a href="collections/eyebrow.html" class="mega-link">Eyebrow</a>
                   <a href="collections/lipstick.html" class="mega-link">Lipstick</a>
                   <a href="collections/lip-gloss.html" class="mega-link">Lip Gloss</a>
-            <a href="lip-oil.html">Lip Oil</a>
-            <a href="lip-liner.html">Lip Liner</a>
-            <a href="lip-sets.html">Lip Sets</a>
-            <a href="lip-plumper.html">Lip Plumper</a>
-                  <a href="lip-oil.html" class="mega-link">Lip Oil</a>
-                  <a href="lip-liner.html" class="mega-link">Lip Liner</a>
-                  <a href="lip-sets.html" class="mega-link">Lip Sets</a>
-                  <a href="lip-plumper.html" class="mega-link">Lip Plumper</a>
+                  <a href="collections/lip-oil.html" class="mega-link">Lip Oil</a>
+                  <a href="collections/lip-liner.html" class="mega-link">Lip Liner</a>
+                  <a href="collections/lip-sets.html" class="mega-link">Lip Sets</a>
+                  <a href="collections/lip-plumper.html" class="mega-link">Lip Plumper</a>
                 </div>
               </div>
               <div class="mega-col">
@@ -457,7 +451,9 @@
           <div class="cart-table-header">
             <span>Product</span><span>Price</span><span>Quantity</span><span>Total</span><span></span>
           </div>
+          <div class="cart-items-list">
           <!-- Items rendered by JS -->
+          </div>
         </div>
 
         <!-- CART SUMMARY -->
@@ -579,44 +575,70 @@
   <script src="js/features.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const itemsEl = document.querySelector('.cart-items');
+      const itemsEl = document.querySelector('.cart-items-list');
+      const cartItemsWrapper = document.querySelector('.cart-items');
       const emptyEl = document.querySelector('.cart-empty-state');
       const subtotalEl = document.querySelector('[data-subtotal]');
       const shippingEl = document.querySelector('[data-shipping]');
       const totalEl = document.querySelector('[data-total]');
-      
-      const items = await MDB.Cart.get();
+
+      // Get items — filter out corrupt/undefined entries
+      let rawItems = [];
+      try {
+        rawItems = await MDB.Cart.get() || [];
+      } catch(e) {
+        const stored = localStorage.getItem('mdb_cart');
+        rawItems = stored ? JSON.parse(stored) : [];
+      }
+
+      // Filter out items with missing critical data
+      const items = rawItems.filter(item =>
+        item && item.name && item.name !== 'undefined' &&
+        typeof item.price === 'number' && !isNaN(item.price)
+      );
+
+      // If all items were invalid, clean localStorage
+      if (rawItems.length > 0 && items.length === 0) {
+        localStorage.removeItem('mdb_cart');
+      }
       
       if (!items || items.length === 0) {
         if (emptyEl) emptyEl.style.display = 'block';
-        if (itemsEl) itemsEl.style.display = 'none';
+        if (cartItemsWrapper) cartItemsWrapper.style.display = 'none';
         if (document.querySelector('.cart-summary')) document.querySelector('.cart-summary').style.display = 'none';
         return;
       }
       
       if (emptyEl) emptyEl.style.display = 'none';
+
+      const fmt = (n) => {
+        if (window.MDB?.UI?.formatPrice) return MDB.UI.formatPrice(n);
+        return (n || 0).toLocaleString('en-EG') + ' LE';
+      };
       
-      // Render cart items
+      // Render cart items — image INSIDE details for proper desktop grid
       if (itemsEl) {
         itemsEl.innerHTML = items.map(item => `
-          <div class="cart-item" data-id="${item.id}" data-variant="${item.variant}">
-            <div class="cart-item-image">
-              <img src="${item.image}" alt="${item.name}">
-            </div>
+          <div class="cart-item" data-id="${item.id || ''}" data-variant="${item.variant || 'Default'}">
             <div class="cart-item-details">
-              <div class="cart-item-name">${item.name}</div>
-              <div class="cart-item-variant">${item.variant || ''}</div>
-              <div class="cart-item-price">${MDB.UI.formatPrice(item.price)}</div>
+              <div class="cart-item-image">
+                <img src="${item.image || ''}" alt="${item.name || 'Product'}" onerror="this.src='img/placeholder.jpg'">
+              </div>
+              <div class="cart-item-info">
+                <div class="cart-item-name">${item.name || 'Product'}</div>
+                <div class="cart-item-variant">${item.variant && item.variant !== 'undefined' ? item.variant : ''}</div>
+              </div>
             </div>
+            <div class="cart-item-price">${fmt(item.price)}</div>
             <div class="cart-item-quantity">
               <div class="quantity-selector quantity-selector-sm">
                 <button class="qty-btn cart-qty-minus" aria-label="Decrease">−</button>
-                <input type="number" class="qty-input cart-qty-input" value="${item.qty}" min="1" readonly>
+                <input type="number" class="qty-input cart-qty-input" value="${item.qty || 1}" min="1" readonly>
                 <button class="qty-btn cart-qty-plus" aria-label="Increase">+</button>
               </div>
             </div>
-            <div class="cart-item-total">${MDB.UI.formatPrice(item.price * item.qty)}</div>
-            <button class="cart-item-remove" aria-label="Remove"><i class="fa-solid fa-trash"></i></button>
+            <div class="cart-item-total">${fmt((item.price || 0) * (item.qty || 1))}</div>
+            <button class="cart-item-remove" aria-label="Remove item"><i class="fa-solid fa-trash"></i></button>
           </div>
         `).join('');
         
@@ -625,15 +647,17 @@
           const id = el.dataset.id;
           const variant = el.dataset.variant;
           
-          el.querySelector('.cart-qty-minus').addEventListener('click', async () => {
+          el.querySelector('.cart-qty-minus')?.addEventListener('click', async () => {
             const input = el.querySelector('.cart-qty-input');
             const newQty = Math.max(1, parseInt(input.value) - 1);
-            input.value = newQty;
-            await MDB.Cart.updateQty(id, variant, newQty);
-            location.reload();
+            if (parseInt(input.value) > 1) {
+              input.value = newQty;
+              await MDB.Cart.updateQty(id, variant, newQty);
+              location.reload();
+            }
           });
           
-          el.querySelector('.cart-qty-plus').addEventListener('click', async () => {
+          el.querySelector('.cart-qty-plus')?.addEventListener('click', async () => {
             const input = el.querySelector('.cart-qty-input');
             const newQty = parseInt(input.value) + 1;
             input.value = newQty;
@@ -641,7 +665,9 @@
             location.reload();
           });
           
-          el.querySelector('.cart-item-remove').addEventListener('click', async () => {
+          el.querySelector('.cart-item-remove')?.addEventListener('click', async () => {
+            el.style.opacity = '0.4';
+            el.style.pointerEvents = 'none';
             await MDB.Cart.remove(id, variant);
             location.reload();
           });
@@ -649,13 +675,14 @@
       }
       
       // Calculate totals
-      const subtotal = await MDB.Cart.subtotal();
-      const shipping = await MDB.Cart.shipping();
-      const total = await MDB.Cart.total();
+      const subtotal = items.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
+      const threshold = 3500;
+      const shipping = subtotal >= threshold ? 0 : 50;
+      const total = subtotal + shipping;
       
-      if (subtotalEl) subtotalEl.textContent = MDB.UI.formatPrice(subtotal);
-      if (shippingEl) shippingEl.textContent = shipping === 0 ? 'Free' : MDB.UI.formatPrice(shipping);
-      if (totalEl) totalEl.textContent = MDB.UI.formatPrice(total);
+      if (subtotalEl) subtotalEl.textContent = fmt(subtotal);
+      if (shippingEl) shippingEl.textContent = shipping === 0 ? 'Free' : fmt(shipping);
+      if (totalEl) totalEl.textContent = fmt(total);
     });
   </script>
   <style>

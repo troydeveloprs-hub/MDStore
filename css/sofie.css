@@ -7873,3 +7873,344 @@ img {
     gap: 10px;
   }
 }
+
+
+/* ═══════════════════════════════════════════════════════════════
+   DESKTOP OVERRIDES — min-width: 1024px
+   إصلاح شامل للهيدر والكارت والدفع على الديسكتوب
+   ═══════════════════════════════════════════════════════════════ */
+@media (min-width: 1024px) {
+
+  /* ── HEADER: إظهار القائمة ── */
+  .header-nav {
+    display: flex !important;
+  }
+
+  /* إخفاء الهامبرغر على الديسكتوب */
+  .hamburger {
+    display: none !important;
+  }
+
+  /* إخفاء القائمة الجانبية للموبايل */
+  .mobile-nav,
+  .mobile-nav-overlay {
+    display: none !important;
+  }
+
+  /* إخفاء Bottom Nav على الديسكتوب */
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+
+  /* ── CART PAGE: Layout صحيح ── */
+  .cart-main {
+    padding: 80px 0 60px;
+  }
+
+  .cart-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 32px;
+    letter-spacing: -0.5px;
+  }
+
+  .cart-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 48px;
+    align-items: flex-start;
+    padding: 0;
+  }
+
+  /* Cart Table Header - ظهور على الديسكتوب */
+  .cart-table-header {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+    padding: 12px 16px;
+    border-bottom: 2px solid var(--color-border);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+  }
+
+  /* Cart Item - عرض صحيح على الديسكتوب (4 أعمدة + remove) */
+  .cart-item {
+    display: grid !important;
+    grid-template-columns: 2fr 1fr 1fr 1fr 40px;
+    align-items: center;
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--color-border);
+    gap: 16px;
+    flex-direction: unset;
+  }
+
+  /* Cart Item Details = Image + Name (العمود الأول) */
+  .cart-item-details {
+    display: flex !important;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    flex-direction: row !important;
+  }
+
+  /* Cart Item Image داخل الـ details */
+  .cart-item-image {
+    width: 72px !important;
+    height: 72px !important;
+    flex-shrink: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f5f5f5;
+  }
+
+  /* Cart Item Info (اسم + variant) */
+  .cart-item-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .cart-item-info .cart-item-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .cart-item-info .cart-item-variant {
+    font-size: 0.78rem;
+    color: var(--color-text-secondary);
+  }
+
+  .cart-item-price,
+  .cart-item-quantity,
+  .cart-item-total,
+  .cart-item-remove {
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cart-item-price {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .cart-item-total {
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  /* Cart Summary */
+  .cart-summary {
+    position: sticky;
+    top: 120px;
+    background: var(--color-bg-light);
+    border: 1.5px solid var(--color-border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .cart-summary-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .cart-summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .cart-summary-divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: 8px 0;
+  }
+
+  .cart-summary-total {
+    font-size: 1.1rem !important;
+    font-weight: 700;
+    border-bottom: none;
+    padding-top: 16px;
+    margin-top: 8px;
+  }
+
+  .cart-promo {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0;
+  }
+
+  .cart-promo-input {
+    flex: 1;
+    padding: 12px 14px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    background: #fff;
+    transition: border-color 0.2s;
+  }
+
+  .cart-promo-input:focus {
+    outline: none;
+    border-color: var(--color-primary, #1a1a1a);
+  }
+
+  .cart-promo-btn {
+    padding: 12px 18px;
+    background: var(--color-bg-dark);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+
+  .cart-promo-btn:hover {
+    opacity: 0.85;
+  }
+
+  .cart-trust {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .cart-trust span {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Cart Notes */
+  .cart-notes {
+    margin-top: 32px;
+  }
+
+  .cart-notes-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .cart-notes-input {
+    width: 100%;
+    min-height: 100px;
+    padding: 14px 16px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+
+  .cart-notes-input:focus {
+    outline: none;
+    border-color: var(--color-primary, #1a1a1a);
+  }
+
+  /* ── CHECKOUT PAGE: Layout صحيح ── */
+  .checkout-page {
+    padding: 80px 0 60px;
+  }
+
+  .checkout-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 420px;
+    gap: 48px;
+    align-items: flex-start;
+  }
+
+  .checkout-section {
+    margin-bottom: 36px;
+  }
+
+  .checkout-section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .checkout-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .checkout-form .form-row {
+    display: flex !important;
+    gap: 14px;
+    flex-direction: row !important;
+  }
+
+  .checkout-form .form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .order-summary-card {
+    position: sticky !important;
+    top: 100px;
+    border: 1.5px solid var(--color-border, #e5e5e5);
+    border-radius: 14px;
+    padding: 28px;
+    background: #fff;
+  }
+
+  /* ── إصلاح الـ Category Banners على ديسكتوب ── */
+  .category-banners-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  /* ── إخفاء القائمة الجانبية من الموبايل على ديسكتوب ── */
+  .mobile-nav-section,
+  .mobile-nav-body,
+  .mobile-nav-footer {
+    /* مخصص للموبايل فقط */
+  }
+}
+
+/* ── MEDIUM: 769px - 1023px ── */
+@media (min-width: 769px) and (max-width: 1023px) {
+  .cart-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 32px;
+  }
+
+  .checkout-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 340px;
+    gap: 32px;
+  }
+}
