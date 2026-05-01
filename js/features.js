@@ -138,23 +138,29 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ===================================================================
      3. WHATSAPP FLOATING BUTTON
      =================================================================== */
-  const whatsappNum = '201037070888'; // Change to real number
-  const waBtn = document.createElement('a');
-  waBtn.href = `https://wa.me/${whatsappNum}?text=${encodeURIComponent('Hi MDBoutiquee! I have a question.')}`;
-  waBtn.target = '_blank';
-  waBtn.className = 'whatsapp-float';
-  waBtn.setAttribute('aria-label', 'Chat on WhatsApp');
-  waBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i>';
-  document.body.appendChild(waBtn);
+  async function initWhatsApp() {
+    const settings = (window.MDB && MDB.Settings) ? await MDB.Settings.get() : {};
+    const rawNum = settings.contactPhone || '201037070888';
+    const whatsappNum = rawNum.replace(/\+/g, '').replace(/\s/g, '');
 
-  // WhatsApp order sharing
-  window.MDB.shareOrderWhatsApp = async function(orderId) {
-    const order = await MDB.Orders.getById(orderId);
-    if (!order || !order.items) return;
-    const items = order.items.map(i => `• ${i.name} (${i.variant}) x${i.qty} — ${MDB.UI.formatPrice(i.price * i.qty)}`).join('\n');
-    const msg = `🛍️ New Order: ${order.id}\n\n${items}\n\n💰 Total: ${MDB.UI.formatPrice(order.total)}\n📍 ${order.customer.address}, ${order.customer.city}\n📞 ${order.customer.phone}`;
-    window.open(`https://wa.me/${whatsappNum}?text=${encodeURIComponent(msg)}`, '_blank');
-  };
+    const waBtn = document.createElement('a');
+    waBtn.href = `https://wa.me/${whatsappNum}?text=${encodeURIComponent('Hi MDBoutiquee! I have a question.')}`;
+    waBtn.target = '_blank';
+    waBtn.className = 'whatsapp-float';
+    waBtn.setAttribute('aria-label', 'Chat on WhatsApp');
+    waBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i>';
+    document.body.appendChild(waBtn);
+
+    // WhatsApp order sharing
+    window.MDB.shareOrderWhatsApp = async function(orderId) {
+      const order = await MDB.Orders.getById(orderId);
+      if (!order || !order.items) return;
+      const items = order.items.map(i => `• ${i.name} (${i.variant}) x${i.qty} — ${MDB.UI.formatPrice(i.price * i.qty)}`).join('\n');
+      const msg = `🛍️ New Order: ${order.id}\n\n${items}\n\n💰 Total: ${MDB.UI.formatPrice(order.total)}\n📍 ${order.customer.address}, ${order.customer.city}\n📞 ${order.customer.phone}`;
+      window.open(`https://wa.me/${whatsappNum}?text=${encodeURIComponent(msg)}`, '_blank');
+    };
+  }
+  initWhatsApp();
 
   /* ===================================================================
      4. STOCK COUNTER — Show on product cards & pages
@@ -489,18 +495,28 @@ document.addEventListener('DOMContentLoaded', () => {
           cartNote.innerHTML = `<i class="fa-solid fa-truck-fast"></i> Free shipping on orders over ${s.shippingThreshold} LE`;
       }
 
-      // 3. Contact Email in footer
-      const footerEmail = document.querySelector('.footer-contact-info p:first-child');
-      if (footerEmail && s.contactEmail) {
-          footerEmail.innerHTML = `<i class="fa-solid fa-envelope"></i> ${s.contactEmail}`;
-      }
+      // 3. Contact Email - Update all occurrences
+      const emailElements = document.querySelectorAll('.footer-contact-info p:first-child, [data-dynamic-email], a[href^="mailto:"]');
+      emailElements.forEach(el => {
+          if (el.tagName === 'A' && el.href.startsWith('mailto:')) {
+              el.href = `mailto:${s.contactEmail}`;
+              if (el.textContent.includes('@')) el.textContent = s.contactEmail;
+          } else {
+              el.innerHTML = `<i class="fa-solid fa-envelope"></i> ${s.contactEmail}`;
+          }
+      });
 
-      // 4. Contact Phone in footer - Convert to WhatsApp link
-      const footerPhone = document.querySelector('.footer-contact-info p:last-child');
-      if (footerPhone && s.contactPhone) {
-          const cleanNum = s.contactPhone.replace(/\+/g, '').replace(/\s/g, '');
-          footerPhone.innerHTML = `<a href="https://wa.me/${cleanNum}" target="_blank" style="color:inherit;text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> ${s.contactPhone}</a>`;
-      }
+      // 4. Contact Phone - Update all occurrences
+      const phoneElements = document.querySelectorAll('.footer-contact-info p:last-child, [data-dynamic-phone], a[href^="tel:"]');
+      const cleanNum = s.contactPhone.replace(/\+/g, '').replace(/\s/g, '');
+      phoneElements.forEach(el => {
+          if (el.tagName === 'A' && el.href.startsWith('tel:')) {
+              el.href = `tel:${s.contactPhone}`;
+              if (el.textContent.match(/\+?\d+/)) el.textContent = s.contactPhone;
+          } else if (el.classList.contains('footer-contact-info-phone') || el.parentElement.classList.contains('footer-contact-info')) {
+              el.innerHTML = `<a href="https://wa.me/${cleanNum}" target="_blank" style="color:inherit;text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> ${s.contactPhone}</a>`;
+          }
+      });
     }
   };
   /* ===================================================================

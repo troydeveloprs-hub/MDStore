@@ -2529,17 +2529,22 @@
         renderProductImagePreview();
       });
 
-      document.getElementById('settings-form').onsubmit = e => {
+      document.getElementById('settings-form').onsubmit = async e => {
         e.preventDefault();
-        MDB.Settings.save({
-          announcement: document.getElementById('sf-ann').value,
-          shippingThreshold: parseInt(document.getElementById('sf-ship').value),
-          contactEmail: document.getElementById('sf-email').value,
-          contactPhone: document.getElementById('sf-phone').value,
-          vodafoneNumber: document.getElementById('sf-vodafone').value,
-          codFee: parseInt(document.getElementById('sf-cod-fee').value)
-        });
-        MDB.UI.toast('Settings saved');
+        try {
+          await MDB.Settings.save({
+            announcement: document.getElementById('sf-ann').value,
+            shippingThreshold: parseInt(document.getElementById('sf-ship').value),
+            contactEmail: document.getElementById('sf-email').value,
+            contactPhone: document.getElementById('sf-phone').value,
+            vodafoneNumber: document.getElementById('sf-vodafone').value,
+            codFee: parseInt(document.getElementById('sf-cod-fee').value)
+          });
+          MDB.UI.toast('Settings saved successfully');
+        } catch (err) {
+          console.error(err);
+          MDB.UI.toast('Error saving settings', 'danger');
+        }
       };
 
       document.getElementById('coupon-form').onsubmit = e => {

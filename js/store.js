@@ -1582,6 +1582,7 @@ const MDB = (() => {
             return {
               announcement: 'Free shipping on orders over 3500 LE',
               shippingThreshold: 3500,
+              codFee: 50,
               contactEmail: 'hello@mdboutiquee2.com',
               contactPhone: '+201037070888',
               vodafoneNumber: '01037070888',
@@ -1590,7 +1591,7 @@ const MDB = (() => {
           }
           throw error;
         }
-        return data.value || {
+        const result = data.value || {
           announcement: 'Free shipping on orders over 3500 LE',
           shippingThreshold: 3500,
           codFee: 50,
@@ -1599,6 +1600,8 @@ const MDB = (() => {
           vodafoneNumber: '01037070888',
           currency: 'LE'
         };
+        _set(KEYS.SETTINGS, result);
+        return result;
       }, _get(KEYS.SETTINGS) || {
         announcement: 'Free shipping on orders over 3500 LE',
         shippingThreshold: 3500,
@@ -1619,6 +1622,7 @@ const MDB = (() => {
           .from(this._table)
           .upsert({ key: 'general', value: merged }, { onConflict: 'key' });
         if (error) throw error;
+        _set(KEYS.SETTINGS, merged);
         this._cache = merged;
       }, null);
     }
