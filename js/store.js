@@ -916,13 +916,18 @@ const MDB = (() => {
               merged.push(lo);
             }
           } else {
-             // If it exists in DB, update local storage with DB status to stay in sync
+             // If it exists in DB, update local storage with DB status ONLY if DB is newer
              const dbOrder = mappedDbOrders.find(o => o.id === lo.id);
              const idx = localOrders.findIndex(o => o.id === lo.id);
              if (idx > -1 && dbOrder) {
-                localOrders[idx].status = dbOrder.status;
-                localOrders[idx].paymentStatus = dbOrder.paymentStatus;
-                localOrders[idx].updatedAt = dbOrder.updatedAt;
+                const dbDate = new Date(dbOrder.updatedAt || dbOrder.createdAt || 0);
+                const localDate = new Date(localOrders[idx].updatedAt || localOrders[idx].createdAt || 0);
+                
+                if (dbDate >= localDate) {
+                  localOrders[idx].status = dbOrder.status;
+                  localOrders[idx].paymentStatus = dbOrder.paymentStatus;
+                  localOrders[idx].updatedAt = dbOrder.updatedAt;
+                }
              }
           }
         }
@@ -1118,6 +1123,12 @@ const MDB = (() => {
         _set(KEYS.ORDERS, localOrders);
       }
 
+      if (!_isUuid(id)) {
+        console.warn(`[MDB Orders] Skip Supabase updateStatus: ID ${id} is not a valid UUID (Local Order).`);
+        this._cache = null;
+        return { id, status: newStatus, localOnly: true };
+      }
+
       return this._run('updateStatus', async () => {
         const client = await this._ensureClient();
         const { data, error } = await client
@@ -1140,6 +1151,12 @@ const MDB = (() => {
         localOrders[idx].paymentStatus = newStatus;
         localOrders[idx].updatedAt = _dateNow();
         _set(KEYS.ORDERS, localOrders);
+      }
+
+      if (!_isUuid(id)) {
+        console.warn(`[MDB Orders] Skip Supabase updatePaymentStatus: ID ${id} is not a valid UUID (Local Order).`);
+        this._cache = null;
+        return { id, payment_status: newStatus, localOnly: true };
       }
 
       const res = await this._run('updatePaymentStatus', async () => {
@@ -1165,6 +1182,12 @@ const MDB = (() => {
       if (idx > -1) {
         localOrders[idx] = { ...localOrders[idx], ...updateData, updatedAt: _dateNow() };
         _set(KEYS.ORDERS, localOrders);
+      }
+
+      if (!_isUuid(id)) {
+        console.warn(`[MDB Orders] Skip Supabase update: ID ${id} is not a valid UUID (Local Order).`);
+        this._cache = null;
+        return { ...updateData, id, localOnly: true };
       }
 
       // 2. Update DB

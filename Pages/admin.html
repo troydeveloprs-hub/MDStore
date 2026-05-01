@@ -2330,6 +2330,7 @@
       dash.dataset.actionsBound = '1';
 
       dash.addEventListener('click', e => {
+        console.log('[MDB Admin] Click event detected:', e.target);
         if (e.target.closest('[data-edit-product]')) { editProduct(decodeURIComponent(e.target.closest('[data-edit-product]').dataset.editProduct)); return; }
         if (e.target.closest('[data-delete-product]')) { deleteProduct(decodeURIComponent(e.target.closest('[data-delete-product]').dataset.deleteProduct)); return; }
         if (e.target.closest('[data-view-order]')) { viewOrder(decodeURIComponent(e.target.closest('[data-view-order]').dataset.viewOrder)); return; }
@@ -2341,20 +2342,30 @@
       });
 
       dash.addEventListener('change', async e => {
+        console.log('[MDB Admin] Change event detected:', e.target);
+        
         const statusSel = e.target.closest('[data-order-status]');
         if (statusSel) {
+          const id = decodeURIComponent(statusSel.dataset.orderStatus);
+          const val = statusSel.value;
+          console.log('[MDB Admin] Updating order status:', id, val);
           const btn = e.target;
           btn.style.opacity = '0.5';
-          await updateStatus(decodeURIComponent(statusSel.dataset.orderStatus), statusSel.value);
+          await updateStatus(id, val);
           btn.style.opacity = '1';
+          return;
         }
         
         const paySel = e.target.closest('[data-payment-status]');
         if (paySel) {
+          const id = decodeURIComponent(paySel.dataset.paymentStatus);
+          const val = paySel.value;
+          console.log('[MDB Admin] Updating payment status:', id, val);
           const btn = e.target;
           btn.style.opacity = '0.5';
-          await updatePaymentStatus(decodeURIComponent(paySel.dataset.paymentStatus), paySel.value);
+          await updatePaymentStatus(id, val);
           btn.style.opacity = '1';
+          return;
         }
       });
     }
@@ -2613,7 +2624,7 @@
             <select class="status-select" data-order-status="${encodeURIComponent(safeText(o.id, ''))}">
               ${['pending', 'processing', 'shipped', 'delivered', 'cancelled'].map(s => `<option value="${s}" ${st === s ? 'selected' : ''}>${s}</option>`).join('')}
             </select>
-            <button class="act-btn danger" type="button" onclick="deleteOrder('${o.id}')"><i class="fa-solid fa-trash"></i></button>
+            <button class="act-btn danger" type="button" data-delete-order="${encodeURIComponent(safeText(o.id, ''))}"><i class="fa-solid fa-trash"></i></button>
           </div>
         </td>
       </tr>`;
