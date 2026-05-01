@@ -1637,20 +1637,22 @@ const MDB = (() => {
     _cache: 'mdb_subscribers',
 
     async subscribe(email) {
-      console.log('Newsletter.subscribe triggered for:', email);
+      console.log('Newsletter.subscribe START for:', email);
       if (!email || !email.includes('@')) throw new Error('Invalid email');
-      const subs = JSON.parse(localStorage.getItem(this._cache) || '[]');
+      const subs = JSON.parse(localStorage.getItem(Newsletter._cache) || '[]');
       if (!subs.includes(email)) {
         subs.push(email);
-        localStorage.setItem(this._cache, JSON.stringify(subs));
+        localStorage.setItem(Newsletter._cache, JSON.stringify(subs));
       }
       try {
+        console.log('Newsletter.subscribe syncing with DB...');
         const client = await Products._ensureClient();
-        const { error } = await client.from(this._table).insert([{ email, created_at: new Date().toISOString() }]);
+        const { error } = await client.from(Newsletter._table).insert([{ email, created_at: new Date().toISOString() }]);
         if (error) {
           console.error('MDB Newsletter Supabase Error:', error.message, error.details);
           throw error;
         }
+        console.log('Newsletter.subscribe DB sync SUCCESS');
       } catch (err) { console.warn('MDB Newsletter DB sync failed:', err); }
       return true;
     },
@@ -1658,12 +1660,12 @@ const MDB = (() => {
     async get() {
       try {
         const client = await Products._ensureClient();
-        const { data, error } = await client.from(this._table).select('*').order('created_at', { ascending: false });
+        const { data, error } = await client.from(Newsletter._table).select('*').order('created_at', { ascending: false });
         if (error) throw error;
         return data || [];
       } catch (err) {
         console.warn('MDB Newsletter DB fetch failed, using local fallback:', err);
-        const local = JSON.parse(localStorage.getItem(this._cache) || '[]');
+        const local = JSON.parse(localStorage.getItem(Newsletter._cache) || '[]');
         return local.map(email => ({ email, created_at: null }));
       }
     }

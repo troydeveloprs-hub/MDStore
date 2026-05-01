@@ -1065,7 +1065,9 @@ document.addEventListener('DOMContentLoaded', () => {
       try {
         console.log('Checking MDB.Newsletter:', window.MDB ? !!window.MDB.Newsletter : 'MDB missing');
         if (window.MDB && window.MDB.Newsletter) {
+          console.log('Calling Newsletter.subscribe...');
           await window.MDB.Newsletter.subscribe(email);
+          console.log('Newsletter.subscribe call DONE');
           window.MDB.UI.toast('Thank you for subscribing!', 'success');
           newsletterForm.reset();
         } else {
