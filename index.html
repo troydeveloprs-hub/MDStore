@@ -575,6 +575,35 @@
     </div>
   </section>
 
+  <!-- ========== SHOP / SEARCH RESULTS (Hidden by default) ========== -->
+  <main id="shop-mode-container" style="display: none; padding: 40px 0;">
+    <div class="container">
+      <div class="section-header">
+        <h1 id="shop-title" class="section-title">Shop All</h1>
+        <div class="collection-toolbar">
+          <span class="collection-count">Loading products...</span>
+          <div class="collection-sort">
+            <label for="sort-main">Sort by:</label>
+            <select id="sort-main" class="sort-select">
+              <option value="newest">Newest</option>
+              <option value="price-asc">Price: Low to High</option>
+              <option value="price-desc">Price: High to Low</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="products-grid products-grid-4" id="shop-grid">
+        <!-- Dynamic products -->
+      </div>
+      <div id="shop-no-products" style="display:none; text-align:center; padding:60px; color:#888;">
+        <i class="fa-solid fa-magnifying-glass" style="font-size:48px; margin-bottom:20px; opacity:0.5;"></i>
+        <h3>No products found</h3>
+        <p>Try adjusting your search or filters to find what you're looking for.</p>
+        <a href="index.html" class="btn btn-primary" style="margin-top:20px;">Back to Home</a>
+      </div>
+    </div>
+  </main>
+
   <!-- ========== TRUST BADGES ========== -->
   <section class="trust-badges scroll-reveal">
     <div class="container">
@@ -827,42 +856,109 @@
     document.addEventListener('DOMContentLoaded', async () => {
       if (!window.MDB || !MDB.Products || !MDB.UI) return;
 
-      // Update cart badges on page load
-      if (window.MDB && window.MDB.UI && window.MDB.UI.updateCartBadges) {
-        await window.MDB.UI.updateCartBadges();
-      }
       const newGrid = document.getElementById('home-new-grid');
       const skincareGrid = document.getElementById('home-skincare-grid');
-      try {
-        const products = await MDB.Products.getAll();
-        console.log("--- DB PRODUCTS LOADED ---", products);
+      const shopContainer = document.getElementById('shop-mode-container');
+      const homeSections = document.querySelectorAll('.hero, .category-banners, .brands-strip, .products-section, .promo-banner, .trust-badges, .reviews-section, .instagram-section, .newsletter');
+      const shopGrid = document.getElementById('shop-grid');
+      const shopTitle = document.getElementById('shop-title');
+      const shopCount = document.querySelector('.collection-count');
+      const shopNoProducts = document.getElementById('shop-no-products');
+      const sortMain = document.getElementById('sort-main');
 
-        if (newGrid) {
-          let makeup = products.filter(p => {
-            const cat = (p.category || "").toLowerCase().trim();
-            return cat.includes("makeup") || cat.includes("mekup") || cat.includes("مكياج");
-          }).slice(0, 4);
+      // 4. Extract parameters from URL
+      function getParams() {
+        const path = window.location.pathname.toLowerCase();
+        const searchParams = new URLSearchParams(window.location.search);
+        let brand = searchParams.get('brand');
+        let category = searchParams.get('category');
+        let search = searchParams.get('search') || searchParams.get('q');
 
-          if (makeup.length === 0 && products.length > 0) {
-            makeup = products.slice(0, 4);
-          }
+        if (path.includes('/brand/')) brand = path.split('/brand/')[1].split('/')[0];
+        if (path.includes('/category/')) category = path.split('/category/')[1].split('/')[0];
 
-          newGrid.innerHTML = makeup.length ? makeup.map(p => MDB.UI.productCardHTML(p)).join("")
-            : "<div style='grid-column:1/-1;text-align:center;padding:40px;color:#888;'>No products found in database.</div>";
+        return { brand, category, search };
+      }
+
+      async function init() {
+        const params = getParams();
+        const isShopMode = params.brand || params.category || params.search;
+
+        if (isShopMode) {
+          // Enter Shop Mode
+          homeSections.forEach(s => s.style.display = 'none');
+          if (shopContainer) shopContainer.style.display = 'block';
+          
+          let title = 'Shop All';
+          if (params.search) title = `Search: "${params.search}"`;
+          else if (params.brand) title = `Brand: ${params.brand.toUpperCase()}`;
+          else if (params.category) title = params.category.charAt(0).toUpperCase() + params.category.slice(1);
+          if (shopTitle) shopTitle.textContent = title;
+
+          await loadShopProducts(params);
+        } else {
+          // Home Mode
+          await loadHomeProducts();
         }
 
-        if (skincareGrid) {
-          const skincare = products.filter(p => {
-            const cat = (p.category || "").toLowerCase().trim();
-            return cat.includes("skincare") || cat.includes("عناية") || cat.includes("skin");
-          }).slice(0, 4);
-          if (skincare.length) skincareGrid.innerHTML = skincare.map(p => MDB.UI.productCardHTML(p)).join("");
-          else {
-            const sec = skincareGrid.closest(".products-section");
-            if (sec) sec.style.display = "none";
-          }
+        // Update cart badges
+        if (MDB.UI.updateCartBadges) await MDB.UI.updateCartBadges();
+      }
+
+      async function loadShopProducts(params) {
+        if (!shopGrid) return;
+        shopGrid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px;">Loading products...</div>';
+        
+        // 9. Add debugging
+        console.log('Shop Mode Params:', params);
+
+        // 10. Optimize performance - direct fetch
+        const products = await MDB.Products.fetchProducts({
+          brand: params.brand,
+          category: params.category,
+          search: params.search,
+          sort: sortMain ? sortMain.value : 'newest'
+        });
+
+        // 5. Clear previous state (handled by innerHTML = '')
+        shopGrid.innerHTML = '';
+
+        if (products.length === 0) {
+          // 6. Prevent fallback bugs
+          if (shopNoProducts) shopNoProducts.style.display = 'block';
+          if (shopCount) shopCount.textContent = '0 products';
+        } else {
+          if (shopNoProducts) shopNoProducts.style.display = 'none';
+          if (shopCount) shopCount.textContent = `${products.length} products`;
+          // 7. Reusable rendering
+          shopGrid.innerHTML = products.map(p => MDB.UI.productCardHTML(p)).join("");
         }
-      } catch (err) { console.error(err); }
+      }
+
+      async function loadHomeProducts() {
+        try {
+          const makeup = await MDB.Products.fetchProducts({ category: 'makeup', limit: 4 });
+          if (newGrid) {
+            newGrid.innerHTML = makeup.length ? makeup.map(p => MDB.UI.productCardHTML(p)).join("")
+              : "<div style='grid-column:1/-1;text-align:center;padding:40px;color:#888;'>No makeup products found.</div>";
+          }
+
+          const skincare = await MDB.Products.fetchProducts({ category: 'skincare', limit: 4 });
+          if (skincareGrid) {
+            if (skincare.length) skincareGrid.innerHTML = skincare.map(p => MDB.UI.productCardHTML(p)).join("");
+            else {
+              const sec = skincareGrid.closest(".products-section");
+              if (sec) sec.style.display = "none";
+            }
+          }
+        } catch (err) { console.error('Home load error:', err); }
+      }
+
+      if (sortMain) {
+        sortMain.addEventListener('change', () => loadShopProducts(getParams()));
+      }
+
+      init();
     });
   </script>
 </body>

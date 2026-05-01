@@ -182,6 +182,15 @@ const MDB = (() => {
       return Number.isNaN(date.getTime()) ? _dateNow() : date.toISOString();
     },
 
+    _normalizeSlug(val) {
+      return String(val || '')
+        .toLowerCase()
+        .trim()
+        .replace(/\./g, '') // Remove dots (e.g. e.l.f -> elf)
+        .replace(/\s+/g, '-') // Spaces to hyphens
+        .replace(/-+/g, '-'); // Multiple hyphens to one
+    },
+
     _mapRow(row) {
       if (!row) return null;
       let metadata = row.metadata;
@@ -207,6 +216,10 @@ const MDB = (() => {
       merged.reviewCount = Number(merged.reviewCount || 0);
       merged.price = Number(merged.price);
       merged.originalPrice = merged.originalPrice ? Number(merged.originalPrice) : null;
+      
+      // Ensure brand is consistent for matching
+      merged.brand = merged.brand || '';
+      
       return _normalizeProductImages(merged);
     },
 
@@ -278,21 +291,74 @@ const MDB = (() => {
       }
     },
 
-    async getAll(skipCache = false) {
-      if (!skipCache && this._cache) return this._cache;
-
-      return this._run('getAll', async () => {
+    async fetchProducts({ brand, category, search, sort, isNewArrival, isFeatured, limit = 50, page = 1 } = {}) {
+      console.log('MDB Products Fetch:', { brand, category, search, sort, isNewArrival, isFeatured });
+      
+      return this._run('fetchProducts', async () => {
         const client = await this._ensureClient();
-        const { data, error } = await client
+        let query = client
           .from(this._table)
-          .select('id, name, price, image, images, description, created_at, metadata')
-          .order('created_at', { ascending: false });
+          .select('id, name, price, image, images, description, created_at, metadata');
+
+        // Dynamic Filtering
+        if (brand) {
+          query = query.ilike('brand', `%${brand}%`);
+        }
+
+        if (category) {
+          query = query.eq('category', category);
+        }
+
+        if (search) {
+          query = query.ilike('name', `%${search}%`);
+        }
+
+        if (isNewArrival !== undefined) {
+          query = query.eq('metadata->isNewArrival', isNewArrival);
+        }
+
+        if (isFeatured !== undefined) {
+          query = query.eq('metadata->isFeatured', isFeatured);
+        }
+
+        // Sorting
+        if (sort === 'price-asc') {
+          query = query.order('price', { ascending: true });
+        } else if (sort === 'price-desc') {
+          query = query.order('price', { ascending: false });
+        } else if (sort === 'newest') {
+          query = query.order('created_at', { ascending: false });
+        } else {
+          query = query.order('created_at', { ascending: false });
+        }
+
+        // Pagination
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+        query = query.range(from, to);
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
-        this._cache = (data || []).map(row => this._mapRow(row));
-        return this._cache;
+        const products = (data || []).map(row => this._mapRow(row));
+        
+        if (brand && products.length > 0) {
+          const normBrand = this._normalizeSlug(brand);
+          return products.filter(p => this._normalizeSlug(p.brand).includes(normBrand));
+        }
+
+        return products;
       }, []);
+    },
+
+    async getAll(skipCache = false) {
+      if (!skipCache && this._cache) return this._cache;
+      
+      // Use fetchProducts for consistency
+      const products = await this.fetchProducts({ limit: 1000 });
+      if (products.length > 0) this._cache = products;
+      return products;
     },
 
     async seed(options = {}) {
@@ -421,28 +487,18 @@ const MDB = (() => {
     },
 
     async getByCategory(cat) {
-      const all = await this.getAll();
-      return all.filter(p => p.category === cat);
+      return this.fetchProducts({ category: cat });
     },
 
     async getBySubcategory(sub) {
+      // Subcategory might need special handling if it's not a top-level column
+      // For now let's assume it's filtered server-side if possible or keep simple
       const all = await this.getAll();
       return all.filter(p => p.subcategory === sub);
     },
 
     async search(query) {
-      const all = await this.getAll();
-      const q = String(query || '').toLowerCase().trim();
-      if (!q) return all;
-      return all.filter(p =>
-        String(p.id || '').toLowerCase().includes(q) ||
-        String(p.legacyId || '').toLowerCase().includes(q) ||
-        String(p.name || '').toLowerCase().includes(q) ||
-        String(p.brand || '').toLowerCase().includes(q) ||
-        String(p.category || '').toLowerCase().includes(q) ||
-        String(p.subcategory || '').toLowerCase().includes(q) ||
-        String(p.description || '').toLowerCase().includes(q)
-      );
+      return this.fetchProducts({ search: query });
     },
 
     async getFeatured() {
