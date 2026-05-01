@@ -152,7 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(waBtn);
 
     // WhatsApp order sharing
-    window.MDB.shareOrderWhatsApp = async function(orderId) {
+    window.MDB.shareOrderWhatsApp = async function (orderId) {
       const order = await MDB.Orders.getById(orderId);
       if (!order || !order.items) return;
       const items = order.items.map(i => `• ${i.name} (${i.variant}) x${i.qty} — ${MDB.UI.formatPrice(i.price * i.qty)}`).join('\n');
@@ -426,13 +426,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async validate(code) {
       const allCoupons = {
-        'MDB10':    { type: 'percent', value: 10, label: '10% Off', minOrder: 0, maxUses: 99, expiry: '2027-12-31' },
-        'MDB20':    { type: 'percent', value: 20, label: '20% Off', minOrder: 500, maxUses: 5, expiry: '2027-06-30' },
-        'SAVE50':   { type: 'fixed', value: 50, label: '50 LE Off', minOrder: 200, maxUses: 10, expiry: '2027-12-31' },
-        'SAVE100':  { type: 'fixed', value: 100, label: '100 LE Off', minOrder: 800, maxUses: 3, expiry: '2027-06-30' },
+        'MDB10': { type: 'percent', value: 10, label: '10% Off', minOrder: 0, maxUses: 99, expiry: '2027-12-31' },
+        'MDB20': { type: 'percent', value: 20, label: '20% Off', minOrder: 500, maxUses: 5, expiry: '2027-06-30' },
+        'SAVE50': { type: 'fixed', value: 50, label: '50 LE Off', minOrder: 200, maxUses: 10, expiry: '2027-12-31' },
+        'SAVE100': { type: 'fixed', value: 100, label: '100 LE Off', minOrder: 800, maxUses: 3, expiry: '2027-06-30' },
         'FREESHIP': { type: 'fixed', value: 50, label: 'Free Shipping', minOrder: 0, maxUses: 99, expiry: '2027-12-31' },
-        'VIP30':    { type: 'percent', value: 30, label: '30% VIP Discount', minOrder: 1000, maxUses: 1, expiry: '2027-03-31' },
-        'WELCOME15':{ type: 'percent', value: 15, label: '15% Welcome Discount', minOrder: 0, maxUses: 1, expiry: '2027-12-31' },
+        'VIP30': { type: 'percent', value: 30, label: '30% VIP Discount', minOrder: 1000, maxUses: 1, expiry: '2027-03-31' },
+        'WELCOME15': { type: 'percent', value: 15, label: '15% Welcome Discount', minOrder: 0, maxUses: 1, expiry: '2027-12-31' },
         'BEAUTY25': { type: 'percent', value: 25, label: '25% Off Beauty', minOrder: 300, maxUses: 2, expiry: '2027-09-30' },
       };
 
@@ -478,51 +478,52 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!MDB.Settings) return;
       const s = await MDB.Settings.get();
       if (!s) return;
-      
+
       // 1. Announcement Bar
       const annText = document.querySelector('.announcement-text');
       if (annText && s.announcement) {
-          // preserve the link if it exists
-          const link = annText.querySelector('a');
-          const prefix = s.announcement + ' — ';
-          annText.innerHTML = prefix;
-          if (link) annText.appendChild(link);
+        // preserve the link if it exists
+        const link = annText.querySelector('a');
+        const prefix = s.announcement + ' — ';
+        annText.innerHTML = prefix;
+        if (link) annText.appendChild(link);
       }
 
       // 2. Cart Shipping Note
       const cartNote = document.querySelector('.cart-shipping-note');
       if (cartNote) {
-          cartNote.innerHTML = `<i class="fa-solid fa-truck-fast"></i> Free shipping on orders over ${s.shippingThreshold} LE`;
+        cartNote.innerHTML = `<i class="fa-solid fa-truck-fast"></i> Free shipping on orders over ${s.shippingThreshold} LE`;
       }
 
       // 3. Contact Email - Update all occurrences
       const emailElements = document.querySelectorAll('.footer-contact-info p:first-child, [data-dynamic-email], a[href^="mailto:"]');
       emailElements.forEach(el => {
-          if (el.tagName === 'A' && el.href.startsWith('mailto:')) {
-              el.href = `mailto:${s.contactEmail}`;
-              if (el.textContent.includes('@')) el.textContent = s.contactEmail;
-          } else {
-              el.innerHTML = `<i class="fa-solid fa-envelope"></i> ${s.contactEmail}`;
-          }
+        if (el.tagName === 'A' && el.href.startsWith('mailto:')) {
+          el.href = `mailto:${s.contactEmail}`;
+          if (el.textContent.includes('@')) el.textContent = s.contactEmail;
+        } else {
+          el.innerHTML = `<i class="fa-solid fa-envelope"></i> ${s.contactEmail}`;
+        }
       });
 
       // 4. Contact Phone - Update all occurrences
       const phoneElements = document.querySelectorAll('.footer-contact-info p:last-child, [data-dynamic-phone], a[href^="tel:"]');
-      const cleanNum = s.contactPhone.replace(/\+/g, '').replace(/\s/g, '');
+      const phone = s.contactPhone || '';
+      const cleanNum = phone.replace(/\+/g, '').replace(/\s/g, '');
       phoneElements.forEach(el => {
-          if (el.tagName === 'A' && el.href.startsWith('tel:')) {
-              el.href = `tel:${s.contactPhone}`;
-              if (el.textContent.match(/\+?\d+/)) el.textContent = s.contactPhone;
-          } else if (el.classList.contains('footer-contact-info-phone') || el.parentElement.classList.contains('footer-contact-info')) {
-              el.innerHTML = `<a href="https://wa.me/${cleanNum}" target="_blank" style="color:inherit;text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> ${s.contactPhone}</a>`;
-          }
+        if (el.tagName === 'A' && el.href.startsWith('tel:')) {
+          el.href = `tel:${phone}`;
+          if (el.textContent.match(/\+?\d+/)) el.textContent = phone;
+        } else if (el.classList.contains('footer-contact-info-phone') || el.parentElement.classList.contains('footer-contact-info')) {
+          el.innerHTML = `<a href="https://wa.me/${cleanNum}" target="_blank" style="color:inherit;text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> ${phone}</a>`;
+        }
       });
     }
   };
   /* ===================================================================
      12. QUICK VIEW — Product preview modal
      =================================================================== */
-  
+
 
   /* (ATC logic moved/handled entirely by app.js using event delegation) */
 

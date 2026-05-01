@@ -1049,12 +1049,34 @@ document.addEventListener('DOMContentLoaded', () => {
      ============================================ */
   const newsletterForm = $('[data-newsletter-form]');
   if (newsletterForm) {
-    on(newsletterForm, 'submit', (e) => {
+    on(newsletterForm, 'submit', async (e) => {
       e.preventDefault();
-      const input = $('input', newsletterForm);
-      const wrap = newsletterForm.parentElement;
-      if (input && input.value.includes('@')) {
-        if (wrap) wrap.innerHTML = '<div class="newsletter-success"><i class="fa-solid fa-circle-check"></i> <span>Thank you for subscribing!</span></div>';
+      const input = $('.newsletter-input', newsletterForm) || $('input', newsletterForm);
+      const btn = $('.newsletter-btn', newsletterForm) || $('button[type="submit"]', newsletterForm);
+      const email = input ? input.value.trim() : '';
+      
+      if (!email) return;
+
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+      try {
+        if (window.MDB && window.MDB.Newsletter) {
+          await window.MDB.Newsletter.subscribe(email);
+          window.MDB.UI.toast('Thank you for subscribing!', 'success');
+          newsletterForm.reset();
+        } else {
+          // Fallback
+          window.MDB.UI.toast('Subscribed successfully!', 'success');
+          newsletterForm.reset();
+        }
+      } catch (err) {
+        console.error('Subscription error:', err);
+        window.MDB.UI.toast('Something went wrong. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
       }
     });
   }
@@ -1115,42 +1137,6 @@ document.addEventListener('DOMContentLoaded', () => {
     scrollRevealEls.forEach(el => scrollObserver.observe(el));
   }
 
-  /* ============================================
-     NEWSLETTER SUBSCRIPTION
-     ============================================ */
-  const newsletterForm = $('[data-newsletter-form]');
-  if (newsletterForm) {
-    on(newsletterForm, 'submit', async (e) => {
-      e.preventDefault();
-      const input = $('.newsletter-input', newsletterForm);
-      const btn = $('.newsletter-btn', newsletterForm);
-      const email = input.value.trim();
-      
-      if (!email) return;
-
-      const originalText = btn.innerHTML;
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-
-      try {
-        if (window.MDB && window.MDB.Newsletter) {
-          await window.MDB.Newsletter.subscribe(email);
-          window.MDB.UI.toast('Thank you for subscribing!', 'success');
-          newsletterForm.reset();
-        } else {
-          // Fallback if store.js not loaded fully
-          window.MDB.UI.toast('Subscribed successfully!', 'success');
-          newsletterForm.reset();
-        }
-      } catch (err) {
-        console.error('Subscription error:', err);
-        window.MDB.UI.toast('Something went wrong. Please try again.', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalText;
-      }
-    });
-  }
 
   /* ============================================
      ESCAPE KEY — Close all overlays
