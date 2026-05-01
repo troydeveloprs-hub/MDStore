@@ -1487,7 +1487,7 @@ const MDB = (() => {
           id: row.id,
           productId: row.product_id,
           rating: row.rating,
-          review_text: row.review_text,
+          text: row.review_text,
           authorName: row.author_name || 'Anonymous',
           authorEmail: row.author_email || '',
           isVerified: !!row.user_id,

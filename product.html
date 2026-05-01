@@ -907,10 +907,71 @@
             <strong>${r.authorName || 'Anonymous'}</strong>
             <span style="color:var(--color-accent);">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}</span>
           </div>
-          <p style="margin-top:8px;font-size:0.9rem;color:#555;">${r.review_text || r.text || ''}</p>
+          <p style="margin-top:8px;font-size:0.9rem;color:#555;">${r.text || ''}</p>
           <small style="color:#999;">${new Date(r.createdAt).toLocaleDateString()}</small>
         </div>
       `).join('');
+    }
+
+    // Star Rating Logic
+    let currentRating = 0;
+    document.querySelectorAll('#review-stars i').forEach(star => {
+      star.onclick = () => {
+        currentRating = parseInt(star.dataset.val);
+        document.querySelectorAll('#review-stars i').forEach((s, i) => {
+          if (i < currentRating) {
+            s.classList.replace('fa-regular', 'fa-solid');
+            s.style.color = 'var(--color-accent)';
+          } else {
+            s.classList.replace('fa-solid', 'fa-regular');
+            s.style.color = '#ccc';
+          }
+        });
+      };
+    });
+
+    async function submitReview() {
+      const pid = new URLSearchParams(window.location.search).get('id');
+      const text = document.getElementById('review-text').value.trim();
+      
+      if (!currentRating) {
+        MDB.UI.toast('Please select a rating', 'warning');
+        return;
+      }
+      if (!text) {
+        MDB.UI.toast('Please write a comment', 'warning');
+        return;
+      }
+
+      const btn = document.querySelector('.review-submit');
+      const originalText = btn.textContent;
+      
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+        
+        await MDB.Reviews.add({
+          productId: pid,
+          rating: currentRating,
+          text: text
+        });
+
+        MDB.UI.toast('Review submitted! Thank you.', 'success');
+        document.getElementById('review-text').value = '';
+        currentRating = 0;
+        document.querySelectorAll('#review-stars i').forEach(s => {
+          s.classList.replace('fa-solid', 'fa-regular');
+          s.style.color = '#ccc';
+        });
+        
+        await renderReviews(pid);
+      } catch (err) {
+        console.error(err);
+        MDB.UI.toast('Failed to submit review.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
     }
 
     async function renderRelated(pid) {
