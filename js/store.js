@@ -861,9 +861,43 @@ const MDB = (() => {
       } catch (err) {
         console.error(`[MDB Orders] Error during ${opName}:`, err);
         if (err.code) console.error(`[MDB Orders] Supabase Error Code: ${err.code} - ${err.message}`);
+        
+        // Auto-fix for schema cache errors (missing columns)
+        if (err.message && err.message.includes("Could not find the") && err.message.includes("column")) {
+          return { error: err.message, isSchemaError: true };
+        }
+
         if (fallback === undefined || fallback === null) return { error: err.message || String(err) };
         return fallback;
       }
+    },
+
+    async _robustUpdate(id, payload) {
+      const client = await this._ensureClient();
+      let currentPayload = { ...payload };
+      let lastError = null;
+
+      for (let i = 0; i < 5; i++) {
+        const { data, error } = await client
+          .from(this._table)
+          .update(currentPayload)
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (!error) return data;
+
+        lastError = error;
+        const match = error.message && error.message.match(/Could not find the '([^']+)' column/);
+        if (match) {
+          const col = match[1];
+          console.warn(`[MDB Orders] Column "${col}" missing in DB. Removing from update and retrying...`);
+          delete currentPayload[col];
+          continue;
+        }
+        break;
+      }
+      throw lastError;
     },
 
     async get() {
@@ -1131,16 +1165,7 @@ const MDB = (() => {
       }
 
       return this._run('updateStatus', async () => {
-        const client = await this._ensureClient();
-        const { data, error } = await client
-          .from(this._table)
-          .update({ status: newStatus, updated_at: _dateNow() })
-          .eq('id', id)
-          .select()
-          .single();
-        if (error) throw error;
-        this._cache = null;
-        return data;
+        return await this._robustUpdate(id, { status: newStatus, updated_at: _dateNow() });
       }, null);
     },
 
@@ -1161,16 +1186,7 @@ const MDB = (() => {
       }
 
       const res = await this._run('updatePaymentStatus', async () => {
-        const client = await this._ensureClient();
-        const { data, error } = await client
-          .from(this._table)
-          .update({ payment_status: newStatus, updated_at: _dateNow() })
-          .eq('id', id)
-          .select()
-          .single();
-        if (error) throw error;
-        this._cache = null;
-        return data;
+        return await this._robustUpdate(id, { payment_status: newStatus, updated_at: _dateNow() });
       }, null);
       
       return res;
@@ -1193,8 +1209,6 @@ const MDB = (() => {
 
       // 2. Update DB
       return this._run('update', async () => {
-        const client = await this._ensureClient();
-        
         // Map camelCase to snake_case for DB
         const dbUpdate = { updated_at: _dateNow() };
         if (updateData.status) dbUpdate.status = updateData.status;
@@ -1213,14 +1227,7 @@ const MDB = (() => {
           if (updateData.customer.city) dbUpdate.customer_city = updateData.customer.city;
         }
 
-        const { data, error } = await client
-          .from(this._table)
-          .update(dbUpdate)
-          .eq('id', id)
-          .select()
-          .single();
-        
-        if (error) throw error;
+        const data = await this._robustUpdate(id, dbUpdate);
         this._cache = null;
         return data;
       }, null);
