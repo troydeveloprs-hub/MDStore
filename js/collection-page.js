@@ -35,12 +35,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else if (path.includes('/category/')) {
       category = path.split('/category/')[1].split('/')[0].replace(/\.html$/i, '');
     } else if (path.includes('/collections/')) {
-      // Handle legacy collection paths
       const coll = path.split('/collections/')[1].split('/')[0].replace(/\.html$/i, '');
-      if (['makeup', 'skincare', 'hair', 'fragrance'].includes(coll)) {
+      const mainCats = ['makeup', 'skincare', 'hair', 'fragrance', 'bath-body', 'tools', 'nail'];
+      if (mainCats.includes(coll)) {
         category = coll;
       } else {
-        brand = coll;
+        category = coll; // Treat as category/subcategory (e.g. concealer)
       }
     }
 

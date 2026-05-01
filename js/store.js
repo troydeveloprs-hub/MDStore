@@ -301,7 +301,9 @@ const MDB = (() => {
           .from(this._table)
           .select('id, name, price, image, images, description, created_at, metadata');
 
-        // ... (skipping unchanged code for brevity, will match in actual tool call) ...
+        // Apply server-side filters if possible (metadata filtering)
+        if (isFeatured) query = query.eq('metadata->>isFeatured', 'true');
+        if (isNewArrival) query = query.eq('metadata->>isNewArrival', 'true');
         
         const { data, error } = await query;
 
@@ -310,22 +312,24 @@ const MDB = (() => {
         let products = (data || []).map(row => this._mapRow(row));
         
         // Final Local Filtering & Fallback
-        // If we got nothing, try to filter from ALL products (handles edge cases in naming/dots)
+        // If we got nothing from DB, or if we need to search across ALL products (handles edge cases in naming/dots)
         if (!skipFallback && products.length === 0 && (brand || category || search)) {
+          console.log('No direct results, trying local fallback...');
           const all = await this.getAll();
           products = all;
         }
 
         if (brand) {
           const normBrand = this._normalizeSlug(brand);
-          products = products.filter(p => this._normalizeSlug(p.brand).includes(normBrand));
+          products = products.filter(p => this._normalizeSlug(p.brand || '').includes(normBrand));
         }
 
         if (category) {
           const normCat = String(category).toLowerCase().trim();
           products = products.filter(p => 
             String(p.category || '').toLowerCase().includes(normCat) ||
-            String(p.subcategory || '').toLowerCase().includes(normCat)
+            String(p.subcategory || '').toLowerCase().includes(normCat) ||
+            this._normalizeSlug(p.category || '').includes(this._normalizeSlug(normCat))
           );
         }
 
@@ -337,6 +341,11 @@ const MDB = (() => {
             String(p.category || '').toLowerCase().includes(s)
           );
         }
+
+        // Sorting
+        if (sort === 'price-asc') products.sort((a, b) => a.price - b.price);
+        else if (sort === 'price-desc') products.sort((a, b) => b.price - a.price);
+        else if (sort === 'newest') products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         return products;
       }, []);
