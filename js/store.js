@@ -2005,7 +2005,7 @@ const MDB = (() => {
   });
 
   /* ─── Public API ─── */
-  return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, Settings, Coupons, UI, KEYS };
+  return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, Settings, Coupons, Newsletter, UI, KEYS };
 })();
 
 /* Make globally accessible */

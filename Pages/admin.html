@@ -1405,6 +1405,14 @@
         margin-left: 0;
       }
 
+             <div class="nav-section-label">Marketing</div>
+        <button class="nav-item" data-panel="coupons">
+          <i class="fa-solid fa-ticket nav-icon"></i> Coupons
+        </button>
+        <button class="nav-item" data-panel="subscribers">
+          <i class="fa-solid fa-envelope-open-text nav-icon"></i> Subscribers
+        </button>
+
       .page-content {
         padding: 20px;
       }
@@ -1507,6 +1515,9 @@
         <div class="nav-section-label">Audience</div>
         <button class="nav-item" data-tab="customers">
           <span class="nav-icon"><i class="fa-solid fa-users"></i></span> Customers
+        </button>
+        <button class="nav-item" data-tab="subscribers">
+          <span class="nav-icon"><i class="fa-solid fa-envelope-open-text"></i></span> Subscribers
         </button>
         <button class="nav-item" data-tab="reviews">
           <span class="nav-icon"><i class="fa-solid fa-star"></i></span> Reviews
@@ -1912,6 +1923,31 @@
                   <i class="fa-solid fa-file-excel"></i> Export Reviews
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SUBSCRIBERS ── -->
+        <div class="admin-panel" id="panel-subscribers">
+          <div class="section-header">
+            <div class="section-title">Newsletter Subscribers</div>
+            <button class="btn btn-gold" onclick="exportSubscribers()">
+              <i class="fa-solid fa-file-excel"></i> Export Subscribers
+            </button>
+          </div>
+          <div class="table-shell">
+            <div style="overflow-x:auto">
+              <table class="admin-table" id="subscribers-table">
+                <thead>
+                  <tr>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Date Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -2381,6 +2417,7 @@
       renderAnalytics();
       renderReviews();
       renderCoupons();
+      renderSubscribers();
       await renderInventory();
     }
 
@@ -2397,6 +2434,7 @@
           if (panel) panel.classList.add('active');
           if (tab.dataset.tab === 'products') renderProducts(getProductSearchTerm());
           if (tab.dataset.tab === 'settings') loadSettings();
+          if (tab.dataset.tab === 'subscribers') renderSubscribers();
           // Hide export btn on non-order tabs
           const exportBtn = document.getElementById('export-orders-btn');
           if (exportBtn) exportBtn.style.display = tab.dataset.tab === 'orders' ? 'flex' : 'none';
@@ -2461,6 +2499,7 @@
       document.getElementById('export-customers-btn')?.addEventListener('click', exportCustomers);
       document.getElementById('export-reviews-btn')?.addEventListener('click', exportReviews);
       document.getElementById('export-coupons-btn')?.addEventListener('click', exportCoupons);
+      document.getElementById('export-subscribers-btn')?.addEventListener('click', exportSubscribers);
 
       // Single Item Exports (Bound once globally)
       document.getElementById('export-single-order-excel-btn')?.addEventListener('click', () => {
@@ -3367,6 +3406,44 @@
         'Status': 'ACTIVE'
       }));
       exportToExcel(data, 'MDB_Coupons_List', 'Coupons');
+    }
+
+    /* ─ SUBSCRIBERS ─ */
+    async function renderSubscribers() {
+      const subs = JSON.parse(localStorage.getItem('mdb_subscribers') || '[]');
+      const tbody = document.querySelector('#subscribers-table tbody');
+      if (!tbody) return;
+      
+      tbody.innerHTML = subs.map(email => `<tr>
+        <td><strong>${escapeHtml(email)}</strong></td>
+        <td><span class="badge badge-success">Subscribed</span></td>
+        <td>${formatAdminDate(new Date())}</td>
+        <td>
+          <button class="act-btn danger" onclick="deleteSubscriber('${encodeURIComponent(email)}')">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="4"><div class="empty-state"><i class="fa-solid fa-envelope"></i><p>No subscribers yet</p></div></td></tr>';
+    }
+
+    async function deleteSubscriber(email) {
+      if (!confirm(`Remove ${decodeURIComponent(email)} from subscribers?`)) return;
+      const decoded = decodeURIComponent(email);
+      let subs = JSON.parse(localStorage.getItem('mdb_subscribers') || '[]');
+      subs = subs.filter(s => s !== decoded);
+      localStorage.setItem('mdb_subscribers', JSON.stringify(subs));
+      MDB.UI.toast('Subscriber removed');
+      renderSubscribers();
+    }
+
+    async function exportSubscribers() {
+      const subs = JSON.parse(localStorage.getItem('mdb_subscribers') || '[]');
+      const data = subs.map(email => ({
+        'Email': email,
+        'Status': 'Subscribed',
+        'Date Exported': new Date().toLocaleDateString()
+      }));
+      exportToExcel(data, 'MDB_Newsletter_Subscribers', 'Subscribers');
     }
 
     async function exportSingleOrder(id) {

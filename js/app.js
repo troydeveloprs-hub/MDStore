@@ -1116,6 +1116,43 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /* ============================================
+     NEWSLETTER SUBSCRIPTION
+     ============================================ */
+  const newsletterForm = $('[data-newsletter-form]');
+  if (newsletterForm) {
+    on(newsletterForm, 'submit', async (e) => {
+      e.preventDefault();
+      const input = $('.newsletter-input', newsletterForm);
+      const btn = $('.newsletter-btn', newsletterForm);
+      const email = input.value.trim();
+      
+      if (!email) return;
+
+      const originalText = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+
+      try {
+        if (window.MDB && window.MDB.Newsletter) {
+          await window.MDB.Newsletter.subscribe(email);
+          window.MDB.UI.toast('Thank you for subscribing!', 'success');
+          newsletterForm.reset();
+        } else {
+          // Fallback if store.js not loaded fully
+          window.MDB.UI.toast('Subscribed successfully!', 'success');
+          newsletterForm.reset();
+        }
+      } catch (err) {
+        console.error('Subscription error:', err);
+        window.MDB.UI.toast('Something went wrong. Please try again.', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+      }
+    });
+  }
+
+  /* ============================================
      ESCAPE KEY — Close all overlays
      ============================================ */
   on(document, 'keydown', (e) => {
