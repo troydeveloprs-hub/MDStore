@@ -326,10 +326,13 @@ const MDB = (() => {
 
         if (category) {
           const normCat = String(category).toLowerCase().trim();
+          const slugCat = this._normalizeSlug(normCat);
           products = products.filter(p => 
             String(p.category || '').toLowerCase().includes(normCat) ||
             String(p.subcategory || '').toLowerCase().includes(normCat) ||
-            this._normalizeSlug(p.category || '').includes(this._normalizeSlug(normCat))
+            this._normalizeSlug(p.category || '').includes(slugCat) ||
+            this._normalizeSlug(p.subcategory || '').includes(slugCat) ||
+            String(p.name || '').toLowerCase().includes(normCat)
           );
         }
 
