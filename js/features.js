@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
   /* ===================================================================
      3. WHATSAPP FLOATING BUTTON
      =================================================================== */
-  const whatsappNum = '201001234567'; // Change to real number
+  const whatsappNum = '201037070888'; // Change to real number
   const waBtn = document.createElement('a');
   waBtn.href = `https://wa.me/${whatsappNum}?text=${encodeURIComponent('Hi MDBoutiquee! I have a question.')}`;
   waBtn.target = '_blank';
@@ -493,6 +493,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const footerEmail = document.querySelector('.footer-contact-info p:first-child');
       if (footerEmail && s.contactEmail) {
           footerEmail.innerHTML = `<i class="fa-solid fa-envelope"></i> ${s.contactEmail}`;
+      }
+
+      // 4. Contact Phone in footer - Convert to WhatsApp link
+      const footerPhone = document.querySelector('.footer-contact-info p:last-child');
+      if (footerPhone && s.contactPhone) {
+          const cleanNum = s.contactPhone.replace(/\+/g, '').replace(/\s/g, '');
+          footerPhone.innerHTML = `<a href="https://wa.me/${cleanNum}" target="_blank" style="color:inherit;text-decoration:none;"><i class="fa-brands fa-whatsapp"></i> ${s.contactPhone}</a>`;
       }
     }
   };
