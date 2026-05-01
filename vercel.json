@@ -1,8 +1,13 @@
 {
   "cleanUrls": true,
+  "trailingSlash": false,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/brand/:path*",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/((?!api|Pages|collections|css|js|data|img|imghero|logos|scratch|supabase|.*\\..*).*)",
       "destination": "/index.html"
     }
   ]
