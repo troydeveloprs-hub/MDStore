@@ -11,6 +11,7 @@
     rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="../css/sofie.css">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js" defer></script>
   <style>
     :root {
       --gold: #c9a96e;
@@ -490,8 +491,15 @@
     }
 
     /* ── PANELS ── */
-    .admin-panel { display: none; padding: 0 32px 40px; }
-    .admin-panel.active { display: block; animation: fadeIn 0.3s ease; }
+    .admin-panel {
+      display: none;
+      padding: 0 32px 40px;
+    }
+
+    .admin-panel.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
 
     /* PAGINATION */
     .pagination-wrap {
@@ -503,9 +511,24 @@
       background: var(--surface2);
       border-radius: 0 0 12px 12px;
     }
-    .pagination-info { font-size: 13px; color: var(--text2); }
-    .pagination-btns { display: flex; align-items: center; gap: 12px; }
-    .page-num { font-size: 13px; font-weight: 600; min-width: 50px; text-align: center; }
+
+    .pagination-info {
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .pagination-btns {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .page-num {
+      font-size: 13px;
+      font-weight: 600;
+      min-width: 50px;
+      text-align: center;
+    }
 
     /* ══════════════════════════════════════
        STAT CARDS
@@ -1465,7 +1488,7 @@
         <button class="nav-item active" data-tab="dashboard">
           <span class="nav-icon"><i class="fa-solid fa-chart-pie"></i></span> Dashboard
         </button>
-        
+
         <div class="nav-section-label">Store</div>
         <button class="nav-item" data-tab="orders">
           <span class="nav-icon"><i class="fa-solid fa-box"></i></span> Orders
@@ -1531,7 +1554,7 @@
             <i class="fa-solid fa-arrows-rotate"></i> Refresh
           </button>
           <button class="tb-btn" id="export-orders-btn" style="display:none">
-            <i class="fa-solid fa-download"></i> Export CSV
+            <i class="fa-solid fa-file-excel"></i> Export Excel
           </button>
         </div>
       </header>
@@ -1543,13 +1566,17 @@
           <div style="padding-bottom:20px">
             <div class="stats-grid" id="admin-stats"></div>
           </div>
-          
+
           <div class="form-row">
             <div class="form-card" style="flex:1">
               <h4>Quick Actions</h4>
               <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
-                <button class="btn btn-primary" onclick="document.querySelector('[data-tab=products]').click(); toggleProductForm(true)"><i class="fa-solid fa-plus"></i> New Product</button>
-                <button class="btn btn-gold" onclick="document.querySelector('[data-tab=coupons]').click(); toggleCouponForm()"><i class="fa-solid fa-ticket"></i> New Coupon</button>
+                <button class="btn btn-primary"
+                  onclick="document.querySelector('[data-tab=products]').click(); toggleProductForm(true)"><i
+                    class="fa-solid fa-plus"></i> New Product</button>
+                <button class="btn btn-gold"
+                  onclick="document.querySelector('[data-tab=coupons]').click(); toggleCouponForm()"><i
+                    class="fa-solid fa-ticket"></i> New Coupon</button>
                 <button class="btn" onclick="refreshAll()"><i class="fa-solid fa-arrows-rotate"></i> Sync Data</button>
               </div>
             </div>
@@ -1565,7 +1592,8 @@
                 <input type="text" class="search-input" id="order-search" placeholder="Search orders…">
               </div>
               <div class="filter-wrap" style="display:flex;gap:10px">
-                <select class="f-input" id="order-status-filter" style="width:auto;padding:8px 12px;font-size:13px;border-radius:8px">
+                <select class="f-input" id="order-status-filter"
+                  style="width:auto;padding:8px 12px;font-size:13px;border-radius:8px">
                   <option value="">All Statuses</option>
                   <option value="pending">Pending</option>
                   <option value="processing">Processing</option>
@@ -1573,7 +1601,8 @@
                   <option value="delivered">Delivered</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
-                <select class="f-input" id="order-payment-filter" style="width:auto;padding:8px 12px;font-size:13px;border-radius:8px">
+                <select class="f-input" id="order-payment-filter"
+                  style="width:auto;padding:8px 12px;font-size:13px;border-radius:8px">
                   <option value="">All Payment</option>
                   <option value="pending">Unpaid</option>
                   <option value="paid">Paid</option>
@@ -1581,7 +1610,7 @@
                   <option value="refunded">Refunded</option>
                 </select>
                 <button class="btn btn-gold" id="_export-orders-btn" style="padding:8px 16px">
-                  <i class="fa-solid fa-download"></i> Export CSV
+                  <i class="fa-solid fa-file-excel"></i> Export Excel
                 </button>
               </div>
             </div>
@@ -1614,6 +1643,9 @@
               <div id="products-summary" style="font-size:12.5px;color:var(--text2);margin-top:4px">Loading…</div>
             </div>
             <div class="section-actions">
+              <button class="btn" type="button" id="export-products-excel-btn">
+                <i class="fa-solid fa-file-excel"></i> Export Excel
+              </button>
               <button class="btn btn-gold" type="button" id="toggle-product-form-btn"><i class="fa-solid fa-plus"></i>
                 Add Product</button>
             </div>
@@ -1780,6 +1812,9 @@
                 </div><!-- /form-grid -->
 
                 <div class="form-actions">
+                  <button type="button" class="btn" id="export-single-product-excel-btn" style="display:none">
+                    <i class="fa-solid fa-file-excel"></i> Export
+                  </button>
                   <button type="button" class="btn" id="cancel-product-form-btn">Cancel</button>
                   <button type="submit" class="btn btn-gold" id="save-product-btn">
                     <i class="fa-solid fa-floppy-disk"></i> Save Product
@@ -1796,7 +1831,8 @@
                 <input type="text" class="search-input" id="product-search" placeholder="Search products…">
               </div>
               <div class="filter-wrap">
-                <select class="f-input" id="product-category-filter" style="width:auto;padding:8px 12px;font-size:13px;border-radius:8px">
+                <select class="f-input" id="product-category-filter"
+                  style="width:auto;padding:8px 12px;font-size:13px;border-radius:8px">
                   <option value="">All Categories</option>
                   <option value="makeup">Makeup</option>
                   <option value="skincare">Skincare</option>
@@ -1840,10 +1876,16 @@
                     <th>City</th>
                     <th>Joined</th>
                     <th>Orders</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
               </table>
+              <div style="padding:16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+                <button class="btn" onclick="exportCustomers()">
+                  <i class="fa-solid fa-file-excel"></i> Export Customers
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1865,6 +1907,11 @@
                 </thead>
                 <tbody></tbody>
               </table>
+              <div style="padding:16px; border-top:1px solid var(--border); display:flex; justify-content:flex-end;">
+                <button class="btn" onclick="exportReviews()">
+                  <i class="fa-solid fa-file-excel"></i> Export Reviews
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1873,9 +1920,14 @@
         <div class="admin-panel" id="panel-coupons">
           <div class="section-header">
             <div class="section-title">Coupons</div>
-            <button class="btn btn-gold" type="button" id="toggle-coupon-form-btn">
-              <i class="fa-solid fa-plus"></i> New Coupon
-            </button>
+            <div class="section-actions" style="display:flex; gap:8px;">
+              <button class="btn" onclick="exportCoupons()">
+                <i class="fa-solid fa-file-excel"></i> Export Excel
+              </button>
+              <button class="btn btn-gold" type="button" id="toggle-coupon-form-btn">
+                <i class="fa-solid fa-plus"></i> New Coupon
+              </button>
+            </div>
           </div>
           <div id="coupon-form-wrap" style="display:none" class="mini-form-shell">
             <form class="admin-form" id="coupon-form" style="display:flex;flex-direction:column;gap:14px">
@@ -1930,6 +1982,9 @@
                 <i class="fa-solid fa-search"></i>
                 <input type="text" class="search-input" id="inventory-search" placeholder="Search inventory…">
               </div>
+              <button class="btn" type="button" id="export-inventory-excel-btn">
+                <i class="fa-solid fa-file-excel"></i> Export Excel
+              </button>
             </div>
             <div style="overflow-x:auto">
               <table class="admin-table" id="inventory-table">
@@ -2008,27 +2063,47 @@
   </div><!-- /admin-dashboard -->
 
   <!-- Order Details Modal -->
-  <div id="order-modal-overlay" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center; padding:20px;">
-    <div id="order-modal-content" style="background:var(--surface); width:100%; max-width:800px; max-height:90vh; overflow-y:auto; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); animation: fadeUp 0.3s ease;">
-      <div style="padding:24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:var(--surface); z-index:10;">
-        <h2 style="font-family:'Inter', 'Cairo', sans-serif; font-size:24px; font-weight:600; color:var(--text);">Order Details <span id="om-id" style="font-size:16px; color:var(--text2); margin-left:10px;"></span></h2>
-        <button onclick="document.getElementById('order-modal-overlay').style.display='none'" style="background:transparent; border:none; font-size:20px; color:var(--text2); cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+  <div id="order-modal-overlay"
+    style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:999; align-items:center; justify-content:center; padding:20px;">
+    <div id="order-modal-content"
+      style="background:var(--surface); width:100%; max-width:800px; max-height:90vh; overflow-y:auto; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,0.2); animation: fadeUp 0.3s ease;">
+      <div
+        style="padding:24px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; background:var(--surface); z-index:10;">
+        <h2 style="font-family:'Inter', 'Cairo', sans-serif; font-size:24px; font-weight:600; color:var(--text);">Order
+          Details <span id="om-id" style="font-size:16px; color:var(--text2); margin-left:10px;"></span></h2>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="btn" id="export-single-order-excel-btn">
+            <i class="fa-solid fa-file-excel"></i> Export
+          </button>
+          <button onclick="document.getElementById('order-modal-overlay').style.display='none'"
+            style="background:transparent; border:none; font-size:20px; color:var(--text2); cursor:pointer;"><i
+              class="fa-solid fa-xmark"></i></button>
+        </div>
       </div>
       <div id="order-edit-form" style="padding:24px; display:flex; flex-direction:column; gap:24px;">
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
           <div style="background:var(--surface2); padding:16px; border-radius:12px;">
-            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:12px;">Customer Info</p>
-            <input type="text" id="om-edit-name" class="search-input" style="margin-bottom:8px; padding-left:12px;" placeholder="Name">
-            <input type="email" id="om-edit-email" class="search-input" style="margin-bottom:8px; padding-left:12px;" placeholder="Email">
+            <p
+              style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:12px;">
+              Customer Info</p>
+            <input type="text" id="om-edit-name" class="search-input" style="margin-bottom:8px; padding-left:12px;"
+              placeholder="Name">
+            <input type="email" id="om-edit-email" class="search-input" style="margin-bottom:8px; padding-left:12px;"
+              placeholder="Email">
             <input type="tel" id="om-edit-phone" class="search-input" style="padding-left:12px;" placeholder="Phone">
           </div>
           <div style="background:var(--surface2); padding:16px; border-radius:12px;">
-            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:12px;">Shipping Address</p>
-            <input type="text" id="om-edit-address" class="search-input" style="margin-bottom:8px; padding-left:12px;" placeholder="Address">
+            <p
+              style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:12px;">
+              Shipping Address</p>
+            <input type="text" id="om-edit-address" class="search-input" style="margin-bottom:8px; padding-left:12px;"
+              placeholder="Address">
             <input type="text" id="om-edit-city" class="search-input" style="padding-left:12px;" placeholder="City">
           </div>
           <div style="background:var(--surface2); padding:16px; border-radius:12px;">
-            <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:12px;">Payment & Status</p>
+            <p
+              style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:12px;">
+              Payment & Status</p>
             <div style="display:flex; flex-direction:column; gap:8px;">
               <select id="om-edit-method" class="status-select" style="width:100%">
                 <option value="cash">Cash on Delivery</option>
@@ -2053,29 +2128,35 @@
         </div>
 
         <div>
-          <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:8px;">Notes</p>
-          <textarea id="om-edit-notes" class="search-input" style="width:100%; min-height:80px; padding-left:12px;" placeholder="Order notes..."></textarea>
+          <p style="font-size:11px; font-weight:600; color:var(--text3); text-transform:uppercase; margin-bottom:8px;">
+            Notes</p>
+          <textarea id="om-edit-notes" class="search-input" style="width:100%; min-height:80px; padding-left:12px;"
+            placeholder="Order notes..."></textarea>
         </div>
-        
+
         <div>
-          <h3 style="font-size:16px; font-weight:600; color:var(--text); margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">Items (<span id="om-items-count">0</span>)</h3>
+          <h3
+            style="font-size:16px; font-weight:600; color:var(--text); margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:8px;">
+            Items (<span id="om-items-count">0</span>)</h3>
           <div id="om-items" style="display:flex; flex-direction:column; gap:12px;"></div>
         </div>
 
-        <div style="background:var(--surface2); padding:16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
+        <div
+          style="background:var(--surface2); padding:16px; border-radius:12px; display:flex; justify-content:space-between; align-items:center;">
           <div style="display:flex; flex-direction:column;">
-             <span style="font-size:13px; color:var(--text3);">Total Amount (LE)</span>
-             <input type="number" id="om-edit-total" class="search-input" style="width:120px; font-size:18px; font-weight:700; color:var(--gold); padding-left:12px;">
+            <span style="font-size:13px; color:var(--text3);">Total Amount (LE)</span>
+            <input type="number" id="om-edit-total" class="search-input"
+              style="width:120px; font-size:18px; font-weight:700; color:var(--gold); padding-left:12px;">
           </div>
           <button id="save-order-btn" class="btn btn-primary" style="padding:12px 32px; border-radius:12px;">
-             <i class="fa-solid fa-save"></i> Save Changes
+            <i class="fa-solid fa-save"></i> Save Changes
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <script src="../js/store.js"></script>
+  <script src="../js/store.js" defer></script>
   <script>
     /* ═══════════════════════════════════════════
        INIT & AUTH
@@ -2229,13 +2310,13 @@
         ['body-lotion', 'Body Lotion'], ['body-wash', 'Body Wash'], ['scrub', 'Scrub'], ['deodorant', 'Deodorant']
       ]
     };
-    const CATEGORY_LABELS = { 
-      makeup: 'Makeup', 
-      skincare: 'Skincare', 
-      hair: 'Hair', 
-      fragrance: 'Fragrance', 
-      tools: 'Tools & Brushes', 
-      'bath-body': 'Bath & Body' 
+    const CATEGORY_LABELS = {
+      makeup: 'Makeup',
+      skincare: 'Skincare',
+      hair: 'Hair',
+      fragrance: 'Fragrance',
+      tools: 'Tools & Brushes',
+      'bath-body': 'Bath & Body'
     };
     const VARIANT_TYPES = [['color', 'Color'], ['size', 'Size'], ['shade', 'Shade'], ['volume', 'Volume'], ['scent', 'Scent'], ['style', 'Style'], ['material', 'Material'], ['finish', 'Finish']];
 
@@ -2343,7 +2424,7 @@
 
       dash.addEventListener('change', async e => {
         console.log('[MDB Admin] Change event detected:', e.target);
-        
+
         const statusSel = e.target.closest('[data-order-status]');
         if (statusSel) {
           const id = decodeURIComponent(statusSel.dataset.orderStatus);
@@ -2355,7 +2436,7 @@
           btn.style.opacity = '1';
           return;
         }
-        
+
         const paySel = e.target.closest('[data-payment-status]');
         if (paySel) {
           const id = decodeURIComponent(paySel.dataset.paymentStatus);
@@ -2372,12 +2453,31 @@
 
     /* ─ FORM EVENTS ─ */
     function bindFormEvents() {
+      // Export Buttons
       document.getElementById('export-orders-btn')?.addEventListener('click', exportOrders);
       document.getElementById('_export-orders-btn')?.addEventListener('click', exportOrders);
+      document.getElementById('export-products-excel-btn')?.addEventListener('click', exportProducts);
+      document.getElementById('export-inventory-excel-btn')?.addEventListener('click', exportInventory);
+      document.getElementById('export-customers-btn')?.addEventListener('click', exportCustomers);
+      document.getElementById('export-reviews-btn')?.addEventListener('click', exportReviews);
+      document.getElementById('export-coupons-btn')?.addEventListener('click', exportCoupons);
+
+      // Single Item Exports (Bound once globally)
+      document.getElementById('export-single-order-excel-btn')?.addEventListener('click', () => {
+        if (typeof currentEditingOrderId !== 'undefined' && currentEditingOrderId) {
+          exportSingleOrder(currentEditingOrderId);
+        }
+      });
+      document.getElementById('export-single-product-excel-btn')?.addEventListener('click', () => {
+        if (typeof editingPid !== 'undefined' && editingPid) {
+          exportSingleProduct(editingPid);
+        }
+      });
+
       document.getElementById('toggle-product-form-btn')?.addEventListener('click', () => toggleProductForm(true));
       document.getElementById('cancel-product-form-btn')?.addEventListener('click', () => toggleProductForm(false));
       document.getElementById('toggle-coupon-form-btn')?.addEventListener('click', toggleCouponForm);
-            document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value, document.getElementById('order-status-filter').value, document.getElementById('order-payment-filter').value));
+      document.getElementById('order-search')?.addEventListener('input', async e => await renderOrders(e.target.value, document.getElementById('order-status-filter').value, document.getElementById('order-payment-filter').value));
       document.getElementById('order-status-filter')?.addEventListener('change', async e => await renderOrders(document.getElementById('order-search').value, e.target.value, document.getElementById('order-payment-filter').value));
       document.getElementById('order-payment-filter')?.addEventListener('change', async e => await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value, e.target.value));
       document.getElementById('product-search')?.addEventListener('input', async e => await renderProducts(e.target.value, document.getElementById('product-category-filter').value));
@@ -2461,7 +2561,7 @@
         const saveBtn = document.getElementById('save-product-btn');
         try {
           saveBtn.disabled = true;
-          
+
           // Upload pending image files to Supabase Storage
           const uploadedImageUrls = [];
           if (pendingImageFiles.length > 0) {
@@ -2484,7 +2584,7 @@
             });
             pendingImageFiles = [];
           }
-          
+
           const data = {
             id: document.getElementById('pf-id').value.trim() || editingPid,
             createdAt: document.getElementById('pf-created').value ? new Date(document.getElementById('pf-created').value).toISOString() : new Date().toISOString(),
@@ -2507,7 +2607,7 @@
             images: productImageState,
             variantGroups: collectVariantGroups()
           };
-          
+
           if (!data.name || !data.brand) {
             throw new Error('Name and Brand are required');
           }
@@ -2517,9 +2617,9 @@
           MDB.UI.toast('Product saved successfully!', 'success');
           toggleProductForm(false);
           await refreshAll();
-        } catch (err) { 
+        } catch (err) {
           console.error('--- SAVE ERROR ---', err);
-          showErr(err, 'Failed to save product. Please check console for details.'); 
+          showErr(err, 'Failed to save product. Please check console for details.');
         }
         finally { saveBtn.disabled = false; }
       };
@@ -2531,7 +2631,7 @@
       const products = await MDB.Products.getAll() || [];
       const reviews = await MDB.Reviews.get() || [];
       const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
-      
+
       const revenue = orders.reduce((s, o) => s + (Number(o.total) || 0), 0);
       const pending = orders.filter(o => (o.status || 'pending') === 'pending').length;
       const shipped = orders.filter(o => o.status === 'shipped').length;
@@ -2541,7 +2641,7 @@
 
       const badge = document.getElementById('pending-badge');
       if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? 'inline' : 'none'; }
-      
+
       document.getElementById('admin-stats').innerHTML = `
       <div class="stat-card">
         <div class="stat-top"><div class="stat-icon gold"><i class="fa-solid fa-coins"></i></div><span class="stat-trend up">Sales</span></div>
@@ -2593,7 +2693,7 @@
       if (statusFilter) orders = orders.filter(o => safeText(o.status) === statusFilter);
       if (paymentFilter) orders = orders.filter(o => safeText(o.paymentStatus || o.payment_status) === paymentFilter);
       if (q) { const ql = q.toLowerCase(); orders = orders.filter(o => safeText(o.id).toLowerCase().includes(ql) || getOrderCustomer(o).name.toLowerCase().includes(ql)); }
-      
+
       const totalItems = orders.length;
       const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
       if (orderCurrentPage > totalPages) orderCurrentPage = Math.max(1, totalPages);
@@ -2602,7 +2702,7 @@
 
       const tbody = document.querySelector('#orders-table tbody');
       if (!orders.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box-open"></i><p>No orders found</p></div></td></tr>`; renderOrderPagination(0); return; }
-      
+
       tbody.innerHTML = paginatedOrders.map(o => {
         const c = getOrderCustomer(o);
         const st = safeText(o.status, 'pending');
@@ -2632,42 +2732,16 @@
       renderOrderPagination(totalItems);
     }
 
-    async function updateStatus(id, s) { 
-      try {
-        const res = await MDB.Orders.updateStatus(id, s);
-        if (res && !res.error) {
-          MDB.UI.toast('Order Status updated'); 
-        } else {
-          MDB.UI.toast('Server Error: ' + (res?.error || 'Unknown error'), 'error');
-        }
-      } catch (err) {
-        showErr(err, 'Could not update status');
-      }
-      await refreshAll();
-    }
-    
-    async function updatePaymentStatus(id, s) { 
-      try {
-        const res = await MDB.Orders.updatePaymentStatus(id, s);
-        if (res && !res.error) {
-          MDB.UI.toast('Payment Status updated'); 
-        } else {
-          MDB.UI.toast('Server Error: ' + (res?.error || 'Unknown error'), 'error');
-        }
-      } catch (err) {
-        showErr(err, 'Could not update payment status');
-      }
-      await refreshAll();
-    }
+
 
     function renderOrderPagination(totalItems) {
       const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
       const container = document.getElementById('order-pagination');
       if (!container) return;
       if (totalPages <= 1) { container.innerHTML = ''; return; }
-      
+
       container.innerHTML = `
-        <div class="pagination-info">Showing ${Math.min(totalItems, (orderCurrentPage-1)*ITEMS_PER_PAGE+1)}-${Math.min(totalItems, orderCurrentPage*ITEMS_PER_PAGE)} of ${totalItems}</div>
+        <div class="pagination-info">Showing ${Math.min(totalItems, (orderCurrentPage - 1) * ITEMS_PER_PAGE + 1)}-${Math.min(totalItems, orderCurrentPage * ITEMS_PER_PAGE)} of ${totalItems}</div>
         <div class="pagination-btns">
           <button class="btn btn-sm" ${orderCurrentPage === 1 ? 'disabled' : ''} onclick="changeOrderPage(${orderCurrentPage - 1})"><i class="fa-solid fa-chevron-left"></i> Prev</button>
           <span class="page-num">${orderCurrentPage} / ${totalPages}</span>
@@ -2681,9 +2755,9 @@
       const container = document.getElementById('product-pagination');
       if (!container) return;
       if (totalPages <= 1) { container.innerHTML = ''; return; }
-      
+
       container.innerHTML = `
-        <div class="pagination-info">Showing ${Math.min(totalItems, (productCurrentPage-1)*ITEMS_PER_PAGE+1)}-${Math.min(totalItems, productCurrentPage*ITEMS_PER_PAGE)} of ${totalItems}</div>
+        <div class="pagination-info">Showing ${Math.min(totalItems, (productCurrentPage - 1) * ITEMS_PER_PAGE + 1)}-${Math.min(totalItems, productCurrentPage * ITEMS_PER_PAGE)} of ${totalItems}</div>
         <div class="pagination-btns">
           <button class="btn btn-sm" ${productCurrentPage === 1 ? 'disabled' : ''} onclick="changeProductPage(${productCurrentPage - 1})"><i class="fa-solid fa-chevron-left"></i> Prev</button>
           <span class="page-num">${productCurrentPage} / ${totalPages}</span>
@@ -2702,8 +2776,20 @@
       await renderProducts(document.getElementById('product-search').value, document.getElementById('product-category-filter').value);
     }
 
-    async function updateStatus(id, s) { await MDB.Orders.updateStatus(id, s); MDB.UI.toast('Order Status updated'); await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value, document.getElementById('order-payment-filter').value); await renderStats(); }
-    async function updatePaymentStatus(id, s) { await MDB.Orders.updatePaymentStatus(id, s); MDB.UI.toast('Payment Status updated'); await renderOrders(document.getElementById('order-search').value, document.getElementById('order-status-filter').value, document.getElementById('order-payment-filter').value); await renderStats(); }
+    async function updateStatus(id, s) {
+      try {
+        await MDB.Orders.updateStatus(id, s);
+        MDB.UI.toast('Order Status updated');
+        await refreshAll();
+      } catch (err) { showErr(err, 'Failed to update status'); }
+    }
+    async function updatePaymentStatus(id, s) {
+      try {
+        await MDB.Orders.updatePaymentStatus(id, s);
+        MDB.UI.toast('Payment Status updated');
+        await refreshAll();
+      } catch (err) { showErr(err, 'Failed to update payment'); }
+    }
     async function deleteOrder(id) {
       if (confirm('Delete this order?')) {
         await MDB.Orders.delete(id);
@@ -2721,7 +2807,7 @@
 
       const c = getOrderCustomer(order);
       document.getElementById('om-id').textContent = '#' + safeText(order.id, '-');
-      
+
       // Populate inputs
       document.getElementById('om-edit-name').value = c.name || '';
       document.getElementById('om-edit-email').value = c.email || '';
@@ -2751,13 +2837,13 @@
       `).join('');
 
       document.getElementById('order-modal-overlay').style.display = 'flex';
-      
+
       // Bind save button once
       const saveBtn = document.getElementById('save-order-btn');
       saveBtn.onclick = async () => {
         saveBtn.disabled = true;
         saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
-        
+
         try {
           const updateData = {
             customer: {
@@ -2773,7 +2859,7 @@
             notes: document.getElementById('om-edit-notes').value,
             total: parseFloat(document.getElementById('om-edit-total').value)
           };
-          
+
           const res = await MDB.Orders.update(currentEditingOrderId, updateData);
           if (res && !res.error) {
             MDB.UI.toast('Order details updated successfully');
@@ -2800,14 +2886,14 @@
       MDB.UI ? MDB.UI.toast(m, 'error') : alert(m);
     }
 
-    
+
     async function renderProducts(q = '', catFilter = '') {
       const products = await MDB.Products.getAll();
       const low = products.filter(p => p.stock < 10);
       let filtered = products;
       if (catFilter) filtered = filtered.filter(p => safeText(p.category) === catFilter);
       if (q) { const ql = q.toLowerCase(); filtered = filtered.filter(p => safeText(p.name).toLowerCase().includes(ql) || safeText(p.brand).toLowerCase().includes(ql) || safeText(p.id).toLowerCase().includes(ql)); }
-      
+
       const totalItems = filtered.length;
       const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
       if (productCurrentPage > totalPages) productCurrentPage = Math.max(1, totalPages);
@@ -2816,10 +2902,10 @@
 
       document.getElementById('low-stock-alert').style.display = low.length ? 'flex' : 'none';
       document.getElementById('products-summary').textContent = `Showing ${filtered.length} products`;
-      
+
       const tbody = document.querySelector('#products-table tbody');
       if (!filtered.length) { tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-box"></i><p>No products found</p></div></td></tr>`; renderProductPagination(0); return; }
-      
+
       tbody.innerHTML = paginated.map(p => `<tr>
       <td><img src="${adminImageSrc(p.image)}" class="product-thumb"></td>
       <td><strong>${escapeHtml(p.name)}</strong><div class="cell-sub">${escapeHtml(p.id)}</div></td>
@@ -2834,7 +2920,7 @@
         </div>
       </td>
     </tr>`).join('');
-      
+
       renderProductPagination(filtered.length);
     }
 
@@ -2864,6 +2950,11 @@
       productImageState = Array.isArray(p.images) ? p.images.slice() : [];
       renderVariantGroups(p.variantGroups || []);
       renderProductImagePreview();
+
+      // Show single product export button
+      const singleExportBtn = document.getElementById('export-single-product-excel-btn');
+      if (singleExportBtn) singleExportBtn.style.display = 'inline-flex';
+
       document.getElementById('product-form-wrap').style.display = 'block';
       document.getElementById('product-form-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
@@ -2878,16 +2969,16 @@
       const wrap = document.getElementById('product-form-wrap');
       const isShown = wrap.style.display !== 'none';
       const newState = show !== null ? show : !isShown;
-      
+
       if (newState && !editingPid) {
         resetProductFormFields();
       }
-      
+
       wrap.style.display = newState ? 'block' : 'none';
       document.getElementById('toggle-product-form-btn').innerHTML = newState
         ? '<i class="fa-solid fa-xmark"></i> Close'
         : '<i class="fa-solid fa-plus"></i> Add Product';
-      
+
       if (newState) {
         wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
@@ -2912,6 +3003,10 @@
       populateSubcategoryOptions('makeup');
       renderVariantGroups([]);
       renderProductImagePreview();
+
+      // Hide single product export button
+      const singleExportBtn = document.getElementById('export-single-product-excel-btn');
+      if (singleExportBtn) singleExportBtn.style.display = 'none';
     }
 
     /* ─ CATEGORIES ─ */
@@ -3137,14 +3232,204 @@
       document.getElementById('sf-vodafone').value = s.vodafoneNumber || '';
     }
 
-    /* ─ EXPORT ─ */
+    /* ─ EXPORT SYSTEM (Robust & Professional) ─ */
+    function exportToExcel(data, filename = 'Export', sheetName = 'Sheet1') {
+      try {
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+          MDB.UI.toast('No data available to export', 'warning');
+          return;
+        }
+        
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        
+        // Auto-calculate column widths
+        const colWidths = {};
+        const rows = Array.isArray(data) ? data : [data];
+        rows.forEach(row => {
+          Object.keys(row).forEach(key => {
+            const val = String(row[key] || '');
+            colWidths[key] = Math.max(colWidths[key] || key.length, val.length);
+          });
+        });
+        worksheet['!cols'] = Object.keys(colWidths).map(key => ({ wch: colWidths[key] + 2 }));
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+        const fullFileName = `${filename}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        XLSX.writeFile(workbook, fullFileName);
+        MDB.UI.toast('Exported: ' + fullFileName);
+      } catch (err) {
+        console.error('Export Error:', err);
+        MDB.UI.toast('Export failed', 'error');
+      }
+    }
+
     async function exportOrders() {
-      const os = await MDB.Orders.get();
-      let csv = 'ID,Customer,Email,Total,Status,Date\n';
-      os.forEach(o => { csv += `${o.id},${o.customer?.name || ''},${o.customer?.email || ''},${o.total},${o.status},${o.createdAt}\n`; });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
-      a.download = 'orders.csv'; a.click();
+      MDB.UI.toast('Preparing orders export...', 'info');
+      const orders = await MDB.Orders.get();
+      const data = orders.map(o => {
+        const c = getOrderCustomer(o);
+        return {
+          'Order ID': String(o.id),
+          'Date': formatAdminDate(o.createdAt),
+          'Customer': String(c.name || 'Guest'),
+          'Email': String(c.email || '-'),
+          'Phone': String(c.phone || '-'),
+          'Total (LE)': Number(o.total || 0),
+          'Status': String(o.status || 'pending').toUpperCase(),
+          'Payment Method': String(o.paymentMethod || 'cash').toUpperCase(),
+          'Payment Status': String(o.paymentStatus || 'pending').toUpperCase(),
+          'City': String(c.city || '-'),
+          'Address': String(o.customer?.address || '-'),
+          'Items Count': Array.isArray(o.items) ? o.items.length : 0,
+          'Notes': String(o.notes || '')
+        };
+      });
+      exportToExcel(data, 'MDB_Orders_Full', 'Orders');
+    }
+
+    async function exportProducts() {
+      MDB.UI.toast('Preparing product catalog...', 'info');
+      const ps = await MDB.Products.getAll();
+      const data = ps.map(p => ({
+        'SKU/ID': String(p.id),
+        'Product Name': String(p.name),
+        'Brand': String(p.brand || 'MDB'),
+        'Price (LE)': Number(p.price || 0),
+        'Original Price': p.originalPrice || '-',
+        'Stock': Number(p.stock || 0),
+        'Category': String(p.category),
+        'Subcategory': String(p.subcategory || '-'),
+        'Rating': Number(p.rating || 0),
+        'Reviews': Number(p.reviewCount || 0),
+        'Featured': p.isFeatured ? 'Yes' : 'No',
+        'New': p.isNewArrival ? 'Yes' : 'No'
+      }));
+      exportToExcel(data, 'MDB_Products_Catalog', 'Products');
+    }
+
+    async function exportInventory() {
+      const ps = await MDB.Products.getAll();
+      const data = ps.map(p => ({
+        'SKU': String(p.id),
+        'Name': String(p.name),
+        'Stock Level': Number(p.stock || 0),
+        'Status': (p.stock || 0) > 0 ? ((p.stock || 0) < 10 ? 'LOW STOCK' : 'IN STOCK') : 'OUT OF STOCK',
+        'Category': String(p.category),
+        'Price': Number(p.price || 0)
+      }));
+      exportToExcel(data, 'MDB_Inventory_Report', 'Inventory');
+    }
+
+    async function exportCustomers() {
+      const users = JSON.parse(localStorage.getItem('mdb_users') || '[]');
+      const orders = await MDB.Orders.get();
+      const data = users.map(u => {
+        const userOrders = orders.filter(o => o.customer.email?.toLowerCase() === u.email?.toLowerCase());
+        const totalSpent = userOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+        return {
+          'Name': `${u.firstName} ${u.lastName}`,
+          'Email': u.email,
+          'Phone': u.phone || '-',
+          'City': u.city || '-',
+          'Total Orders': userOrders.length,
+          'Total Spent (LE)': totalSpent,
+          'Joined At': formatAdminDate(u.createdAt)
+        };
+      });
+      exportToExcel(data, 'MDB_Customers_List', 'Customers');
+    }
+
+    async function exportReviews() {
+      const rs = await MDB.Reviews.get();
+      const data = rs.map(r => ({
+        'Date': formatAdminDate(r.createdAt),
+        'Product ID': r.productId,
+        'Author': r.authorName,
+        'Rating': r.rating,
+        'Review Content': r.text
+      }));
+      exportToExcel(data, 'MDB_Product_Reviews', 'Reviews');
+    }
+
+    async function exportCoupons() {
+      const cs = await MDB.Coupons.get();
+      const data = cs.map(c => ({
+        'Code': c.code,
+        'Type': c.type,
+        'Value': c.value,
+        'Min Order (LE)': c.minOrder,
+        'Status': 'ACTIVE'
+      }));
+      exportToExcel(data, 'MDB_Coupons_List', 'Coupons');
+    }
+
+    async function exportSingleOrder(id) {
+      if (!id) return;
+      MDB.UI.toast('Generating order Excel...', 'info');
+      const orders = await MDB.Orders.get();
+      const o = orders.find(ord => String(ord.id).trim() === String(id).trim());
+      if (!o) {
+        MDB.UI.toast('Order not found', 'error');
+        return;
+      }
+
+      const c = getOrderCustomer(o);
+      const overview = [{
+        'Order ID': String(o.id),
+        'Date': formatAdminDate(o.createdAt),
+        'Customer Name': String(c.name),
+        'Email': String(c.email),
+        'Phone': String(c.phone),
+        'City': String(c.city),
+        'Address': String(o.customer?.address || ''),
+        'Total Amount (LE)': Number(o.total || 0),
+        'Status': String(o.status).toUpperCase(),
+        'Payment Method': String(o.paymentMethod || 'cash').toUpperCase(),
+        'Notes': String(o.notes || '')
+      }];
+
+      const items = (o.items || []).map(i => ({
+        'Product Name': String(i.name),
+        'Variant': String(i.variant || 'Default'),
+        'Unit Price (LE)': Number(i.price || 0),
+        'Quantity': Number(i.qty || 1),
+        'Line Total': Number(i.price || 0) * Number(i.qty || 1)
+      }));
+
+      try {
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(overview), "Overview");
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(items), "Ordered Items");
+        XLSX.writeFile(workbook, `MDB_Order_Details_${o.id}.xlsx`);
+        MDB.UI.toast('Single order exported');
+      } catch (err) {
+        console.error(err);
+        MDB.UI.toast('Export failed', 'error');
+      }
+    }
+
+    async function exportSingleProduct(id) {
+      if (!id) return;
+      const p = await MDB.Products.getById(id);
+      if (!p) {
+        MDB.UI.toast('Product not found', 'error');
+        return;
+      }
+      const data = [{
+        'ID': String(p.id),
+        'Name': String(p.name),
+        'Brand': String(p.brand || 'MDB'),
+        'Price (LE)': Number(p.price || 0),
+        'Stock': Number(p.stock || 0),
+        'Category': String(p.category),
+        'Subcategory': String(p.subcategory || ''),
+        'Rating': Number(p.rating || 0),
+        'Reviews': Number(p.reviewCount || 0),
+        'Description': String(p.description || ''),
+        'Ingredients': Array.isArray(p.ingredients) ? p.ingredients.join(', ') : (p.ingredients || '')
+      }];
+      exportToExcel(data, `MDB_Product_${p.id}`, "Product Info");
     }
   </script>
 </body>
