@@ -2635,10 +2635,10 @@
     async function updateStatus(id, s) { 
       try {
         const res = await MDB.Orders.updateStatus(id, s);
-        if (res) {
+        if (res && !res.error) {
           MDB.UI.toast('Order Status updated'); 
         } else {
-          MDB.UI.toast('Failed to update status on server', 'warning');
+          MDB.UI.toast('Server Error: ' + (res?.error || 'Unknown error'), 'error');
         }
       } catch (err) {
         showErr(err, 'Could not update status');
@@ -2649,10 +2649,10 @@
     async function updatePaymentStatus(id, s) { 
       try {
         const res = await MDB.Orders.updatePaymentStatus(id, s);
-        if (res) {
+        if (res && !res.error) {
           MDB.UI.toast('Payment Status updated'); 
         } else {
-          MDB.UI.toast('Failed to update payment status on server', 'warning');
+          MDB.UI.toast('Server Error: ' + (res?.error || 'Unknown error'), 'error');
         }
       } catch (err) {
         showErr(err, 'Could not update payment status');
@@ -2775,12 +2775,12 @@
           };
           
           const res = await MDB.Orders.update(currentEditingOrderId, updateData);
-          if (res) {
+          if (res && !res.error) {
             MDB.UI.toast('Order details updated successfully');
             document.getElementById('order-modal-overlay').style.display = 'none';
             await refreshAll();
           } else {
-            MDB.UI.toast('Failed to update order on server', 'warning');
+            MDB.UI.toast('Server Error: ' + (res?.error || 'Failed to update order'), 'error');
           }
         } catch (err) {
           showErr(err, 'Could not save order details');

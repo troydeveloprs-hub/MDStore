@@ -861,6 +861,7 @@ const MDB = (() => {
       } catch (err) {
         console.error(`[MDB Orders] Error during ${opName}:`, err);
         if (err.code) console.error(`[MDB Orders] Supabase Error Code: ${err.code} - ${err.message}`);
+        if (fallback === undefined || fallback === null) return { error: err.message || String(err) };
         return fallback;
       }
     },
@@ -1199,7 +1200,9 @@ const MDB = (() => {
         if (updateData.status) dbUpdate.status = updateData.status;
         if (updateData.paymentStatus) dbUpdate.payment_status = updateData.paymentStatus;
         if (updateData.paymentMethod) dbUpdate.payment_method = updateData.paymentMethod;
-        if (updateData.total !== undefined) dbUpdate.total = updateData.total;
+        if (updateData.total !== undefined && !Number.isNaN(parseFloat(updateData.total))) {
+          dbUpdate.total = parseFloat(updateData.total);
+        }
         if (updateData.notes !== undefined) dbUpdate.notes = updateData.notes;
         
         if (updateData.customer) {
