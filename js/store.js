@@ -1515,7 +1515,8 @@ const MDB = (() => {
         rating: Math.min(5, Math.max(1, parseInt(data.rating) || 5)),
         review_text: data.text || '',
         author_name: user ? ((user.firstName + ' ' + user.lastName).trim()) : (data.authorName || 'Anonymous'),
-        author_email: user ? user.email : (data.authorEmail || '')
+        author_email: user ? user.email : (data.authorEmail || ''),
+        created_at: new Date().toISOString()
       };
 
       return this._run('add', async () => {
@@ -1644,9 +1645,23 @@ const MDB = (() => {
       }
       try {
         const client = await Products._ensureClient();
-        await client.from(this._table).insert([{ email, created_at: new Date() }]);
-      } catch (err) { console.warn('Newsletter sync failed:', err); }
+        const { error } = await client.from(this._table).insert([{ email, created_at: new Date().toISOString() }]);
+        if (error) throw error;
+      } catch (err) { console.warn('MDB Newsletter DB sync failed:', err); }
       return true;
+    },
+
+    async get() {
+      try {
+        const client = await Products._ensureClient();
+        const { data, error } = await client.from(this._table).select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        return data || [];
+      } catch (err) {
+        console.warn('MDB Newsletter DB fetch failed, using local fallback:', err);
+        const local = JSON.parse(localStorage.getItem(this._cache) || '[]');
+        return local.map(email => ({ email, created_at: null }));
+      }
     }
   };
 
@@ -1658,18 +1673,33 @@ const MDB = (() => {
     _cache: 'mdb_messages',
 
     async send(data) {
-      const entry = { ...data, id: 'msg_' + Date.now(), status: 'new', created_at: new Date() };
+      const entry = { ...data, id: 'msg_' + Date.now(), status: 'new', created_at: new Date().toISOString() };
       const msgs = JSON.parse(localStorage.getItem(this._cache) || '[]');
       msgs.unshift(entry);
       localStorage.setItem(this._cache, JSON.stringify(msgs));
       try {
         const client = await Products._ensureClient();
-        await client.from(this._table).insert([entry]);
-      } catch (err) { console.warn('Messages sync failed:', err); }
+        const { error } = await client.from(this._table).insert([entry]);
+        if (error) throw error;
+      } catch (err) { console.warn('MDB Messages DB sync failed:', err); }
       return true;
     },
 
-    async get() { return JSON.parse(localStorage.getItem(this._cache) || '[]'); },
+    async get() {
+      try {
+        const client = await Products._ensureClient();
+        const { data, error } = await client.from(this._table).select('*').order('created_at', { ascending: false });
+        if (error) throw error;
+        // Merge with local if unique
+        const local = JSON.parse(localStorage.getItem(this._cache) || '[]');
+        const combined = [...data];
+        local.forEach(l => { if (!combined.find(c => c.id === l.id)) combined.push(l); });
+        return combined.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+      } catch (err) {
+        console.warn('MDB Messages DB fetch failed, using local fallback:', err);
+        return JSON.parse(localStorage.getItem(this._cache) || '[]');
+      }
+    },
     async delete(id) {
       let msgs = JSON.parse(localStorage.getItem(this._cache) || '[]');
       msgs = msgs.filter(m => m.id !== id);
