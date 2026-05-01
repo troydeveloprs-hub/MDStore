@@ -3,7 +3,7 @@ import re
 
 collections_dir = 'collections'
 mapping = {
-    'makeup': '../img/makeup-banner.jpg',
+    'makeup': '../img/makeup-banner.jpeg',
     'skincare': '../img/skincare-banner.jpg',
     'fragrance': '../img/spray.jpg',
     'hair': '../imghero/4.jpeg',
