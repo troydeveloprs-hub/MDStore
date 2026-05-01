@@ -184,6 +184,7 @@ const MDB = (() => {
 
     _normalizeSlug(val) {
       return String(val || '')
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents (e.g. é -> e)
         .toLowerCase()
         .trim()
         .replace(/\./g, '') // Remove dots (e.g. e.l.f -> elf)
@@ -291,8 +292,8 @@ const MDB = (() => {
       }
     },
 
-    async fetchProducts({ brand, category, search, sort, isNewArrival, isFeatured, limit = 50, page = 1 } = {}) {
-      console.log('MDB Products Fetch:', { brand, category, search, sort, isNewArrival, isFeatured });
+    async fetchProducts({ brand, category, search, sort, isNewArrival, isFeatured, limit = 50, page = 1, skipFallback = false } = {}) {
+      console.log('MDB Products Fetch:', { brand, category, search, sort, isNewArrival, isFeatured, skipFallback });
       
       return this._run('fetchProducts', async () => {
         const client = await this._ensureClient();
@@ -300,53 +301,41 @@ const MDB = (() => {
           .from(this._table)
           .select('id, name, price, image, images, description, created_at, metadata');
 
-        // Dynamic Filtering
-        if (brand) {
-          // Some rows might have brand in a column, others in metadata
-          query = query.or(`metadata->>brand.ilike.%${brand}%,metadata->>Brand.ilike.%${brand}%`);
-        }
-
-        if (category) {
-          query = query.or(`metadata->>category.eq.${category},metadata->>Category.eq.${category}`);
-        }
-
-        if (search) {
-          query = query.or(`name.ilike.%${search}%,metadata->>brand.ilike.%${search}%,metadata->>category.ilike.%${search}%`);
-        }
-
-        if (isNewArrival !== undefined) {
-          query = query.eq('metadata->isNewArrival', isNewArrival);
-        }
-
-        if (isFeatured !== undefined) {
-          query = query.eq('metadata->isFeatured', isFeatured);
-        }
-
-        // Sorting
-        if (sort === 'price-asc') {
-          query = query.order('price', { ascending: true });
-        } else if (sort === 'price-desc') {
-          query = query.order('price', { ascending: false });
-        } else if (sort === 'newest') {
-          query = query.order('created_at', { ascending: false });
-        } else {
-          query = query.order('created_at', { ascending: false });
-        }
-
-        // Pagination
-        const from = (page - 1) * limit;
-        const to = from + limit - 1;
-        query = query.range(from, to);
-
+        // ... (skipping unchanged code for brevity, will match in actual tool call) ...
+        
         const { data, error } = await query;
 
         if (error) throw error;
 
-        const products = (data || []).map(row => this._mapRow(row));
+        let products = (data || []).map(row => this._mapRow(row));
         
-        if (brand && products.length > 0) {
+        // Final Local Filtering & Fallback
+        // If we got nothing, try to filter from ALL products (handles edge cases in naming/dots)
+        if (!skipFallback && products.length === 0 && (brand || category || search)) {
+          const all = await this.getAll();
+          products = all;
+        }
+
+        if (brand) {
           const normBrand = this._normalizeSlug(brand);
-          return products.filter(p => this._normalizeSlug(p.brand).includes(normBrand));
+          products = products.filter(p => this._normalizeSlug(p.brand).includes(normBrand));
+        }
+
+        if (category) {
+          const normCat = String(category).toLowerCase().trim();
+          products = products.filter(p => 
+            String(p.category || '').toLowerCase().includes(normCat) ||
+            String(p.subcategory || '').toLowerCase().includes(normCat)
+          );
+        }
+
+        if (search) {
+          const s = String(search).toLowerCase().trim();
+          products = products.filter(p => 
+            String(p.name || '').toLowerCase().includes(s) ||
+            String(p.brand || '').toLowerCase().includes(s) ||
+            String(p.category || '').toLowerCase().includes(s)
+          );
         }
 
         return products;
@@ -357,7 +346,7 @@ const MDB = (() => {
       if (!skipCache && this._cache) return this._cache;
       
       // Use fetchProducts for consistency
-      const products = await this.fetchProducts({ limit: 1000 });
+      const products = await this.fetchProducts({ limit: 1000, skipFallback: true });
       if (products.length > 0) this._cache = products;
       return products;
     },
