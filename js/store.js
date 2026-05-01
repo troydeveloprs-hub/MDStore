@@ -1628,6 +1628,56 @@ const MDB = (() => {
     }
   };
 
+  /* ===================================================================
+     NEWSLETTER — Handle email subscriptions
+     =================================================================== */
+  const Newsletter = {
+    _table: 'subscribers',
+    _cache: 'mdb_subscribers',
+
+    async subscribe(email) {
+      if (!email || !email.includes('@')) throw new Error('Invalid email');
+      const subs = JSON.parse(localStorage.getItem(this._cache) || '[]');
+      if (!subs.includes(email)) {
+        subs.push(email);
+        localStorage.setItem(this._cache, JSON.stringify(subs));
+      }
+      try {
+        const client = await Products._ensureClient();
+        await client.from(this._table).insert([{ email, created_at: new Date() }]);
+      } catch (err) { console.warn('Newsletter sync failed:', err); }
+      return true;
+    }
+  };
+
+  /* ===================================================================
+     MESSAGES — Handle contact form inquiries
+     =================================================================== */
+  const Messages = {
+    _table: 'inquiries',
+    _cache: 'mdb_messages',
+
+    async send(data) {
+      const entry = { ...data, id: 'msg_' + Date.now(), status: 'new', created_at: new Date() };
+      const msgs = JSON.parse(localStorage.getItem(this._cache) || '[]');
+      msgs.unshift(entry);
+      localStorage.setItem(this._cache, JSON.stringify(msgs));
+      try {
+        const client = await Products._ensureClient();
+        await client.from(this._table).insert([entry]);
+      } catch (err) { console.warn('Messages sync failed:', err); }
+      return true;
+    },
+
+    async get() { return JSON.parse(localStorage.getItem(this._cache) || '[]'); },
+    async delete(id) {
+      let msgs = JSON.parse(localStorage.getItem(this._cache) || '[]');
+      msgs = msgs.filter(m => m.id !== id);
+      localStorage.setItem(this._cache, JSON.stringify(msgs));
+      return true;
+    }
+  };
+
   const Coupons = {
     _cache: null,
     _table: 'coupons',
@@ -2005,7 +2055,7 @@ const MDB = (() => {
   });
 
   /* ─── Public API ─── */
-  return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, Settings, Coupons, Newsletter, UI, KEYS };
+  return { Products, Cart, Wishlist, Orders, Auth, Reviews, Addresses, Settings, Coupons, Newsletter, Messages, UI, KEYS };
 })();
 
 /* Make globally accessible */

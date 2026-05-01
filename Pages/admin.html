@@ -1519,6 +1519,9 @@
         <button class="nav-item" data-tab="subscribers">
           <span class="nav-icon"><i class="fa-solid fa-envelope-open-text"></i></span> Subscribers
         </button>
+        <button class="nav-item" data-tab="messages">
+          <span class="nav-icon"><i class="fa-solid fa-message"></i></span> Messages
+        </button>
         <button class="nav-item" data-tab="reviews">
           <span class="nav-icon"><i class="fa-solid fa-star"></i></span> Reviews
         </button>
@@ -1943,6 +1946,32 @@
                     <th>Email</th>
                     <th>Status</th>
                     <th>Date Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── MESSAGES ── -->
+        <div class="admin-panel" id="panel-messages">
+          <div class="section-header">
+            <div class="section-title">Contact Inquiries</div>
+            <button class="btn btn-gold" onclick="exportMessages()">
+              <i class="fa-solid fa-file-excel"></i> Export Messages
+            </button>
+          </div>
+          <div class="table-shell">
+            <div style="overflow-x:auto">
+              <table class="admin-table" id="messages-table">
+                <thead>
+                  <tr>
+                    <th>From</th>
+                    <th>Subject</th>
+                    <th>Message</th>
+                    <th>Date</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -2418,6 +2447,7 @@
       renderReviews();
       renderCoupons();
       renderSubscribers();
+      renderMessages();
       await renderInventory();
     }
 
@@ -2435,6 +2465,7 @@
           if (tab.dataset.tab === 'products') renderProducts(getProductSearchTerm());
           if (tab.dataset.tab === 'settings') loadSettings();
           if (tab.dataset.tab === 'subscribers') renderSubscribers();
+          if (tab.dataset.tab === 'messages') renderMessages();
           // Hide export btn on non-order tabs
           const exportBtn = document.getElementById('export-orders-btn');
           if (exportBtn) exportBtn.style.display = tab.dataset.tab === 'orders' ? 'flex' : 'none';
@@ -2500,6 +2531,7 @@
       document.getElementById('export-reviews-btn')?.addEventListener('click', exportReviews);
       document.getElementById('export-coupons-btn')?.addEventListener('click', exportCoupons);
       document.getElementById('export-subscribers-btn')?.addEventListener('click', exportSubscribers);
+      document.getElementById('export-messages-btn')?.addEventListener('click', exportMessages);
 
       // Single Item Exports (Bound once globally)
       document.getElementById('export-single-order-excel-btn')?.addEventListener('click', () => {
@@ -3444,6 +3476,49 @@
         'Date Exported': new Date().toLocaleDateString()
       }));
       exportToExcel(data, 'MDB_Newsletter_Subscribers', 'Subscribers');
+    }
+
+    /* ─ MESSAGES ─ */
+    async function renderMessages() {
+      const msgs = await MDB.Messages.get();
+      const tbody = document.querySelector('#messages-table tbody');
+      if (!tbody) return;
+      
+      tbody.innerHTML = msgs.map(m => `<tr>
+        <td>
+          <strong>${escapeHtml(m.name)}</strong>
+          <div class="cell-sub">${escapeHtml(m.email)}</div>
+          <div class="cell-sub">${escapeHtml(m.phone)}</div>
+        </td>
+        <td>${escapeHtml(m.subject)}</td>
+        <td style="max-width:300px; color:var(--text2)">${escapeHtml(m.message)}</td>
+        <td>${formatAdminDate(m.created_at)}</td>
+        <td>
+          <button class="act-btn danger" onclick="deleteMessage('${m.id}')">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="5"><div class="empty-state"><i class="fa-solid fa-message"></i><p>No messages yet</p></div></td></tr>';
+    }
+
+    async function deleteMessage(id) {
+      if (!confirm('Delete this message?')) return;
+      await MDB.Messages.delete(id);
+      MDB.UI.toast('Message deleted');
+      renderMessages();
+    }
+
+    async function exportMessages() {
+      const msgs = await MDB.Messages.get();
+      const data = msgs.map(m => ({
+        'Date': formatAdminDate(m.created_at),
+        'From': m.name,
+        'Email': m.email,
+        'Phone': m.phone,
+        'Subject': m.subject,
+        'Message': m.message
+      }));
+      exportToExcel(data, 'MDB_Contact_Inquiries', 'Messages');
     }
 
     async function exportSingleOrder(id) {
