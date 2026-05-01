@@ -919,16 +919,33 @@
 
       // Summary
       async function renderSummary() {
+        const city = document.getElementById('co-city').value;
         const el = document.getElementById('summary-items');
         el.innerHTML = items.map(i => `<div class="summary-item"><img src="${i.image}" alt="${i.name}"><div class="summary-item-info"><div class="summary-item-name">${i.name}</div><div class="summary-item-meta">${i.variant} × ${i.qty}</div></div><div class="summary-item-price">${MDB.UI.formatPrice(i.price * i.qty)}</div></div>`).join('');
-        document.getElementById('sum-subtotal').textContent = MDB.UI.formatPrice(await MDB.Cart.subtotal());
-        const ship = await MDB.Cart.shipping();
+        
+        const subtotal = await MDB.Cart.subtotal();
+        document.getElementById('sum-subtotal').textContent = MDB.UI.formatPrice(subtotal);
+        
+        const ship = await MDB.Cart.shipping(city);
         document.getElementById('sum-shipping').textContent = ship === 0 ? 'Free' : MDB.UI.formatPrice(ship);
-        const disc = await MDB.Cart.discount();
-        if (disc > 0) { document.getElementById('sum-discount-row').style.display = 'flex'; document.getElementById('sum-discount').textContent = '-' + MDB.UI.formatPrice(disc); }
-        document.getElementById('sum-total').textContent = MDB.UI.formatPrice(await MDB.Cart.total());
+        
+        const disc = await MDB.Cart.discount(city);
+        if (disc > 0) {
+          document.getElementById('sum-discount-row').style.display = 'flex';
+          document.getElementById('sum-discount').textContent = '-' + MDB.UI.formatPrice(disc);
+        } else {
+          document.getElementById('sum-discount-row').style.display = 'none';
+        }
+        
+        const total = await MDB.Cart.total(city);
+        document.getElementById('sum-total').textContent = MDB.UI.formatPrice(total);
       }
       await renderSummary();
+
+      // Update shipping when city changes
+      document.getElementById('co-city').addEventListener('change', () => {
+        renderSummary();
+      });
       
       // Load Settings (Vodafone Number)
       const settings = await MDB.Settings.get();

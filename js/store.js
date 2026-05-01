@@ -302,15 +302,16 @@ const MDB = (() => {
 
         // Dynamic Filtering
         if (brand) {
-          query = query.ilike('brand', `%${brand}%`);
+          // Some rows might have brand in a column, others in metadata
+          query = query.or(`metadata->>brand.ilike.%${brand}%,metadata->>Brand.ilike.%${brand}%`);
         }
 
         if (category) {
-          query = query.eq('category', category);
+          query = query.or(`metadata->>category.eq.${category},metadata->>Category.eq.${category}`);
         }
 
         if (search) {
-          query = query.ilike('name', `%${search}%`);
+          query = query.or(`name.ilike.%${search}%,metadata->>brand.ilike.%${search}%,metadata->>category.ilike.%${search}%`);
         }
 
         if (isNewArrival !== undefined) {
@@ -718,14 +719,39 @@ const MDB = (() => {
       return items.reduce((s, i) => s + (i.price * i.qty), 0);
     },
 
-    async shipping() {
+    async shipping(city = null) {
       const sub = await this.subtotal();
       const threshold = (await Settings.get()).shippingThreshold || 3500;
-      return sub >= threshold ? 0 : 50;
+      if (sub >= threshold) return 0;
+
+      if (!city) return 120; // Default fallback for governorates
+
+      const c = city.toLowerCase().trim();
+      
+      // 100 LE: Cairo & Giza
+      if (c === 'cairo' || c === 'giza') return 100;
+      
+      // 150 LE: Qena & Aswan
+      if (c === 'qena' || c === 'aswan' || c === 'luxor') return 150;
+      
+      // 235 LE: Red Sea (Hurghada), South Sinai (Sharm), Sahel (Matrouh)
+      if (
+        c === 'red sea' || 
+        c === 'south sinai' || 
+        c === 'matrouh' || 
+        c.includes('sharm') || 
+        c.includes('hurghada') || 
+        c.includes('sahel')
+      ) {
+        return 235;
+      }
+      
+      // 120 LE: All other governorates (Alexandria, Dakahlia, etc.)
+      return 120;
     },
 
-    async total() {
-      let t = (await this.subtotal()) + (await this.shipping());
+    async total(city = null) {
+      let t = (await this.subtotal()) + (await this.shipping(city));
       const promo = await this.getAppliedPromo();
       if (promo) {
         if (promo.type === 'percent') t = t * (1 - promo.value / 100);
@@ -734,10 +760,10 @@ const MDB = (() => {
       return Math.round(t * 100) / 100;
     },
 
-    async discount() {
+    async discount(city = null) {
       const promo = await this.getAppliedPromo();
       if (!promo) return 0;
-      const base = (await this.subtotal()) + (await this.shipping());
+      const base = (await this.subtotal()) + (await this.shipping(city));
       if (promo.type === 'percent') return Math.round(base * promo.value / 100);
       if (promo.type === 'fixed') return Math.min(promo.value, base);
       return 0;

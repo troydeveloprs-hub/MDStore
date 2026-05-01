@@ -302,10 +302,6 @@
             <a href="lip-liner.html">Lip Liner</a>
             <a href="lip-sets.html">Lip Sets</a>
             <a href="lip-plumper.html">Lip Plumper</a>
-                  <a href="lip-oil.html" class="mega-link">Lip Oil</a>
-                  <a href="lip-liner.html" class="mega-link">Lip Liner</a>
-                  <a href="lip-sets.html" class="mega-link">Lip Sets</a>
-                  <a href="lip-plumper.html" class="mega-link">Lip Plumper</a>
           </div>
 
           <button class="mobile-nav-subparent">Collections <i class="fa-solid fa-chevron-down"></i></button>
@@ -383,7 +379,7 @@
             <a href="collections/supplements.html">Supplements</a>
             <a href="collections/feminine-care.html">Feminine Care</a>
             <a href="collections/high-tech-tools.html">High Tech Tools</a>
-<a href="collections/eye-care.html">Eye Care</a>
+            <a href="collections/eye-care.html">Eye Care</a>
             <a href="collections/lip-balms.html">Lip Balms & Treatments</a>
           </div>
         </div>
@@ -420,8 +416,6 @@
     <div class="mobile-nav-footer">
       <div class="mobile-nav-social">
         <a href="https://www.instagram.com/md_boutiquee2" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>        <a href="https://m.facebook.com/story.php?story_fbid=pfbid032VNp41V1RhD8x7NN8dDoCQ75iubzwXnJJANUgQ31bf6UBtRb4s2fjCoyLrYiRESEl&id=100069720326946" target="_blank" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-        
-        
       </div>
     </div>
   </nav>
@@ -461,7 +455,7 @@
         <div class="cart-summary">
           <h3 class="cart-summary-title">Order Summary</h3>
           <div class="cart-summary-row"><span>Subtotal</span><span data-subtotal>0 LE</span></div>
-          <div class="cart-summary-row"><span>Shipping</span><span data-shipping>50 LE</span></div>
+          <div class="cart-summary-row"><span>Shipping</span><span data-shipping>0 LE</span></div>
           <div class="cart-promo">
             <input type="text" class="cart-promo-input" placeholder="Promo code">
             <button class="cart-promo-btn">Apply</button>
@@ -599,11 +593,6 @@
         typeof item.price === 'number' && !isNaN(item.price)
       );
 
-      // If all items were invalid, clean localStorage
-      if (rawItems.length > 0 && items.length === 0) {
-        localStorage.removeItem('mdb_cart');
-      }
-      
       if (!items || items.length === 0) {
         if (emptyEl) emptyEl.style.display = 'block';
         if (cartItemsWrapper) cartItemsWrapper.style.display = 'none';
@@ -618,7 +607,7 @@
         return (n || 0).toLocaleString('en-EG') + ' LE';
       };
       
-      // Render cart items — image INSIDE details for proper desktop grid
+      // Render cart items
       if (itemsEl) {
         itemsEl.innerHTML = items.map(item => `
           <div class="cart-item" data-id="${item.id || ''}" data-variant="${item.variant || 'Default'}">
@@ -653,7 +642,6 @@
             const input = el.querySelector('.cart-qty-input');
             const newQty = Math.max(1, parseInt(input.value) - 1);
             if (parseInt(input.value) > 1) {
-              input.value = newQty;
               await MDB.Cart.updateQty(id, variant, newQty);
               location.reload();
             }
@@ -662,14 +650,11 @@
           el.querySelector('.cart-qty-plus')?.addEventListener('click', async () => {
             const input = el.querySelector('.cart-qty-input');
             const newQty = parseInt(input.value) + 1;
-            input.value = newQty;
             await MDB.Cart.updateQty(id, variant, newQty);
             location.reload();
           });
           
           el.querySelector('.cart-item-remove')?.addEventListener('click', async () => {
-            el.style.opacity = '0.4';
-            el.style.pointerEvents = 'none';
             await MDB.Cart.remove(id, variant);
             location.reload();
           });
@@ -677,10 +662,9 @@
       }
       
       // Calculate totals
-      const subtotal = items.reduce((s, i) => s + (i.price || 0) * (i.qty || 1), 0);
-      const threshold = 3500;
-      const shipping = subtotal >= threshold ? 0 : 50;
-      const total = subtotal + shipping;
+      const subtotal = await MDB.Cart.subtotal();
+      const shipping = await MDB.Cart.shipping();
+      const total = await MDB.Cart.total();
       
       if (subtotalEl) subtotalEl.textContent = fmt(subtotal);
       if (shippingEl) shippingEl.textContent = shipping === 0 ? 'Free' : fmt(shipping);
@@ -688,190 +672,34 @@
     });
   </script>
   <style>
-    /* Mobile optimizations for cart page */
     @media (max-width: 768px) {
-      .cart-main {
-        padding: 60px 0 40px;
-      }
-
-      .cart-title {
-        font-size: 1.4rem;
-        margin-bottom: 16px;
-      }
-
-      .cart-layout {
-        gap: 20px;
-      }
-
-      .cart-table-header {
-        display: none; /* Hide desktop table header on mobile */
-      }
-
-      .cart-item {
-        flex-direction: column;
-        gap: 16px;
-        padding: 16px 0;
-        border-bottom: 1px solid var(--color-border, #e5e5e5);
-      }
-
-      .cart-item-image {
-        width: 100%;
-        height: 200px;
-        border-radius: 8px;
-        overflow: hidden;
-      }
-
-      .cart-item-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-
-      .cart-item-details {
-        width: 100%;
-        text-align: center;
-      }
-
-      .cart-item-name {
-        font-size: 1rem;
-        margin-bottom: 4px;
-      }
-
-      .cart-item-variant {
-        font-size: 0.8rem;
-        margin-bottom: 8px;
-      }
-
-      .cart-item-price {
-        font-size: 0.9rem;
-      }
-
-      .cart-item-quantity {
-        justify-content: center;
-        margin: 12px 0;
-      }
-
-      .cart-item-total {
-        text-align: center;
-        font-size: 1rem;
-        font-weight: 700;
-        margin-bottom: 12px;
-      }
-
-      .cart-item-remove {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: #f5f5f5;
-        border: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .cart-summary {
-        padding: 20px;
-        border-radius: 12px;
-      }
-
-      .cart-summary-title {
-        font-size: 1rem;
-        margin-bottom: 16px;
-      }
-
-      .cart-summary-row {
-        font-size: 0.8rem;
-        margin-bottom: 8px;
-      }
-
-      .cart-summary-total {
-        font-size: 1rem;
-        margin-top: 8px;
-      }
-
-      .cart-promo {
-        flex-direction: column;
-        gap: 8px;
-        margin-bottom: 16px;
-      }
-
-      .cart-promo-input {
-        padding: 12px 14px;
-        font-size: 0.85rem;
-      }
-
-      .cart-promo-btn {
-        padding: 12px;
-        font-size: 0.85rem;
-      }
-
-      .cart-notes {
-        margin-top: 20px;
-      }
-
-      .cart-notes-label {
-        font-size: 0.8rem;
-        margin-bottom: 8px;
-      }
-
-      .cart-notes-input {
-        padding: 12px 14px;
-        font-size: 0.85rem;
-        min-height: 80px;
-      }
-
-      .container {
-        padding: 0 16px;
-      }
-
-      .breadcrumb {
-        font-size: 0.75rem;
-        margin-bottom: 16px;
-      }
-
-      /* Better mobile layout for cart items */
-      .cart-items {
-        background: #fff;
-        border-radius: 12px;
-        padding: 0 16px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      }
-
-      .cart-item {
-        position: relative;
-        padding: 16px;
-      }
-
-      .cart-item:first-child {
-        border-radius: 12px 12px 0 0;
-      }
-
-      .cart-item:last-child {
-        border-bottom: none;
-        border-radius: 0 0 12px 12px;
-      }
-
-      .cart-item:only-child {
-        border-radius: 12px;
-      }
-
-      /* Mobile quantity selector improvements */
-      .quantity-selector-sm {
-        transform: scale(0.9);
-      }
-
-      .qty-btn {
-        padding: 8px 12px;
-        font-size: 0.9rem;
-      }
-
-      .qty-input {
-        width: 50px;
-        font-size: 0.85rem;
-      }
+      .cart-main { padding: 60px 0 40px; }
+      .cart-title { font-size: 1.4rem; margin-bottom: 16px; }
+      .cart-layout { gap: 20px; }
+      .cart-table-header { display: none; }
+      .cart-item { flex-direction: column; gap: 16px; padding: 16px 0; border-bottom: 1px solid #e5e5e5; position: relative; }
+      .cart-item-image { width: 100%; height: 200px; border-radius: 8px; overflow: hidden; }
+      .cart-item-image img { width: 100%; height: 100%; object-fit: cover; }
+      .cart-item-details { width: 100%; text-align: center; }
+      .cart-item-name { font-size: 1rem; margin-bottom: 4px; }
+      .cart-item-variant { font-size: 0.8rem; margin-bottom: 8px; }
+      .cart-item-price { font-size: 0.9rem; }
+      .cart-item-quantity { justify-content: center; margin: 12px 0; }
+      .cart-item-total { text-align: center; font-size: 1rem; font-weight: 700; margin-bottom: 12px; }
+      .cart-item-remove { position: absolute; top: 16px; right: 16px; background: #f5f5f5; border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+      .cart-summary { padding: 20px; border-radius: 12px; }
+      .cart-summary-title { font-size: 1rem; margin-bottom: 16px; }
+      .cart-summary-row { font-size: 0.8rem; margin-bottom: 8px; }
+      .cart-summary-total { font-size: 1rem; margin-top: 8px; }
+      .cart-promo { flex-direction: column; gap: 8px; margin-bottom: 16px; }
+      .cart-promo-input { padding: 12px 14px; font-size: 0.85rem; }
+      .cart-promo-btn { padding: 12px; font-size: 0.85rem; }
+      .cart-notes { margin-top: 20px; }
+      .cart-notes-label { font-size: 0.8rem; margin-bottom: 8px; }
+      .cart-notes-input { padding: 12px 14px; font-size: 0.85rem; min-height: 80px; }
+      .container { padding: 0 16px; }
+      .breadcrumb { font-size: 0.75rem; margin-bottom: 16px; }
+      .cart-items { background: #fff; border-radius: 12px; padding: 0 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     }
   </style>
 </body>
