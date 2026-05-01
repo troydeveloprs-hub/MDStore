@@ -143,6 +143,12 @@
       margin-bottom: 32px;
       line-height: 1.6;
     }
+    
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .fa-spin-fast { animation: spin 0.8s linear infinite; }
+    .tb-btn:disabled { opacity: 0.7; cursor: not-allowed; }
+    
+    .loading-mini { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; margin-right: 8px; vertical-align: middle; }
 
     .login-field {
       position: relative;
@@ -2677,10 +2683,13 @@
       document.getElementById('product-form').onsubmit = async e => {
         e.preventDefault();
         const saveBtn = document.getElementById('save-product-btn');
+        const originalText = saveBtn.innerHTML;
+        
         try {
           saveBtn.disabled = true;
+          saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
 
-          // Upload pending image files to Supabase Storage
+          // Upload pending image files
           const uploadedImageUrls = [];
           if (pendingImageFiles.length > 0) {
             for (const file of pendingImageFiles) {
@@ -2689,10 +2698,8 @@
                 uploadedImageUrls.push(uploadedUrl);
               } catch (uploadErr) {
                 console.error('Failed to upload image:', uploadErr);
-                // Continue with other images even if one fails
               }
             }
-            // Replace data URLs with uploaded URLs
             productImageState = productImageState.map(img => {
               if (img.startsWith('data:')) {
                 const uploaded = uploadedImageUrls.shift();
@@ -2726,20 +2733,19 @@
             variantGroups: collectVariantGroups()
           };
 
-          if (!data.name || !data.brand) {
-            throw new Error('Name and Brand are required');
-          }
+          if (!data.name || !data.brand) throw new Error('Name and Brand are required');
 
-          console.log('--- SAVING PRODUCT ---', data);
           await MDB.Products.save(data);
           MDB.UI.toast('Product saved successfully!', 'success');
           toggleProductForm(false);
           await refreshAll();
         } catch (err) {
           console.error('--- SAVE ERROR ---', err);
-          showErr(err, 'Failed to save product. Please check console for details.');
+          showErr(err, 'Failed to save product.');
+        } finally {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalText;
         }
-        finally { saveBtn.disabled = false; }
       };
     }
 
