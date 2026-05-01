@@ -1564,8 +1564,8 @@
           </div>
         </div>
         <div class="topbar-actions">
-          <button class="tb-btn" onclick="refreshAll()" title="Refresh Dashboard">
-            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+          <button class="tb-btn" id="main-refresh-btn" onclick="refreshAll()" title="Refresh Dashboard">
+            <i class="fa-solid fa-arrows-rotate"></i> <span>Refresh</span>
           </button>
           <button class="tb-btn" id="export-orders-btn" style="display:none">
             <i class="fa-solid fa-file-excel"></i> Export Excel
@@ -2441,16 +2441,41 @@
     }
 
     async function refreshAll() {
-      await renderStats();
-      await renderOrders();
-      await renderProducts(document.getElementById('product-search')?.value || '');
-      await renderCustomers();
-      renderAnalytics();
-      renderReviews();
-      renderCoupons();
-      renderSubscribers();
-      renderMessages();
-      await renderInventory();
+      const btn = document.getElementById('main-refresh-btn');
+      const icon = btn?.querySelector('i');
+      const text = btn?.querySelector('span');
+      
+      if (btn) btn.disabled = true;
+      if (icon) icon.className = 'fa-solid fa-arrows-rotate fa-spin-fast';
+      if (text) text.textContent = 'Refreshing...';
+
+      try {
+        // Clear local caches and re-fetch from Supabase
+        await MDB.Products.getAll(true); 
+        await MDB.Orders.get(); 
+        
+        await Promise.all([
+          renderStats(),
+          renderOrders(),
+          renderProducts(document.getElementById('product-search')?.value || ''),
+          renderCustomers(),
+          renderInventory(),
+          renderAnalytics(),
+          renderReviews(),
+          renderCoupons(),
+          renderSubscribers(),
+          renderMessages()
+        ]);
+        
+        MDB.UI.toast('Dashboard data refreshed', 'success');
+      } catch (err) {
+        console.error(err);
+        MDB.UI.toast('Refresh failed', 'error');
+      } finally {
+        if (btn) btn.disabled = false;
+        if (icon) icon.className = 'fa-solid fa-arrows-rotate';
+        if (text) text.textContent = 'Refresh';
+      }
     }
 
     /* ─ TABS ─ */
@@ -3297,16 +3322,48 @@
     }
 
     async function updateStock(pid, value, isDelta = true) {
+      const input = document.querySelector(`input[data-set-stock="${encodeURIComponent(pid)}"]`);
+      const originalValue = input ? input.value : null;
+      
+      if (input) {
+        input.disabled = true;
+        input.parentElement.style.position = 'relative';
+        const spin = document.createElement('i');
+        spin.className = 'fa-solid fa-spinner fa-spin';
+        spin.style.cssText = 'position:absolute; right: -20px; top: 10px; color: var(--gold); font-size: 12px;';
+        input.parentElement.appendChild(spin);
+      }
+
       try {
         const p = await MDB.Products.getById(pid);
-        if (!p) { MDB.UI.toast('Product not found', 'error'); return; }
+        if (!p) throw new Error('Product not found');
+        
         const currentStock = parseInt(p.stock, 10) || 0;
         const finalStock = isDelta ? Math.max(0, currentStock + value) : Math.max(0, parseInt(value, 10));
+        
         await MDB.Products.save({ ...p, stock: finalStock });
-        await renderInventory();
-        await renderProducts(document.getElementById('product-search')?.value || '');
-        MDB.UI.toast(`Stock updated: ${p.name} (${finalStock})`, 'success');
-      } catch (e) { showErr(e, 'Failed to update stock.'); }
+        
+        // Immediate UI refresh for this row if it was a delta update
+        if (input) input.value = finalStock;
+
+        // Global refresh to update dashboard cards and products list
+        await Promise.all([
+            renderStats(),
+            renderInventory(),
+            renderProducts(document.getElementById('product-search')?.value || '')
+        ]);
+        
+        MDB.UI.toast(`Stock updated: ${p.name}`, 'success');
+      } catch (e) { 
+        if (input) input.value = originalValue;
+        showErr(e, 'Failed to update stock.'); 
+      } finally {
+        if (input) {
+          input.disabled = false;
+          const spin = input.parentElement.querySelector('.fa-spinner');
+          if (spin) spin.remove();
+        }
+      }
     }
 
     /* ─ ANALYTICS ─ */
