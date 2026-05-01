@@ -330,8 +330,10 @@ const MDB = (() => {
           products = products.filter(p => 
             String(p.category || '').toLowerCase().includes(normCat) ||
             String(p.subcategory || '').toLowerCase().includes(normCat) ||
+            String(p.brand || '').toLowerCase().includes(normCat) ||
             this._normalizeSlug(p.category || '').includes(slugCat) ||
             this._normalizeSlug(p.subcategory || '').includes(slugCat) ||
+            this._normalizeSlug(p.brand || '').includes(slugCat) ||
             String(p.name || '').toLowerCase().includes(normCat)
           );
         }
