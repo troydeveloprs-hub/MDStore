@@ -3442,16 +3442,16 @@
 
     /* ─ SUBSCRIBERS ─ */
     async function renderSubscribers() {
-      const subs = JSON.parse(localStorage.getItem('mdb_subscribers') || '[]');
+      const subs = await MDB.Newsletter.get();
       const tbody = document.querySelector('#subscribers-table tbody');
       if (!tbody) return;
       
-      tbody.innerHTML = subs.map(email => `<tr>
-        <td><strong>${escapeHtml(email)}</strong></td>
+      tbody.innerHTML = subs.map(s => `<tr>
+        <td><strong>${escapeHtml(s.email)}</strong></td>
         <td><span class="badge badge-success">Subscribed</span></td>
-        <td>${formatAdminDate(new Date())}</td>
+        <td>${s.created_at ? formatAdminDate(s.created_at) : 'Local Only'}</td>
         <td>
-          <button class="act-btn danger" onclick="deleteSubscriber('${encodeURIComponent(email)}')">
+          <button class="act-btn danger" onclick="deleteSubscriber('${encodeURIComponent(s.email)}')">
             <i class="fa-solid fa-trash"></i>
           </button>
         </td>
@@ -3469,11 +3469,11 @@
     }
 
     async function exportSubscribers() {
-      const subs = JSON.parse(localStorage.getItem('mdb_subscribers') || '[]');
-      const data = subs.map(email => ({
-        'Email': email,
+      const subs = await MDB.Newsletter.get();
+      const data = subs.map(s => ({
+        'Email': s.email,
         'Status': 'Subscribed',
-        'Date Exported': new Date().toLocaleDateString()
+        'Date Joined': s.created_at ? formatAdminDate(s.created_at) : 'N/A'
       }));
       exportToExcel(data, 'MDB_Newsletter_Subscribers', 'Subscribers');
     }

@@ -1061,13 +1061,15 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.disabled = true;
       btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
 
+      console.log('MDB Newsletter call:', email);
       try {
+        console.log('Checking MDB.Newsletter:', window.MDB ? !!window.MDB.Newsletter : 'MDB missing');
         if (window.MDB && window.MDB.Newsletter) {
           await window.MDB.Newsletter.subscribe(email);
           window.MDB.UI.toast('Thank you for subscribing!', 'success');
           newsletterForm.reset();
         } else {
-          // Fallback
+          console.warn('MDB.Newsletter NOT found, using local-only fallback.');
           window.MDB.UI.toast('Subscribed successfully!', 'success');
           newsletterForm.reset();
         }

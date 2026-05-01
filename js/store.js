@@ -1637,6 +1637,7 @@ const MDB = (() => {
     _cache: 'mdb_subscribers',
 
     async subscribe(email) {
+      console.log('Newsletter.subscribe triggered for:', email);
       if (!email || !email.includes('@')) throw new Error('Invalid email');
       const subs = JSON.parse(localStorage.getItem(this._cache) || '[]');
       if (!subs.includes(email)) {
@@ -1646,7 +1647,10 @@ const MDB = (() => {
       try {
         const client = await Products._ensureClient();
         const { error } = await client.from(this._table).insert([{ email, created_at: new Date().toISOString() }]);
-        if (error) throw error;
+        if (error) {
+          console.error('MDB Newsletter Supabase Error:', error.message, error.details);
+          throw error;
+        }
       } catch (err) { console.warn('MDB Newsletter DB sync failed:', err); }
       return true;
     },
@@ -1673,6 +1677,7 @@ const MDB = (() => {
     _cache: 'mdb_messages',
 
     async send(data) {
+      console.log('Messages.send triggered for:', data);
       const entry = { ...data, id: 'msg_' + Date.now(), status: 'new', created_at: new Date().toISOString() };
       const msgs = JSON.parse(localStorage.getItem(this._cache) || '[]');
       msgs.unshift(entry);
@@ -1680,7 +1685,10 @@ const MDB = (() => {
       try {
         const client = await Products._ensureClient();
         const { error } = await client.from(this._table).insert([entry]);
-        if (error) throw error;
+        if (error) {
+          console.error('MDB Messages Supabase Error:', error.message, error.details);
+          throw error;
+        }
       } catch (err) { console.warn('MDB Messages DB sync failed:', err); }
       return true;
     },
