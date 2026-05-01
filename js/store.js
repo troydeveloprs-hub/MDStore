@@ -7,16 +7,16 @@ const MDB = (() => {
 
   /* â”€â”€â”€ Storage Keys â”€â”€â”€ */
   const KEYS = {
-    CART:      'mdb_cart',
-    WISHLIST:  'mdb_wishlist',
-    ORDERS:    'mdb_orders',
-    USER:      'mdb_user',
-    SESSION:   'mdb_session',
-    REVIEWS:   'mdb_reviews',
+    CART: 'mdb_cart',
+    WISHLIST: 'mdb_wishlist',
+    ORDERS: 'mdb_orders',
+    USER: 'mdb_user',
+    SESSION: 'mdb_session',
+    REVIEWS: 'mdb_reviews',
     ADDRESSES: 'mdb_addresses',
-    PROMO:     'mdb_applied_promo',
+    PROMO: 'mdb_applied_promo',
     CUSTOM_COUPONS: 'mdb_custom_coupons',
-    SETTINGS:  'mdb_settings',
+    SETTINGS: 'mdb_settings',
   };
 
   /* â”€â”€â”€ Helpers â”€â”€â”€ */
@@ -127,9 +127,8 @@ const MDB = (() => {
 
     return [];
   }
-
   /* ===================================================================
-     PRODUCTS  — Supabase-backed product catalog
+     PRODUCTS  — Supabase-backed product catalog sdfsd
      =================================================================== */
   const Products = {
     _cache: null,
@@ -183,11 +182,11 @@ const MDB = (() => {
       return Number.isNaN(date.getTime()) ? _dateNow() : date.toISOString();
     },
 
-                _mapRow(row) {
+    _mapRow(row) {
       if (!row) return null;
       let metadata = row.metadata;
       if (typeof metadata === "string") {
-        try { metadata = JSON.parse(metadata); } catch(e) { metadata = {}; }
+        try { metadata = JSON.parse(metadata); } catch (e) { metadata = {}; }
       }
       metadata = metadata || {};
       const defaults = this._defaults();
@@ -211,7 +210,7 @@ const MDB = (() => {
       return _normalizeProductImages(merged);
     },
 
-            _toRow(product) {
+    _toRow(product) {
       const base = _normalizeProductImages({
         ...this._defaults(),
         ...product,
@@ -354,7 +353,7 @@ const MDB = (() => {
       return this._run('save', async () => {
         const client = await this._ensureClient();
         const row = this._toRow(product);
-        
+
         // Use upsert only if we have a valid UUID, otherwise insert
         const query = row.id
           ? client.from(this._table).upsert(row)
@@ -568,7 +567,7 @@ const MDB = (() => {
 
       await this._run('save', async () => {
         const client = await this._ensureClient();
-        
+
         // Delete existing cart items for user
         await client.from(this._table).delete().eq('user_id', user.id);
 
@@ -632,7 +631,7 @@ const MDB = (() => {
 
     async clear() { await this._save([]); },
 
-    async count() { 
+    async count() {
       const items = await this.get();
       return items.reduce((s, i) => s + i.qty, 0);
     },
@@ -669,17 +668,17 @@ const MDB = (() => {
 
     async applyPromo(code) {
       const fixedPromos = {
-        'MDB10':   { code: 'MDB10',   type: 'percent', value: 10, label: '10% Off' },
-        'MDB20':   { code: 'MDB20',   type: 'percent', value: 20, label: '20% Off' },
-        'SAVE50':  { code: 'SAVE50',  type: 'fixed',   value: 50, label: '50 LE Off' },
+        'MDB10': { code: 'MDB10', type: 'percent', value: 10, label: '10% Off' },
+        'MDB20': { code: 'MDB20', type: 'percent', value: 20, label: '20% Off' },
+        'SAVE50': { code: 'SAVE50', type: 'fixed', value: 50, label: '50 LE Off' },
         'FREESHIP': { code: 'FREESHIP', type: 'fixed', value: 50, label: 'Free Shipping' },
       };
-      
+
       const customPromos = await Coupons.get();
       const upper = (code || '').trim().toUpperCase();
-      
+
       const found = fixedPromos[upper] || customPromos.find(p => p.code.toUpperCase() === upper);
-      
+
       if (found) {
         _set(KEYS.PROMO, found);
         return { success: true, promo: found };
@@ -767,7 +766,7 @@ const MDB = (() => {
 
       this._run('save', async () => {
         const client = await this._ensureClient();
-        
+
         // Delete existing wishlist items for user
         await client.from(this._table).delete().eq('user_id', user.id);
 
@@ -820,12 +819,12 @@ const MDB = (() => {
       }
     },
 
-    async has(id) { 
+    async has(id) {
       const items = await this.get();
       return items.some(i => i.id === id);
     },
 
-    async count() { 
+    async count() {
       const items = await this.get();
       return items.length;
     },
@@ -861,7 +860,7 @@ const MDB = (() => {
       } catch (err) {
         console.error(`[MDB Orders] Error during ${opName}:`, err);
         if (err.code) console.error(`[MDB Orders] Supabase Error Code: ${err.code} - ${err.message}`);
-        
+
         // Auto-fix for schema cache errors (missing columns)
         if (err.message && err.message.includes("Could not find the") && err.message.includes("column")) {
           return { error: err.message, isSchemaError: true };
@@ -906,7 +905,7 @@ const MDB = (() => {
       return this._run('get', async () => {
         const client = await this._ensureClient();
         let query = client.from(this._table).select('*').order('created_at', { ascending: false });
-        
+
         let dbOrders = [];
         if (!user || user.role !== 'admin') {
           if (user) {
@@ -943,7 +942,7 @@ const MDB = (() => {
         const localOrders = _get(KEYS.ORDERS) || [];
         const merged = [...mappedDbOrders];
         const dbIds = new Set(mappedDbOrders.map(o => o.id));
-        
+
         for (const lo of localOrders) {
           if (!dbIds.has(lo.id)) {
             // Ensure the local order belongs to the user if not admin
@@ -951,22 +950,22 @@ const MDB = (() => {
               merged.push(lo);
             }
           } else {
-             // If it exists in DB, update local storage with DB status ONLY if DB is newer
-             const dbOrder = mappedDbOrders.find(o => o.id === lo.id);
-             const idx = localOrders.findIndex(o => o.id === lo.id);
-             if (idx > -1 && dbOrder) {
-                const dbDate = new Date(dbOrder.updatedAt || dbOrder.createdAt || 0);
-                const localDate = new Date(localOrders[idx].updatedAt || localOrders[idx].createdAt || 0);
-                
-                if (dbDate >= localDate) {
-                  localOrders[idx].status = dbOrder.status;
-                  localOrders[idx].paymentStatus = dbOrder.paymentStatus;
-                  localOrders[idx].updatedAt = dbOrder.updatedAt;
-                }
-             }
+            // If it exists in DB, update local storage with DB status ONLY if DB is newer
+            const dbOrder = mappedDbOrders.find(o => o.id === lo.id);
+            const idx = localOrders.findIndex(o => o.id === lo.id);
+            if (idx > -1 && dbOrder) {
+              const dbDate = new Date(dbOrder.updatedAt || dbOrder.createdAt || 0);
+              const localDate = new Date(localOrders[idx].updatedAt || localOrders[idx].createdAt || 0);
+
+              if (dbDate >= localDate) {
+                localOrders[idx].status = dbOrder.status;
+                localOrders[idx].paymentStatus = dbOrder.paymentStatus;
+                localOrders[idx].updatedAt = dbOrder.updatedAt;
+              }
+            }
           }
         }
-        
+
         // Sort by date descending
         merged.sort((a, b) => new Date(b.createdAt || 0).getTime() < new Date(a.createdAt || 0).getTime() ? 1 : -1);
 
@@ -986,10 +985,10 @@ const MDB = (() => {
     async create(orderData) {
       const user = Auth.getUser();
       console.log('[MDB Orders] User:', user);
-      
+
       const cartItems = await Cart.get();
       console.log('[MDB Orders] Cart Items:', cartItems);
-      
+
       const order = {
         user_id: user?.id || null,
         customer_name: orderData.name || '',
@@ -1020,11 +1019,11 @@ const MDB = (() => {
 
       while (attempts < maxRetries) {
         const { data, error } = await client.from(this._table).insert(currentOrderPayload).select().single();
-        
+
         if (!error) {
           resData = data;
           lastError = null;
-          break; 
+          break;
         }
 
         console.error(`[MDB Orders] Supabase Insert Attempt ${attempts + 1} failed:`, error);
@@ -1056,10 +1055,10 @@ const MDB = (() => {
         console.error('[MDB Orders] All Supabase insertion attempts failed.', lastError);
         throw lastError;
       }
-      
+
       console.log('[MDB Orders] Supabase Success:', resData);
       const res = resData;
-      
+
       console.log('[MDB Orders] Result from Supabase:', res);
 
       // ALWAYS save to localStorage as a fallback/guest history
@@ -1086,14 +1085,14 @@ const MDB = (() => {
         createdAt: _dateNow(),
         updatedAt: _dateNow()
       };
-      
+
       localOrders.unshift(localOrder);
       _set(KEYS.ORDERS, localOrders);
-      
+
       this._cache = null;
       await Cart.clear();
       Cart.removePromo();
-      
+
       return res || localOrder;
     },
 
@@ -1111,9 +1110,9 @@ const MDB = (() => {
           .select('*')
           .eq('id', id)
           .single();
-        
+
         if (error || !data) return null;
-        
+
         // Map DB row to Order object
         return {
           id: data.id,
@@ -1188,7 +1187,7 @@ const MDB = (() => {
       const res = await this._run('updatePaymentStatus', async () => {
         return await this._robustUpdate(id, { payment_status: newStatus, updated_at: _dateNow() });
       }, null);
-      
+
       return res;
     },
 
@@ -1218,7 +1217,7 @@ const MDB = (() => {
           dbUpdate.total = parseFloat(updateData.total);
         }
         if (updateData.notes !== undefined) dbUpdate.notes = updateData.notes;
-        
+
         if (updateData.customer) {
           if (updateData.customer.name) dbUpdate.customer_name = updateData.customer.name;
           if (updateData.customer.email) dbUpdate.customer_email = updateData.customer.email;
@@ -1233,7 +1232,7 @@ const MDB = (() => {
       }, null);
     },
 
-    async count() { 
+    async count() {
       const orders = await this.get();
       return orders.length;
     },
@@ -1250,7 +1249,7 @@ const MDB = (() => {
           .from(this._table)
           .delete()
           .eq('id', id);
-        
+
         // If it's an RLS error, we still return true because it was removed from local storage
         if (error) {
           console.error('[MDB Orders] Delete error from Supabase:', error);
@@ -1260,7 +1259,7 @@ const MDB = (() => {
             throw error;
           }
         }
-        
+
         this._cache = null;
         return true;
       }, true);
@@ -1293,13 +1292,13 @@ const MDB = (() => {
       }
     },
 
-    async _getUsers() { 
+    async _getUsers() {
       return this._run('getUsers', async () => {
         const client = await this._ensureClient();
         const { data, error } = await client.from(this._table).select('*');
         if (error) throw error;
         return data || [];
-      }, _get('mdb_users') || []); 
+      }, _get('mdb_users') || []);
     },
 
     async _saveUsers(users) {
@@ -1358,10 +1357,10 @@ const MDB = (() => {
           .select('*')
           .eq('email', target)
           .single();
-        
+
         if (error || !data) return { success: false, message: 'Invalid email or password' };
         if (data.password !== btoa(password)) return { success: false, message: 'Invalid email or password' };
-        
+
         await this._setSession(data);
         return { success: true, user: this._sanitize(data) };
       }, { success: false, message: 'Login failed' });
@@ -1766,7 +1765,7 @@ const MDB = (() => {
 
       this._run('save', async () => {
         const client = await this._ensureClient();
-        
+
         // Delete existing addresses for user
         await client.from(this._table).delete().eq('user_id', user.id);
 
@@ -1833,13 +1832,13 @@ const MDB = (() => {
     },
 
     /** Generate product card HTML */
-        productCardHTML(p, basePathOverride = null) {
+    productCardHTML(p, basePathOverride = null) {
       const basePath = typeof basePathOverride === "string"
         ? basePathOverride
         : (window.location.pathname.includes("/collections/") || window.location.pathname.includes("/Pages/") ? "../" : "");
       const image = p.image || "img/logo.svg";
       const hoverImage = (Array.isArray(p.images) && p.images.length > 1) ? p.images[1] : (p.images && p.images[0] !== p.image ? p.images[0] : image);
-      
+
       // Ensure image paths start with ../ for collections and pages
       const normalizeImagePath = (imgPath) => {
         if (!imgPath) return basePath + "img/logo.svg";
@@ -1847,10 +1846,10 @@ const MDB = (() => {
         if (imgPath.startsWith("../")) return imgPath;
         return basePath + imgPath;
       };
-      
+
       const normalizedImage = normalizeImagePath(image);
       const normalizedHoverImage = normalizeImagePath(hoverImage);
-      
+
       const oldPrice = p.originalPrice || p.oldPrice;
       const badge = typeof p.badge === "string" ? p.badge.trim() : "";
       const badgeText = badge ? badge.charAt(0).toUpperCase() + badge.slice(1) : "";
@@ -1908,29 +1907,29 @@ const MDB = (() => {
       document.addEventListener('click', (e) => {
         const thumbnail = e.target.closest('.product-card-new__variant');
         if (!thumbnail) return;
-        
+
         const card = thumbnail.closest('.product-card-new');
         if (!card) return;
-        
+
         const mainImage = card.querySelector('.product-card-new__image');
         if (!mainImage) return;
-        
+
         const newSrc = thumbnail.src;
         if (!newSrc) return;
-        
+
         // Fade out current image
         mainImage.classList.add('fade-out');
-        
+
         setTimeout(() => {
           mainImage.src = newSrc;
           mainImage.classList.remove('fade-out');
           mainImage.classList.add('fade-in');
-          
+
           setTimeout(() => {
             mainImage.classList.remove('fade-in');
           }, 300);
         }, 300);
-        
+
         // Update active state
         card.querySelectorAll('.product-card-new__variant').forEach(v => {
           v.classList.remove('active');
