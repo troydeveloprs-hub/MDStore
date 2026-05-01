@@ -399,6 +399,27 @@ const MDB = (() => {
       return this.save(product);
     },
 
+    async update(id, data) {
+      return this._run('update', async () => {
+        const client = await this._ensureClient();
+        const row = this._toRow({ ...data, id });
+        delete row.created_at;
+
+        const { data: updated, error } = await client
+          .from(this._table)
+          .update(row)
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        this._cache = null;
+        const mapped = this._mapRow(updated);
+        _dispatchProductsEvent('changed', { operation: 'update', product: mapped });
+        return mapped;
+      });
+    },
+
     async getByCategory(cat) {
       const all = await this.getAll();
       return all.filter(p => p.category === cat);
@@ -1976,6 +1997,7 @@ const MDB = (() => {
               <button class="product-card-new__action-btn" data-quick-view="${p.id}" title="Quick View" aria-label="Quick view ${p.name}"><i class="fa-regular fa-eye"></i></button>
               <button class="product-card-new__action-btn btn-atc" data-id="${p.id}" ${stock === 0 ? "disabled" : ""} title="Add to Cart" aria-label="Add ${p.name} to cart"><i class="fa-solid fa-cart-shopping"></i></button>
             </div>
+            ${stockLabel ? `<div class="product-card-new__stock-badge ${stockClass}">${stockLabel}</div>` : ''}
           </div>
           
           <div class="product-card-new__details">

@@ -2456,27 +2456,37 @@
       if (text) text.textContent = 'Refreshing...';
 
       try {
+        console.log('--- STARTING GLOBAL REFRESH ---');
         // Clear local caches and re-fetch from Supabase
         await MDB.Products.getAll(true); 
         await MDB.Orders.get(); 
         
+        const safeRender = async (fn, name) => {
+          try {
+            await fn();
+          } catch (e) {
+            console.error(`Dashboard Refresh Error in ${name}:`, e);
+          }
+        };
+
         await Promise.all([
-          renderStats(),
-          renderOrders(),
-          renderProducts(document.getElementById('product-search')?.value || ''),
-          renderCustomers(),
-          renderInventory(),
-          renderAnalytics(),
-          renderReviews(),
-          renderCoupons(),
-          renderSubscribers(),
-          renderMessages()
+          safeRender(renderStats, 'Stats'),
+          safeRender(renderOrders, 'Orders'),
+          safeRender(() => renderProducts(document.getElementById('product-search')?.value || ''), 'Products'),
+          safeRender(renderCustomers, 'Customers'),
+          safeRender(renderInventory, 'Inventory'),
+          safeRender(renderAnalytics, 'Analytics'),
+          safeRender(renderReviews, 'Reviews'),
+          safeRender(renderCoupons, 'Coupons'),
+          safeRender(renderSubscribers, 'Subscribers'),
+          safeRender(renderMessages, 'Messages')
         ]);
         
+        console.log('--- REFRESH COMPLETE ---');
         MDB.UI.toast('Dashboard data refreshed', 'success');
       } catch (err) {
-        console.error(err);
-        MDB.UI.toast('Refresh failed', 'error');
+        console.error('Global Refresh Error:', err);
+        MDB.UI.toast('Refresh failed: ' + err.message, 'error');
       } finally {
         if (btn) btn.disabled = false;
         if (icon) icon.className = 'fa-solid fa-arrows-rotate';
@@ -3293,7 +3303,7 @@
       tbody.innerHTML = filtered.map(p => {
         const stock = parseInt(p.stock, 10) || 0;
         const low = stock < 10;
-        return `<tr>
+        return `<tr data-inventory-row="${encodeURIComponent(p.id)}">
         <td><img src="${adminImageSrc(p.image)}" class="product-thumb" style="width:36px;height:36px;border-radius:4px"></td>
         <td>
           <strong>${escapeHtml(p.name)}</strong>
@@ -3301,19 +3311,22 @@
         </td>
         <td style="font-family:monospace;font-size:12.5px;color:var(--text2)">${escapeHtml(p.id)}</td>
         <td>
-          <input type="number" 
-                 value="${stock}" 
-                 data-set-stock="${encodeURIComponent(p.id)}"
-                 class="search-input" 
-                 style="width:80px; text-align:center; font-weight:700; border-color:${low ? 'var(--danger)' : 'var(--border)'}; padding: 4px;"
-          >
+          <div style="position:relative; display:inline-block;">
+            <input type="number" 
+                   value="${stock}" 
+                   data-set-stock="${encodeURIComponent(p.id)}"
+                   class="search-input" 
+                   style="width:80px; text-align:center; font-weight:700; border-color:${low ? 'var(--danger)' : 'var(--border)'}; padding: 4px;"
+                   onchange="updateStock('${escapeHtml(p.id)}', this.value, false)"
+            >
+          </div>
           <span style="font-size:11px;color:var(--text3)"> units</span>
         </td>
         <td>
           <div class="inv-adj">
-            <button class="act-btn" type="button" data-adjust-stock="${encodeURIComponent(p.id)}" data-delta="-1">−1</button>
-            <button class="act-btn" type="button" data-adjust-stock="${encodeURIComponent(p.id)}" data-delta="1">+1</button>
-            <button class="act-btn" type="button" data-adjust-stock="${encodeURIComponent(p.id)}" data-delta="10">+10</button>
+            <button class="act-btn" type="button" onclick="updateStock('${escapeHtml(p.id)}', -1, true)">−1</button>
+            <button class="act-btn" type="button" onclick="updateStock('${escapeHtml(p.id)}', 1, true)">+1</button>
+            <button class="act-btn" type="button" onclick="updateStock('${escapeHtml(p.id)}', 10, true)">+10</button>
           </div>
         </td>
         <td>
@@ -3325,10 +3338,12 @@
         </td>
       </tr>`;
       }).join('') || '<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-warehouse"></i><p>No products</p></div></td></tr>';
+
     }
 
     async function updateStock(pid, value, isDelta = true) {
       const input = document.querySelector(`input[data-set-stock="${encodeURIComponent(pid)}"]`);
+      const row = document.querySelector(`tr[data-inventory-row="${encodeURIComponent(pid)}"]`);
       const originalValue = input ? input.value : null;
       
       if (input) {
@@ -3339,6 +3354,7 @@
         spin.style.cssText = 'position:absolute; right: -20px; top: 10px; color: var(--gold); font-size: 12px;';
         input.parentElement.appendChild(spin);
       }
+      if (row) row.style.opacity = '0.7';
 
       try {
         const p = await MDB.Products.getById(pid);
@@ -3347,23 +3363,19 @@
         const currentStock = parseInt(p.stock, 10) || 0;
         const finalStock = isDelta ? Math.max(0, currentStock + value) : Math.max(0, parseInt(value, 10));
         
-        await MDB.Products.save({ ...p, stock: finalStock });
+        await MDB.Products.update(pid, { stock: finalStock });
         
-        // Immediate UI refresh for this row if it was a delta update
         if (input) input.value = finalStock;
-
-        // Global refresh to update dashboard cards and products list
-        await Promise.all([
-            renderStats(),
-            renderInventory(),
-            renderProducts(document.getElementById('product-search')?.value || '')
-        ]);
-        
         MDB.UI.toast(`Stock updated: ${p.name}`, 'success');
+
+        // Background refresh to update cards without blocking the user
+        refreshAll().catch(e => console.error('Background refresh failed', e));
+        
       } catch (e) { 
         if (input) input.value = originalValue;
         showErr(e, 'Failed to update stock.'); 
       } finally {
+        if (row) row.style.opacity = '1';
         if (input) {
           input.disabled = false;
           const spin = input.parentElement.querySelector('.fa-spinner');
