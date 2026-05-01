@@ -1978,7 +1978,7 @@ const MDB = (() => {
         : 0;
       const stock = Number.isFinite(parseInt(p.stock, 10)) ? parseInt(p.stock, 10) : null;
       const isWishlisted = Wishlist.has(p.id);
-      let stockLabel = "Available Now";
+      let stockLabel = "";
       let stockClass = "in-stock";
       if (stock === 0) {
         stockLabel = "Out of Stock";
