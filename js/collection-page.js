@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       category: params.category,
       search: params.search,
       sort: params.sort,
-      limit: 1000 // Get all matching for client-side pagination, or implement server-side pagination if needed
+      limit: 100 
     });
     
     countEl.classList.remove('loading');

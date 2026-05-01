@@ -500,25 +500,7 @@
   </main>
 
   <script src="../js/collection-page.js"></script>
-  <script>
-    // Filter products by brand
-    const brandName = 'ESTÉE LAUDER';
 
-    // Override the loadProducts function to filter by brand
-    document.addEventListener('DOMContentLoaded', function() {
-      const countEl = document.querySelector('.collection-count');
-      if (countEl) countEl.classList.add('loading');
-
-      const originalLoadProducts = window.loadProducts;
-
-      window.loadProducts = async function() {
-        const products = await originalLoadProducts();
-        const filteredProducts = products.filter(p => p.brand === brandName);
-        if (countEl) countEl.classList.remove('loading');
-        return filteredProducts;
-      };
-    });
-  </script>
   <footer class="footer">
     <div class="container">
       <div class="footer-inner">
@@ -632,3 +614,4 @@
 </body>
 
 </html>
+

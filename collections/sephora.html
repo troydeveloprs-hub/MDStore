@@ -511,40 +511,7 @@
   </main>
 
   <script src="../js/collection-page.js"></script>
-  <script>
-    // Filter products by brand
-    const brandName = 'SEPHORA';
-    
-    // Override the loadProducts function to filter by brand
-    document.addEventListener('DOMContentLoaded', async function() {
-      if (!window.MDB || !MDB.Products || !MDB.UI) return;
-      
-      const grid = document.getElementById('collection-grid');
-      const countEl = document.querySelector('.collection-count');
-      const noProducts = document.getElementById('no-products');
-      
-      try {
-        const products = await MDB.Products.getAll();
-        const filteredProducts = products.filter(p => {
-          const brand = (p.brand || '').toUpperCase().trim();
-          return brand === brandName || brand.includes('SEPHORA');
-        });
-        
-        if (countEl) countEl.textContent = `${filteredProducts.length} products`;
-        
-        if (filteredProducts.length === 0) {
-          if (grid) grid.innerHTML = '';
-          if (noProducts) noProducts.style.display = 'block';
-        } else {
-          if (noProducts) noProducts.style.display = 'none';
-          if (grid) grid.innerHTML = filteredProducts.map(p => MDB.UI.productCardHTML(p)).join('');
-        }
-      } catch (err) {
-        console.error('Error loading brand products:', err);
-        if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:40px;color:#888;">Error loading products.</div>';
-      }
-    });
-  </script>
+
   <footer class="footer">
     <div class="container">
       <div class="footer-inner">
@@ -669,3 +636,4 @@
 </body>
 
 </html>
+
